@@ -1,0 +1,11 @@
+[package]
+name = "binarka"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+iced = { workspace = true }
+tokio = { workspace = true }
+kompresja = { path = "../kompresja" }
+enumy = { path = "../enumy" }
+szyfrowanie = { path = "../szyfrowanie" }

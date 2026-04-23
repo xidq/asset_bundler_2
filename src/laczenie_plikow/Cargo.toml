@@ -1,0 +1,15 @@
+[package]
+name = "laczenie_plikow"
+version = "0.2.1"
+edition = "2024"
+
+[dependencies]
+futures = { workspace = true }
+image = { workspace = true }
+enumy = { path = "../enumy" }
+tokio = { workspace = true }
+zbiorowa_konwersja_zdjec = { path = "../zbiorowa_konwersja_zdjec" }
+bzip2 = { workspace = true }
+xz2 = { workspace = true }
+webp = { workspace = true }
+zstd = { workspace = true }

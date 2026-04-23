@@ -1,0 +1,10 @@
+[package]
+name = "app"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+iced = { workspace = true }
+tokio = { workspace = true }
+ui_iced = { path = "../ui_iced" }
+enumy = { path = "../enumy" }

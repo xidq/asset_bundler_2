@@ -1,0 +1,20 @@
+[package]
+name = "ui_iced"
+version = "0.4.2"
+edition = "2024"
+
+[dependencies]
+iced = { workspace = true }
+iced_core = { workspace = true }
+enumy = { path = "../enumy" }
+chrono = { workspace = true }
+futures = { workspace = true }
+zbiorowa_konwersja_zdjec = { path = "../zbiorowa_konwersja_zdjec" }
+binarka = { path = "../binarka" }
+sys-locale = { workspace = true }
+rfd = { workspace = true }
+tokio = { workspace = true }
+laczenie_plikow = { path = "../laczenie_plikow" }
+dds = { workspace = true }
+strum = { workspace = true }
+dds_ops = { path = "../dds_ops" }

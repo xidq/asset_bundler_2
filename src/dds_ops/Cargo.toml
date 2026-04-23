@@ -1,0 +1,17 @@
+[package]
+name = "dds_ops"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+dds = { workspace = true }
+enumy = { path = "../enumy" }
+walkdir = { workspace = true }
+image = { workspace = true }
+tokio = { workspace = true }
+futures = { workspace = true }
+zstd = { workspace = true }
+bzip2 = { workspace = true }
+xz2 = { workspace = true }
+iced = { workspace = true }
+zbiorowa_konwersja_zdjec = { path = "../zbiorowa_konwersja_zdjec" }
