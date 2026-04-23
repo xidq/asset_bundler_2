@@ -1,1 +1,0 @@
-mod laczenie_fot_struct_enums;
