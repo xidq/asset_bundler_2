@@ -1,0 +1,8 @@
+/target
+/src/no_sync
+/Test
+src/Data
+src/fonts
+src/pass
+/Cargo.lock
+/.idea

@@ -1,0 +1,44 @@
+
+[workspace]
+members = [
+    "src/zbiorowa_konwersja_zdjec",
+    "src/app",
+    "src/binarka",
+    "src/szyfrowanie",
+    "src/kompresja",
+    "src/ui_iced",
+    "src/laczenie_plikow",
+    "src/enumy",
+    "src/pass",
+    "src/dds_ops",
+]
+
+
+
+resolver = "3"
+[profile.release]
+panic = "abort"
+strip = true
+opt-level = "z"
+debug = 0
+
+[workspace.dependencies]
+iced = "0.14.0"
+iced_core = "0.14.0"
+serde = { version = "1.0.228", features = ["derive"] }
+tokio = { version = "1.52.1", features = ["full"] }
+zstd = "0.13.3"
+image = { version = "0.25.10", features = ["tga","qoi"] }
+rand = "0.10.1"
+walkdir = "2.5.0"
+webp = "0.3.1"
+rayon = "1.12.0"
+futures = "0.3.32"
+chrono = "0.4.44"
+sys-locale = "0.3.2"
+rfd = "0.17.2"
+xz2 = "0.1.7"
+bzip2 = "0.6.1"
+kamadak-exif = "0.6.1"
+dds = "0.2.0"
+strum = { version = "0.28.0", features = ["derive"] }
