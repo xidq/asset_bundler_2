@@ -1,20 +1,24 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_COTTON_CANDY, KOLOR_CZCIONKI_SREDNI, KOLOR_SPANISH_ORANGE, KOLOR_TŁA, WYSOKOSC_CZCIONEK_PRZYCISKI};
+use crate::ui::program_pomniejsze::kolory::{KOLOR_COTTON_CANDY, KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_TŁA, WYSOKOSC_CZCIONEK_PRZYCISKI};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
+// use enumy::inne_ui::WybraneOknoEdycjiZdjęć::OptRozszerzeniaPlikówZdjęciowych;
+use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::program_pomniejsze::style_fn::pick_lista::{styl_menu_pick, styl_pick_list};
+use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
 use crate::ui::program_pomniejsze::style_fn::text_input::styl_text_input;
 use crate::ui::program_pomniejsze::ui_standard::oddzielacz::ui_standard_oddzielacz;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMessage;
 use enumy::dane_do_przetwarzania::{DaneDoPakowaniaDds, DaneDoRozpakowaniaDds};
 use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds};
+use enumy::ikony::folder_icon;
 pub(crate) use enumy::inne_ui::StronyDds;
-use enumy::opcje::{OptFormatDds, OptKompresjaDds};
+use enumy::inne_ui::{StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
+use enumy::opcje::{OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptKompresjaDds, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, container, pick_list, row, text, text_input, Column, Row};
+use iced::widget::{button, container, pick_list, row, slider, space, text, text_input, Column, Row};
 use iced::Element;
 use iced_core::{Color, Length};
 use strum::IntoEnumIterator;
-use enumy::ikony::folder_icon;
 
 pub fn view_dds(
     dane_pakowanie: DaneDoPakowaniaDds,
@@ -25,7 +29,8 @@ pub fn view_dds(
     log_pakowanie: LogPakowaniaDds,
     log_rozpakowywanie: LogRozpakowywanieDds,
     main_process_check: bool,
-
+    stan_klikaczy: StanKlikaczyDoLaczeniaZdjec,
+    wybrane_rozszerzenie:WybranyFormatZdjecia,
 ) -> Element<'_, Message> {
 
     let czy_sie_nada_na_wyslanie_pakowanie=dane_pakowanie.ścieżka_wejściowa.exists() && dane_pakowanie.ścieżka_wyjściowa.exists() && !dane_pakowanie.nazwa.is_empty();
@@ -275,6 +280,594 @@ pub fn view_dds(
 
 
                 ).spacing(15)
+        )
+        .push(
+            Row::new()
+                .push(text("wybierz nazwę").font(jezyk.get_font()).color(KOLOR_CZCIONKI_SREDNI).height(40.).width(Length::FillPortion(3)).center())
+                .push(
+                    container(
+                        text_input(
+                            jezyk.t("input_name"),
+                            &dane_rozpakowanie.nazwa
+                        ).font(jezyk.get_font())
+                            .padding(10)
+                            .style(styl_text_input(!dane_rozpakowanie.nazwa.is_empty(),KOLOR_COTTON_CANDY, KOLOR_TŁA))
+                            .on_input(|xx|Message::Dds(DdsMessage::DdsPakowanieZmianaNazwy(xx))).style(styl_text_input(!dane_pakowanie.nazwa.is_empty(),  KOLOR_COTTON_CANDY,KOLOR_TŁA))
+                            .width(Length::Fill)
+                    ).height(Length::Fixed(40.))
+                        .width(Length::FillPortion(7))
+
+
+                ).spacing(15)
+        )
+        .push(ui_standard_oddzielacz())
+        .push(
+            Column::new()
+                .push(
+                    Row::new()
+                    .push(
+                        button(
+                            text("Jpg")
+                                .font(jezyk.get_font())
+                                .width(Length::Fill)
+                                .height(Length::Fixed(40.))
+                                .center()
+                        )
+                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Jpg{..}), KOLOR_COTTON_CANDY))
+                            .width(Length::FillPortion(1))
+                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Jpg{
+                                jakosc: 90,
+                                progresywny: false,
+                                bit_depth: vec![OptFormatyKoloruObrazOgólny::B8],
+                            }))
+                            )
+
+                    )
+                    .push(
+                        button(
+                            text("png")
+                                .font(jezyk.get_font())
+                                .width(Length::Fill)
+                                .height(Length::Fixed(40.))
+                                .center()
+                        )
+                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Png{..}), KOLOR_COTTON_CANDY))
+                            .width(Length::FillPortion(1))
+                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Png{
+                                kompresja: 3,
+                                bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
+                            }))
+                            )
+                    )
+                    .push(
+                        button(
+                            text("webp")
+                                .font(jezyk.get_font())
+                                .width(Length::Fill)
+                                .height(Length::Fixed(40.))
+                                .center()
+                        )
+                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Webp{..}), KOLOR_COTTON_CANDY))
+                            .width(Length::FillPortion(1))
+                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Webp{
+                                jakosc: 90,
+                                lossless: false,
+                                bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
+                            }))
+                            )
+                    )
+                    .push(
+                        button(
+                            text("tga")
+                                .font(jezyk.get_font())
+                                .width(Length::Fill)
+                                .height(Length::Fixed(40.))
+                                .center()
+                        )
+                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Tga{..}), KOLOR_COTTON_CANDY))
+                            .width(Length::FillPortion(1))
+                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Tga{
+                                bit_depth: Vec::from([OptFormatyKoloruObrazuTga::TrueColor24]),
+                            }))
+                            )
+                    )
+                    .push(
+                        button(
+                            text("ff")
+                                .font(jezyk.get_font())
+                                .width(Length::Fill)
+                                .height(Length::Fixed(40.))
+                                .center()
+                        )
+                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Ff{..}), KOLOR_COTTON_CANDY))
+                            .width(Length::FillPortion(1))
+                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Ff{ metoda_kompresji: OptMetodaKompresjiZdjecia::Brak }))
+                            )
+                    )
+                    .push(
+                        button(
+                            text("qoi")
+                                .font(jezyk.get_font())
+                                .width(Length::Fill)
+                                .height(Length::Fixed(40.))
+                                .center()
+                        )
+                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Qoi{..}), KOLOR_COTTON_CANDY))
+                            .width(Length::FillPortion(1))
+                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Qoi{ bit_depth: Vec::from([OptFormatyKoloruObrazuQoi::Color24]) }))
+                            )
+                    ).spacing(1)
+                )
+                
+                .push(
+                    match dane_rozpakowanie.rozszerzenie.clone()  {
+                        OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, } => {
+                            let bdepth = bit_depth.clone();
+                            container(
+                                Column::new()
+                                    // .push(space().height(Length::Fixed(30.)))
+                                    .push(
+                                        Row::new()
+                                            .push(
+                                                text("")
+                                            )
+                                            .push(
+                                                    slider(
+                                                        0..=100,
+                                                        jakosc,
+                                                        move |nowa_jakosc| {
+                                                            Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Jpg {
+                                                                    jakosc: nowa_jakosc,
+                                                                    progresywny,
+                                                                    bit_depth: bit_depth.clone()
+                                                                }
+                                                            ))
+                                                        }
+                                                    ).style(styl_sliderów(KOLOR_PEACH_PUFF))
+                                                                  .width(Length::FillPortion(6))
+                                            )
+                                            .push(space().width(Length::FillPortion(1)))
+                                            .push(
+                                                text(format!("Q: {}%", jakosc))
+                                                    .color(Color::from_rgba(1., 1., 1., 0.6))
+                                                    .font(jezyk.get_font())
+                                                    .width(Length::FillPortion(3)),
+                                            ).height(Length::Fixed(50.)).padding(15)
+                                    )
+                                    .push(
+                                        Row::new()
+                                            .push(
+                                                button(
+                                                    text("rgb")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::B8),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Jpg{
+                                                                    jakosc, progresywny, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::B8]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                .height(Length::FillPortion(1))
+                                            )
+                                            .push(
+                                                button(
+                                                    text("bw")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::L8),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Jpg{
+                                                                    jakosc, progresywny, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::L8]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                    )
+                            ).width(Length::Fill).height(100.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                        }
+                        OptRozszerzeniaPlikówZdjęciowych::Png{ kompresja, bit_depth } => {
+                            let bdepth = bit_depth.clone();
+                            container(
+                                Column::new()
+                                    // .push(space().height(Length::Fixed(30.)))
+                                    .push(
+                                        Row::new()
+                                            .push(
+                                                text("")
+                                            )
+                                            .push(
+                                                slider(
+                                                    0..=9,
+                                                    kompresja,
+                                                    move |kompresja_nju| {
+                                                        Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                            OptRozszerzeniaPlikówZdjęciowych::Png {
+                                                                kompresja: kompresja_nju,
+                                                                bit_depth: bit_depth.clone()
+                                                            }
+                                                        ))
+                                                    }
+                                                ).style(styl_sliderów(KOLOR_PEACH_PUFF))
+                                                    .width(Length::FillPortion(6))
+                                            )
+                                            .push(space().width(Length::FillPortion(1)))
+                                            .push(
+                                                text(format!("Q: {}", kompresja))
+                                                    .color(Color::from_rgba(1., 1., 1., 0.6))
+                                                    .font(jezyk.get_font())
+                                                    .width(Length::FillPortion(3)),
+                                            ).height(Length::Fixed(50.)).padding(15)
+                                    )
+                                    .push(
+                                        Row::new()
+                                            .push(
+                                                button(
+                                                    text("8l")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::L8),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Png{
+                                                                    kompresja, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::L8]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                            .push(
+                                                button(
+                                                    text("8b")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::B8),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Png{
+                                                                    kompresja, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::B8]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                            .push(
+                                                button(
+                                                    text("16l")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::L16),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Png{
+                                                                    kompresja, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::L16]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                            .push(
+                                                button(
+                                                    text("16b")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::B16),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Png{
+                                                                    kompresja, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::B16]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                    )
+                                    .push(
+                                        Row::new()
+                                            .push(
+                                                button(
+                                                    text("8la")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::L8a),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Png{
+                                                                    kompresja, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::L8a]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                            .push(
+                                                button(
+                                                    text("8ba")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::B8a),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Png{
+                                                                    kompresja, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::B8a]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                            .push(
+                                                button(
+                                                    text("16la")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::L16a),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Png{
+                                                                    kompresja, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::L16a]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                            .push(
+                                                button(
+                                                    text("16ba")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::B16a),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Png{
+                                                                    kompresja, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::B16a]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                    )
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                        }
+                        OptRozszerzeniaPlikówZdjęciowych::Webp{ jakosc, lossless, bit_depth } => {
+
+                            let bdepth = bit_depth.clone();
+                            container(
+                                Column::new()
+                                    // .push(space().height(Length::Fixed(30.)))
+                                    .push(
+                                        Row::new()
+                                            .push(
+                                                text("")
+                                            )
+                                            .push(
+                                                slider(
+                                                    0..=100,
+                                                    jakosc,
+                                                    move |nowa_jakosc| {
+                                                        Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                            OptRozszerzeniaPlikówZdjęciowych::Webp {
+                                                                jakosc: nowa_jakosc,
+                                                                lossless,
+                                                                bit_depth: bit_depth.clone()
+                                                            }
+                                                        ))
+                                                    }
+                                                ).style(styl_sliderów(KOLOR_PEACH_PUFF))
+                                                    .width(Length::FillPortion(6))
+                                            )
+                                            .push(space().width(Length::FillPortion(1)))
+                                            .push(
+                                                text(format!("Q: {}%", jakosc))
+                                                    .color(Color::from_rgba(1., 1., 1., 0.6))
+                                                    .font(jezyk.get_font())
+                                                    .width(Length::FillPortion(3)),
+                                            ).height(Length::Fixed(50.)).padding(15)
+                                    )
+                                    .push(
+                                        Row::new()
+                                            .push(
+                                                button(
+                                                    text("rgb")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::B8),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Webp{
+                                                                    jakosc, lossless, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::B8]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                            .push(
+                                                button(
+                                                    text("alpha")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fixed(40.))
+                                                        .center()
+                                                )
+                                                    .style(
+                                                        styl_przycisków(
+                                                            false,
+                                                            bdepth.contains(&OptFormatyKoloruObrazOgólny::B8a),
+                                                            KOLOR_COTTON_CANDY
+                                                        )
+                                                    )
+                                                    .on_press(
+                                                        Message::Dds(
+                                                            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Webp{
+                                                                    jakosc, lossless, bit_depth: Vec::from(
+                                                                        [OptFormatyKoloruObrazOgólny::B8a]
+                                                                    )
+                                                                }
+                                                            )
+                                                        )
+                                                    )
+                                                    .height(Length::FillPortion(1))
+                                            )
+                                    )
+                            ).width(Length::Fill).height(100.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                        }
+                        OptRozszerzeniaPlikówZdjęciowych::Tga{ bit_depth } => {
+                            container(text("")).width(Length::Fill).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                        }
+                        OptRozszerzeniaPlikówZdjęciowych::Ff{ metoda_kompresji } => {
+                            container(text("")).width(Length::Fill).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                        }
+                        OptRozszerzeniaPlikówZdjęciowych::Qoi{ bit_depth } => {
+                            container(text("")).width(Length::Fill).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                        }
+                    }
+                )
         )
         .width(Length::FillPortion(2))
         .height(Length::Fill)

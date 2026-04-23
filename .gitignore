@@ -6,3 +6,4 @@ src/fonts
 src/pass
 /Cargo.lock
 /.idea
+/export/

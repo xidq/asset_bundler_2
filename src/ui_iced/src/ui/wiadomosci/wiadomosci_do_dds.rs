@@ -5,6 +5,8 @@ use enumy::statusy::LogTxDoPakowanieDds;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
+use enumy::opcje::OptRozszerzeniaPlikówZdjęciowych;
+use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
 
 impl Program {
     pub fn update_message_dds(&mut self, msg: DdsMessage) -> Task<DdsMessage> {
@@ -120,6 +122,54 @@ impl Program {
             }
             DdsMessage::DdsRozpakowanieZmianaŚcieżkiWyjściowej(ścieżka) => {
                 self.dane_temp_do_rozpakowywania_dds.ścieżka_wyjściowa = PathBuf::from(ścieżka);
+            }
+            DdsMessage::DdsRozpakowanieZmianaRozszerzenia(huehue) => {
+                self.dane_temp_do_rozpakowania_dds_formaty_zdjec = huehue
+
+            },
+            DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(huehue) => {
+                let _ = match huehue{
+                    OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth } => {
+                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
+                            OptRozszerzeniaPlikówZdjęciowych::Jpg{
+                                jakosc,
+                                progresywny,
+                                bit_depth,
+                            }
+
+                    }
+                    OptRozszerzeniaPlikówZdjęciowych::Png { kompresja, bit_depth } => {
+                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
+                            OptRozszerzeniaPlikówZdjęciowych::Png{
+                                kompresja,
+                                bit_depth,
+                            }
+
+                    }
+                    OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, lossless, bit_depth } => {
+                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
+                        OptRozszerzeniaPlikówZdjęciowych::Webp{
+                            jakosc,
+                            lossless,
+                            bit_depth,
+                        }
+                    }
+                    OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth } => {
+                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
+                            OptRozszerzeniaPlikówZdjęciowych::Tga{
+                                bit_depth,
+                            }
+                    }
+
+                    OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } => {
+                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
+                            OptRozszerzeniaPlikówZdjęciowych::Ff{ metoda_kompresji }
+                    }
+                    OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth } => {
+                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
+                            OptRozszerzeniaPlikówZdjęciowych::Qoi{ bit_depth }
+                    }
+                };
             }
             _ => {}
         }

@@ -1,5 +1,5 @@
-use enumy::inne_ui::StronyDds;
-use enumy::opcje::{OptFormatDds, OptKompresjaDds};
+use enumy::inne_ui::{StronyDds, WybranyFormatZdjecia};
+use enumy::opcje::{OptFormatDds, OptFormatyKoloruObrazuQoi, OptKompresjaDds, OptRozszerzeniaPlikówZdjęciowych};
 use enumy::statusy::LogTxDoPakowanieDds;
 
 #[derive(Debug, Clone)]
@@ -19,4 +19,7 @@ pub enum DdsMessage {
     DdsRozpakowanieZmianaŚcieżkiWyjściowej(String),
     DdsRozpakowanieZmianaŚcieżkiWyjściowejWybór,
     Nic,
+    DdsRozpakowanieZmianaRozszerzenia(WybranyFormatZdjecia),
+    DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych),
+    DdsRozpakowaniZemianaRozszerzeniaDaneBit(OptRozszerzeniaPlikówZdjęciowych),
 }

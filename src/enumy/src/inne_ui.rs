@@ -10,6 +10,18 @@ pub enum StronyDds {
     ZplikuDoDds,
     ZddsDoPliku,
 }
+
+#[allow(dead_code)]
+#[derive(Debug, Clone)]
+pub enum WybranyFormatZdjecia{
+    Jpg,
+    Png,
+    Webp,
+    Tga,
+    Ff,
+    Qoi,
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct StanKlikaczyDoLaczeniaZdjec {

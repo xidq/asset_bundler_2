@@ -28,7 +28,7 @@ pub(crate) use enumy::wybranie_jezykowe::{DevToolsMenu, WybórJęzyka};
 use iced::widget::{tooltip, Column, Row};
 use iced::{Border, Color, Element, Length};
 use iced_core::{Shadow, Theme, Vector};
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, StanKlikaczyDoLaczeniaZdjec};
+use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
 use crate::ui::wiadomosci::message_ui::Message;
 use laczenie_plikow::laczenie_fot_struct_enums::{fn_do_laczenia_fot, LogTxDoŁączeniaZdjęć};
 use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
@@ -67,8 +67,11 @@ pub struct Program {
     main_process_check: bool,
     startowy_jezyk: String,
     pub(crate) stan_boolean_do_laczenia_zdjec: StanKlikaczyDoLaczeniaZdjec,
+    pub(crate) stan_boolean_do_dds: StanKlikaczyDoLaczeniaZdjec,
     pub(crate) dane_temp_do_pakowania_dds: DaneDoPakowaniaDds,
     pub(crate) dane_temp_do_rozpakowywania_dds: DaneDoRozpakowaniaDds,
+    pub(crate) dane_temp_do_rozpakowania_dds_formaty_zdjec: WybranyFormatZdjecia,
+    
 }
 
 
@@ -248,6 +251,38 @@ impl Program {
                     qoi_wybrany_32b: false,
                     qoi_wybrany_24b: true,
                 },
+                stan_boolean_do_dds: StanKlikaczyDoLaczeniaZdjec {
+                    obraz_r_wybrany: false,
+                    obraz_g_wybrany: false,
+                    obraz_b_wybrany: false,
+                    obraz_a_wybrany: false,
+                    sciezka_out_wybrana: false,
+                    jpg_wybrany: true,
+                    jpg_jakosc: 90,
+                    png_wybrany: false,
+                    png_wybrane_8bit: false,
+                    png_wybrane_16bit: false,
+                    png_wybrane_8bita: false,
+                    png_wybrane_16bita: false,
+                    png_kompresja: 3,
+                    tga_wybrany: false,
+                    tga_wybrany_32b: false,
+                    tga_wybrany_24b: false,
+                    tga_wybrany_16b: false,
+                    webp_wybrany: false,
+                    webp_lossless: false,
+                    webp_wybrany_rgb: false,
+                    webp_wybrany_alpha: false,
+                    webp_jakosc: 0,
+                    ff_wybrany: false,
+                    ff_kompresja_brak: false,
+                    ff_kompresja_zstd: false,
+                    ff_kompresja_bzip2: false,
+                    ff_kompresja_xz: false,
+                    qoi_wybrany: false,
+                    qoi_wybrany_32b: false,
+                    qoi_wybrany_24b: false,
+                },
                 dane_temp_do_pakowania_dds: DaneDoPakowaniaDds {
                     ścieżka_wejściowa: PathBuf::new(),
                     ścieżka_wyjściowa: PathBuf::new(),
@@ -266,6 +301,7 @@ impl Program {
                     },
                 },
                 checker_bool_status_dds: (false, false),
+                dane_temp_do_rozpakowania_dds_formaty_zdjec: WybranyFormatZdjecia::Jpg,
             },
             Task::batch(Vec::from([
                 Task::done(Message::InitLogStartowy),
@@ -1767,7 +1803,8 @@ impl Program {
                 self.status_dds_pakowanie.clone(),
                 self.status_dds_rozpakowywanie.clone(),
                 self.main_process_check,
-
+                self.stan_boolean_do_dds.clone(),
+                self.dane_temp_do_rozpakowania_dds_formaty_zdjec.clone(),
             ),
             OptUIWariantPodstrony::Dev => crate::ui::program_pomniejsze::dev::ui_ustawienia(&self.ui_ustawienia),
             //_ => column![text("Opcja jest, lecz UI jeszcze nie").size(50)].into(),
