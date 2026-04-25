@@ -23,6 +23,19 @@ pub enum WybranyFormatZdjecia{
 }
 
 #[allow(dead_code)]
+#[derive(Debug, Clone,PartialEq)]
+pub enum CheckActiveProcess{
+    ProcessPakowaniePliku,
+    ProcessRozpakowaniePliku,
+    ProcessDdsPakowanie,
+    ProcessDdsRozpakowanie,
+    ProcessŁączenieZdjęć,
+    ProcessKonwersjaZdjęć,
+    ProcessŻodyn,
+}
+
+
+#[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct StanKlikaczyDoLaczeniaZdjec {
     pub obraz_r_wybrany: bool,

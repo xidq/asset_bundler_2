@@ -10,13 +10,10 @@ pub async fn laczenie_qoi(
     ścieżka_wyjściowa: &Path,
     nazwa_pliku: &str,
     alfa_rgb: &(u16, u16, u16),
-    bit_depth: &Vec<OptFormatyKoloruObrazuQoi>,
+    bit_depth: &OptFormatyKoloruObrazuQoi,
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
-    let depth = bit_depth
-        .first()
-        .cloned()
-        .unwrap_or(OptFormatyKoloruObrazuQoi::Color24);
+    let depth = bit_depth;
 
     // --- OBSŁUGA BIT DEPTH I FORMATU ---
     let (final_img, nazwa_bd, color_type, szer, wys) = match depth {

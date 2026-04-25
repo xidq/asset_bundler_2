@@ -82,7 +82,7 @@ pub enum OptFormatDds {
 //     OptFormatDds::DxgiFormatBc7Typeless,
 // ];
 #[allow(dead_code)]
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum OptRozszerzeniaPlikówZdjęciowych {
     Jpg {
         jakosc: u8,
@@ -108,6 +108,44 @@ pub enum OptRozszerzeniaPlikówZdjęciowych {
         bit_depth: Vec<OptFormatyKoloruObrazuQoi>,
     },
 }
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq)]
+pub enum OptRozszerzeniaPlikówZdjęciowychPojedyncze {
+    Jpg {
+        jakosc: u8,
+        progresywny: bool,
+        bit_depth: OptFormatyKoloruObrazOgólny,
+    },
+    Png {
+        kompresja: u8,
+        bit_depth: OptFormatyKoloruObrazOgólny,
+    },
+    Webp {
+        jakosc: u8,
+        lossless: bool,
+        bit_depth: OptFormatyKoloruObrazOgólny,
+    },
+    Tga {
+        bit_depth: OptFormatyKoloruObrazuTga,
+    },
+    Ff {
+        metoda_kompresji: OptMetodaKompresjiZdjecia,
+    },
+    Qoi {
+        bit_depth: OptFormatyKoloruObrazuQoi,
+    },
+}
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq)]
+pub enum OptRozszerzeniaPlikówZdjęciowychZnacznik{
+    Jpg,
+    Png,
+    Webp,
+    Tga,
+    Ff,
+    Qoi
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Copy, Clone, PartialEq)]
 pub enum OptMetodaKompresjiZdjecia {

@@ -1,13 +1,15 @@
-use std::path::PathBuf;
+// use laczenie_plikow::laczenie_fot_struct_enums::fn_do_laczenia_fot;
+use crate::ui::program::Program;
+use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
+use enumy::enums_structs_io::FILTERFOTO;
+use enumy::inne_ui::CheckActiveProcess;
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::statusy::LogTxDoŁączeniaZdjęć;
 use futures::channel::mpsc;
 use iced::Task;
-use enumy::enums_structs_io::FILTERFOTO;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych};
-use enumy::statusy::LogTxDoŁączeniaZdjęć;
 use laczenie_plikow::laczenie_fot_struct_enums::fn_do_laczenia_fot;
-use crate::ui::program::Program;
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
+use std::mem::discriminant;
+use std::path::PathBuf;
 
 impl Program {
     pub fn update_message_łączenie_zdjęć(&mut self, msg: ŁączenieZdjęćMessage) -> Task<ŁączenieZdjęćMessage> {
@@ -84,171 +86,182 @@ impl Program {
             ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieOutPathChanged(s) => {
                 self.dane_temp_do_łączenia_zdjęć.sciezka_out = PathBuf::from(s);
             }
-            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaWybraneRozszerzenie(huehue) => match huehue.as_ref() {
-                "jpg" => {
-                    self.stan_boolean_do_laczenia_zdjec.jpg_wybrany = true;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.tga_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.ff_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.qoi_wybrany = false;
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaWybraneRozszerzenie(huehue) => match huehue {
+                OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg  => {
+                    let piksidipsi = OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg {
+                        jakosc:90,
+                        progresywny:false,
+                        bit_depth: OptFormatyKoloruObrazOgólny::B8,
+                    };
+                    if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
+                        self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;
+                        self.dane_temp_do_łączenia_zdjęć.tag = huehue;
+                    };
                 }
-                "png" => {
-                    self.stan_boolean_do_laczenia_zdjec.jpg_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrany = true;
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.tga_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.ff_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.qoi_wybrany = false;
+                OptRozszerzeniaPlikówZdjęciowychZnacznik::Png  => {
+                    let piksidipsi = OptRozszerzeniaPlikówZdjęciowychPojedyncze::Png {
+                        kompresja:3,
+                        bit_depth: OptFormatyKoloruObrazOgólny::B8,
+                    };
+                    if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
+                        self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;
+                        self.dane_temp_do_łączenia_zdjęć.tag = huehue;
+                    }
                 }
-                "webp" => {
-                    self.stan_boolean_do_laczenia_zdjec.jpg_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany = true;
-                    self.stan_boolean_do_laczenia_zdjec.tga_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.ff_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.qoi_wybrany = false;
+                OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp  => {
+                    let piksidipsi = OptRozszerzeniaPlikówZdjęciowychPojedyncze::Webp {
+                        jakosc: 90,
+                        bit_depth: OptFormatyKoloruObrazOgólny::B8,
+                        lossless: false,
+                    };
+                    if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
+                        self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;
+                        self.dane_temp_do_łączenia_zdjęć.tag = huehue;
+                    }
                 }
-                "tga" => {
-                    self.stan_boolean_do_laczenia_zdjec.jpg_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.tga_wybrany = true;
-                    self.stan_boolean_do_laczenia_zdjec.ff_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.qoi_wybrany = false;
+                OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga  => {
+                    let piksidipsi = OptRozszerzeniaPlikówZdjęciowychPojedyncze::Tga {
+                        bit_depth: OptFormatyKoloruObrazuTga::TrueColor24,
+                    };
+                    if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
+                        self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;
+                        self.dane_temp_do_łączenia_zdjęć.tag = huehue;
+                    }
                 }
-                "ff" => {
-                    self.stan_boolean_do_laczenia_zdjec.jpg_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.tga_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.ff_wybrany = true;
-                    self.stan_boolean_do_laczenia_zdjec.qoi_wybrany = false;
+                OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff  => {
+                    let piksidipsi = OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff {
+                        metoda_kompresji: OptMetodaKompresjiZdjecia::Brak,
+                    };
+                    if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
+                        self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;
+                        self.dane_temp_do_łączenia_zdjęć.tag = huehue;
+                    }
                 }
-                "qoi" => {
-                    self.stan_boolean_do_laczenia_zdjec.jpg_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.tga_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.ff_wybrany = false;
-                    self.stan_boolean_do_laczenia_zdjec.qoi_wybrany = true;
+                OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi  => {
+                    let piksidipsi = OptRozszerzeniaPlikówZdjęciowychPojedyncze::Qoi {
+                        bit_depth: OptFormatyKoloruObrazuQoi::Color24,
+                    };
+                    if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
+                        self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;
+                        self.dane_temp_do_łączenia_zdjęć.tag = huehue;
+                    }
                 }
-                _ => {}
             },
 
             ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaJakosciJpg(procent) => {
-                self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
+                // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg {ref mut jakosc,..} = self.dane_temp_do_łączenia_zdjęć.out_format{
+                    *jakosc = procent
+                };
+
             }
-            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaRozszerzeniePng(lejlejlej) => match lejlejlej {
-                OptFormatyKoloruObrazOgólny::B8a => {
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita = true;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita = false;
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaRozszerzeniePng(lejlejlej) =>  {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Png {ref mut bit_depth,..} = self.dane_temp_do_łączenia_zdjęć.out_format{
+                    *bit_depth = lejlejlej;
                 }
-                OptFormatyKoloruObrazOgólny::B16 => {
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit = true;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita = false;
+
                 }
-                OptFormatyKoloruObrazOgólny::B16a => {
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita = true;
-                }
-                _ => {
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit = true;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit = false;
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita = false;
-                }
-            },
+            //     OptFormatyKoloruObrazOgólny::B8a => {
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita = true;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita = false;
+            //     }
+            //     OptFormatyKoloruObrazOgólny::B16 => {
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit = true;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita = false;
+            //     }
+            //     OptFormatyKoloruObrazOgólny::B16a => {
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita = true;
+            //     }
+            //     _ => {
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit = true;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit = false;
+            //         self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita = false;
+            //     }
+            // },
             ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiPng(procent) => {
-                self.stan_boolean_do_laczenia_zdjec.png_kompresja = procent;
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Png {ref mut kompresja,..} = self.dane_temp_do_łączenia_zdjęć.out_format{*kompresja = procent};
             }
-            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaRozszerzenieWebp(lejlejlej) => match lejlejlej {
-                OptFormatyKoloruObrazOgólny::B8a => {
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany_rgb = false;
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany_alpha = true;
-                }
-                _ => {
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany_rgb = true;
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany_alpha = false;
-                }
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaRozszerzenieWebp(lejlejlej) =>  {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Webp{ref mut bit_depth,..} = self.dane_temp_do_łączenia_zdjęć.out_format{*bit_depth = lejlejlej;};
             },
             ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaJakosciWebp(procent) => {
-                self.stan_boolean_do_laczenia_zdjec.webp_jakosc = procent;
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Webp { ref mut jakosc,.. } = self.dane_temp_do_łączenia_zdjęć.out_format{ *jakosc = procent; }
             }
 
             ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianalosslessWebp => {
-                self.stan_boolean_do_laczenia_zdjec.webp_lossless =
-                    !self.stan_boolean_do_laczenia_zdjec.webp_lossless
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Webp {ref mut lossless,..} = self.dane_temp_do_łączenia_zdjęć.out_format{ *lossless = !*lossless}
+
             }
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaRozszerzenieTga(lejlejlej) =>  {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Tga{ref mut bit_depth,..} = self.dane_temp_do_łączenia_zdjęć.out_format{*bit_depth = lejlejlej;};
+            },
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaRozszerzenieFf(lejlejlej) =>  {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff{ref mut metoda_kompresji } = self.dane_temp_do_łączenia_zdjęć.out_format{*metoda_kompresji = lejlejlej;};
+            },
 
             ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieNazwaChanged(blob) => {
                 self.dane_temp_do_łączenia_zdjęć.nazwa = blob;
             }
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaRozszerzenieQoi(lejlejlej) =>  {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Qoi{ref mut bit_depth,..} = self.dane_temp_do_łączenia_zdjęć.out_format{*bit_depth = lejlejlej;};
+            },
+
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfZstd(procent) => {
+                // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_temp_do_łączenia_zdjęć.out_format {
+
+                    // 2. Dobieramy się mutowalnie do wartości wewnątrz enuma OptMetodaKompresjiZdjecia
+                    if let OptMetodaKompresjiZdjecia::Zstd(aktualny_procent) = metoda_kompresji {
+
+                        // 3. Podmieniamy wartość przez dereferencję
+                        *aktualny_procent = procent;
+                    }
+                }
+
+            }
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfBzip2(procent) => {
+                // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_temp_do_łączenia_zdjęć.out_format {
+
+                    // 2. Dobieramy się mutowalnie do wartości wewnątrz enuma OptMetodaKompresjiZdjecia
+                    if let OptMetodaKompresjiZdjecia::Bzip2(aktualny_procent) = metoda_kompresji {
+
+                        // 3. Podmieniamy wartość przez dereferencję
+                        *aktualny_procent = procent;
+                    }
+                }
+
+            }
+            ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfXz(procent) => {
+                // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_temp_do_łączenia_zdjęć.out_format {
+
+                    // 2. Dobieramy się mutowalnie do wartości wewnątrz enuma OptMetodaKompresjiZdjecia
+                    if let OptMetodaKompresjiZdjecia::Xz(aktualny_procent) = metoda_kompresji {
+
+                        // 3. Podmieniamy wartość przez dereferencję
+                        *aktualny_procent = procent;
+                    }
+                }
+
+            }
 
             ŁączenieZdjęćMessage::WysylkaDanychDoLaczeniaZdjec => {
-                let png_depth = match (
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bit,
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_8bita,
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bit,
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrane_16bita,
-                ) {
-                    (_, true, _, _) => OptFormatyKoloruObrazOgólny::B8a,
-                    (_, _, true, _) => OptFormatyKoloruObrazOgólny::B16,
-                    (_, _, _, true) => OptFormatyKoloruObrazOgólny::B16a,
-                    (_, _, _, _) => OptFormatyKoloruObrazOgólny::B8,
-                };
-                let webp_depth = match (
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany_rgb,
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany_alpha,
-                ) {
-                    (_, true) => OptFormatyKoloruObrazOgólny::B8a,
-                    (_, _) => OptFormatyKoloruObrazOgólny::B8,
-                };
 
-                let rozszerzenie: OptRozszerzeniaPlikówZdjęciowych = match (
-                    self.stan_boolean_do_laczenia_zdjec.jpg_wybrany,
-                    self.stan_boolean_do_laczenia_zdjec.png_wybrany,
-                    self.stan_boolean_do_laczenia_zdjec.webp_wybrany,
-                    self.stan_boolean_do_laczenia_zdjec.tga_wybrany,
-                    self.stan_boolean_do_laczenia_zdjec.ff_wybrany,
-                    self.stan_boolean_do_laczenia_zdjec.qoi_wybrany,
-                ) {
-                    (_, true, _, _, _, _) => OptRozszerzeniaPlikówZdjęciowych::Png {
-                        kompresja: self.stan_boolean_do_laczenia_zdjec.png_kompresja,
-                        bit_depth: vec![png_depth],
-                    },
-                    (_, _, true, _, _, _) => OptRozszerzeniaPlikówZdjęciowych::Webp {
-                        jakosc: self.stan_boolean_do_laczenia_zdjec.webp_jakosc,
-                        lossless: false,
-                        bit_depth: vec![webp_depth],
-                    },
-                    (_, _, _, true, _, _) => {
-                        OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth: vec![] }
-                    }
-                    (_, _, _, _, true, _) => OptRozszerzeniaPlikówZdjęciowych::Ff {
-                        metoda_kompresji: OptMetodaKompresjiZdjecia::Brak,
-                    },
-                    (_, _, _, _, _, true) => {
-                        OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth: vec![] }
-                    }
-                    (_, _, _, _, _, _) => OptRozszerzeniaPlikówZdjęciowych::Jpg {
-                        jakosc: self.stan_boolean_do_laczenia_zdjec.jpg_jakosc,
-                        progresywny: false,
-                        bit_depth: vec![OptFormatyKoloruObrazOgólny::B8],
-                    },
-                };
-                let mut dane_do_obrobki = self.dane_temp_do_łączenia_zdjęć.clone();
-                self.checker_bool_status_łączenie_zdjęć = true;
+                let dane_do_obrobki = self.dane_temp_do_łączenia_zdjęć.clone();
+                self.checker_bool_status_procesow = CheckActiveProcess::ProcessŁączenieZdjęć;
                 // self.status_zmiany_fot_log = Default::default();
                 // println!("ścieżka przekazywana to: {:?}", self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa);
 
-                dane_do_obrobki.out_format = rozszerzenie;
+
                 dbg!(&dane_do_obrobki.sciezka_r);
                 dbg!(&dane_do_obrobki.sciezka_g);
                 dbg!(&dane_do_obrobki.sciezka_b);
@@ -300,10 +313,10 @@ impl Program {
             ŁączenieZdjęćMessage::PostepLaczeniaFot(progress) => match progress {
                 LogTxDoŁączeniaZdjęć::Start => {}
                 LogTxDoŁączeniaZdjęć::Koniec => {
-                    self.checker_bool_status_łączenie_zdjęć = false;
+                    self.checker_bool_status_procesow = CheckActiveProcess::ProcessŻodyn;
                 }
                 LogTxDoŁączeniaZdjęć::Błąd(_) => {
-                    self.checker_bool_status_łączenie_zdjęć = false;
+                    self.checker_bool_status_procesow = CheckActiveProcess::ProcessŻodyn;
                 }
             },
             _ => {}

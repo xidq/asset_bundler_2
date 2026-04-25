@@ -14,13 +14,10 @@ pub async fn laczenie_tga(
     ścieżka_wyjściowa: &Path,
     nazwa_pliku: &str,
     alfa_rgb: &(u16, u16, u16),
-    bit_depth: &Vec<OptFormatyKoloruObrazuTga>,
+    bit_depth: &OptFormatyKoloruObrazuTga,
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
-    let depth = bit_depth
-        .first()
-        .cloned()
-        .unwrap_or(OptFormatyKoloruObrazuTga::TrueColor24);
+    let depth = bit_depth;
 
     // --- OBSŁUGA BIT DEPTH I FORMATU ---
     let (final_img, nazwa_bd, color_type, szer, wys) = match depth {

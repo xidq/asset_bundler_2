@@ -12,7 +12,7 @@ use enumy::dane_do_przetwarzania::{DaneDoPakowaniaDds, DaneDoRozpakowaniaDds};
 use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds};
 use enumy::ikony::folder_icon;
 pub(crate) use enumy::inne_ui::StronyDds;
-use enumy::inne_ui::{StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
+use enumy::inne_ui::{CheckActiveProcess, StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
 use enumy::opcje::{OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptKompresjaDds, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{button, container, pick_list, row, slider, space, text, text_input, Column, Row};
@@ -20,18 +20,16 @@ use iced::Element;
 use iced_core::{Color, Length};
 use strum::IntoEnumIterator;
 
-pub fn view_dds(
-    dane_pakowanie: DaneDoPakowaniaDds,
-    dane_rozpakowanie: DaneDoRozpakowaniaDds,
+pub fn view_dds<'a>(
+    dane_pakowanie: &DaneDoPakowaniaDds,
+    dane_rozpakowanie: &DaneDoRozpakowaniaDds,
     wybrane_okno: &StronyDds,
-    jezyk: WybórJęzyka,
-    czy_jest_proces_zaczety: (bool,bool),
-    log_pakowanie: LogPakowaniaDds,
-    log_rozpakowywanie: LogRozpakowywanieDds,
-    main_process_check: bool,
-    stan_klikaczy: StanKlikaczyDoLaczeniaZdjec,
-    wybrane_rozszerzenie:WybranyFormatZdjecia,
-) -> Element<'_, Message> {
+    jezyk: &WybórJęzyka,
+    log_pakowanie: &LogPakowaniaDds,
+    log_rozpakowywanie: &LogRozpakowywanieDds,
+    main_process_check: &CheckActiveProcess,
+) -> Element<'a, Message> {
+    let valid =  *main_process_check == CheckActiveProcess::ProcessŻodyn;
 
     let czy_sie_nada_na_wyslanie_pakowanie=dane_pakowanie.ścieżka_wejściowa.exists() && dane_pakowanie.ścieżka_wyjściowa.exists() && !dane_pakowanie.nazwa.is_empty();
     let lewa = Column::new()
@@ -47,7 +45,7 @@ pub fn view_dds(
             .width(Length::Fill)
             .on_press(Message::Dds(DdsMessage::ZmienMenuDds(StronyDds::ZplikuDoDds)))
             .style(styl_przycisków(
-                czy_jest_proces_zaczety.0,
+                *main_process_check == CheckActiveProcess::ProcessDdsPakowanie,
                 matches!(wybrane_okno, StronyDds::ZplikuDoDds),
                 KOLOR_COTTON_CANDY,
             )),
@@ -63,7 +61,7 @@ pub fn view_dds(
             .width(Length::Fill)
             .on_press(Message::Dds(DdsMessage::ZmienMenuDds(StronyDds::ZddsDoPliku)))
             .style(styl_przycisków(
-                czy_jest_proces_zaczety.1,
+                *main_process_check == CheckActiveProcess::ProcessDdsRozpakowanie,
                 matches!(wybrane_okno, StronyDds::ZddsDoPliku),
                 KOLOR_COTTON_CANDY,
             )),
@@ -182,7 +180,7 @@ pub fn view_dds(
         )
         .push(ui_standard_oddzielacz())
         .push(
-            if czy_sie_nada_na_wyslanie_pakowanie && !czy_jest_proces_zaczety.0 && !main_process_check {
+            if czy_sie_nada_na_wyslanie_pakowanie && valid {
                 button(
                     text(jezyk.t("process_btn_start"))
                         .font(jezyk.get_font())
@@ -196,9 +194,9 @@ pub fn view_dds(
                     .style(styl_przycisków(false, false, KOLOR_COTTON_CANDY))
             } else {
                 button(
-                    text(if czy_jest_proces_zaczety.0 {
+                    text(if *main_process_check == CheckActiveProcess::ProcessDdsPakowanie {
                         jezyk.t("btn_bussy_processing")
-                    } else if main_process_check {
+                    } else if !valid {
                         jezyk.t("btn_bussy_processing_other")
                     } else {
                         jezyk.t("btn_gib_data")
@@ -212,7 +210,7 @@ pub fn view_dds(
                     .height(Length::Fixed(40.))
                     .style(styl_przycisków(
                         false,
-                        czy_jest_proces_zaczety.0,
+                        *main_process_check == CheckActiveProcess::ProcessDdsPakowanie,
                         KOLOR_COTTON_CANDY,
                     ))
             },
@@ -305,97 +303,54 @@ pub fn view_dds(
             Column::new()
                 .push(
                     Row::new()
-                    .push(
-                        button(
-                            text("Jpg")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .height(Length::Fixed(40.))
-                                .center()
-                        )
-                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Jpg{..}), KOLOR_COTTON_CANDY))
-                            .width(Length::FillPortion(1))
-                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Jpg{
-                                jakosc: 90,
-                                progresywny: false,
-                                bit_depth: vec![OptFormatyKoloruObrazOgólny::B8],
-                            }))
-                            )
-
+                    .push(przycisk_wyboru_rozszerzenia(
+                        "jpg",
+                        OptRozszerzeniaPlikówZdjęciowych::Jpg {
+                            jakosc: 90,
+                            progresywny: false,
+                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
+                        },
+                        &dane_rozpakowanie.rozszerzenie,
+                        jezyk.get_font())
                     )
-                    .push(
-                        button(
-                            text("png")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .height(Length::Fixed(40.))
-                                .center()
-                        )
-                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Png{..}), KOLOR_COTTON_CANDY))
-                            .width(Length::FillPortion(1))
-                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Png{
-                                kompresja: 3,
-                                bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
-                            }))
-                            )
+                    .push(przycisk_wyboru_rozszerzenia(
+                        "png",
+                        OptRozszerzeniaPlikówZdjęciowych::Png {
+                            kompresja: 3,
+                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
+                        },
+                        &dane_rozpakowanie.rozszerzenie,
+                        jezyk.get_font())
                     )
-                    .push(
-                        button(
-                            text("webp")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .height(Length::Fixed(40.))
-                                .center()
-                        )
-                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Webp{..}), KOLOR_COTTON_CANDY))
-                            .width(Length::FillPortion(1))
-                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Webp{
-                                jakosc: 90,
-                                lossless: false,
-                                bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
-                            }))
-                            )
+                    .push(przycisk_wyboru_rozszerzenia(
+                        "webp",
+                        OptRozszerzeniaPlikówZdjęciowych::Webp {
+                            jakosc: 90,
+                            lossless: false,
+                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
+                        },
+                        &dane_rozpakowanie.rozszerzenie,
+                        jezyk.get_font())
                     )
-                    .push(
-                        button(
-                            text("tga")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .height(Length::Fixed(40.))
-                                .center()
-                        )
-                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Tga{..}), KOLOR_COTTON_CANDY))
-                            .width(Length::FillPortion(1))
-                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Tga{
-                                bit_depth: Vec::from([OptFormatyKoloruObrazuTga::TrueColor24]),
-                            }))
-                            )
+                    .push(przycisk_wyboru_rozszerzenia(
+                        "tga",
+                        OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth: Vec::from([OptFormatyKoloruObrazuTga::TrueColor24]) },
+                        &dane_rozpakowanie.rozszerzenie,
+                        jezyk.get_font())
                     )
-                    .push(
-                        button(
-                            text("ff")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .height(Length::Fixed(40.))
-                                .center()
-                        )
-                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Ff{..}), KOLOR_COTTON_CANDY))
-                            .width(Length::FillPortion(1))
-                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Ff{ metoda_kompresji: OptMetodaKompresjiZdjecia::Brak }))
-                            )
+                    .push(przycisk_wyboru_rozszerzenia(
+                        "ff",
+                        OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji: OptMetodaKompresjiZdjecia::Brak },
+                        &dane_rozpakowanie.rozszerzenie,
+                        jezyk.get_font())
                     )
-                    .push(
-                        button(
-                            text("qoi")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .height(Length::Fixed(40.))
-                                .center()
-                        )
-                            .style(styl_przycisków(false, matches!(dane_rozpakowanie.rozszerzenie,OptRozszerzeniaPlikówZdjęciowych::Qoi{..}), KOLOR_COTTON_CANDY))
-                            .width(Length::FillPortion(1))
-                            .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(OptRozszerzeniaPlikówZdjęciowych::Qoi{ bit_depth: Vec::from([OptFormatyKoloruObrazuQoi::Color24]) }))
-                            )
+                    .push(przycisk_wyboru_rozszerzenia(
+                        "qoi",
+                        OptRozszerzeniaPlikówZdjęciowych::Qoi {
+                            bit_depth: Vec::from([OptFormatyKoloruObrazuQoi::Color24]),
+                        },
+                        &dane_rozpakowanie.rozszerzenie,
+                        jezyk.get_font())
                     ).spacing(1)
                 )
                 
@@ -494,7 +449,8 @@ pub fn view_dds(
                                                     .height(Length::FillPortion(1))
                                             )
                                     )
-                            ).width(Length::Fill).height(100.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                                    .push(space().height(Length::Fixed(50.)))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Png{ kompresja, bit_depth } => {
                             let bdepth = bit_depth.clone();
@@ -855,16 +811,180 @@ pub fn view_dds(
                                                     .height(Length::FillPortion(1))
                                             )
                                     )
-                            ).width(Length::Fill).height(100.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                                    .push(space().height(Length::Fixed(50.)))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Tga{ bit_depth } => {
-                            container(text("")).width(Length::Fill).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            let bdepth = bit_depth.clone();
+                            container(
+                                Column::new()
+                                    .push(space().height(Length::Fixed(50.)))
+                                    .push(
+                                        Row::new()
+                                            .push(przycisk_wyboru_bit_depth_tga(
+                                                "szary",
+                                                OptFormatyKoloruObrazuTga::Szary8,
+                                                &bdepth,
+                                                jezyk.get_font()
+                                            ))
+                                            .push(przycisk_wyboru_bit_depth_tga(
+                                                "HC16",
+                                                OptFormatyKoloruObrazuTga::HighColor16,
+                                                &bdepth,
+                                                jezyk.get_font()
+                                            ))
+                                            .push(przycisk_wyboru_bit_depth_tga(
+                                                "TC24",
+                                                OptFormatyKoloruObrazuTga::TrueColor24,
+                                                &bdepth,
+                                                jezyk.get_font()
+                                            ))
+                                            .push(przycisk_wyboru_bit_depth_tga(
+                                                "TC32",
+                                                OptFormatyKoloruObrazuTga::TrueColorA32,
+                                                &bdepth,
+                                                jezyk.get_font()
+                                            ))
+
+                                    )
+                                    .push(space().height(Length::Fixed(50.)))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Ff{ metoda_kompresji } => {
-                            container(text("")).width(Length::Fill).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            // let bdepth = bit_depth.clone();
+                            container(
+                                Column::new()
+                                    .push(
+                                        match metoda_kompresji{
+                                            OptMetodaKompresjiZdjecia::Zstd(xxx) => {
+                                                Row::new()
+                                                    .push(
+                                                        slider(
+                                                            1..=22,
+                                                            xxx,
+                                                            move |nowa_jakosc| {
+                                                                Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                    OptRozszerzeniaPlikówZdjęciowych::Ff {
+                                                                        metoda_kompresji: OptMetodaKompresjiZdjecia::Zstd(nowa_jakosc),
+                                                                    }
+                                                                ))
+                                                            }
+                                                        ).style(styl_sliderów(KOLOR_PEACH_PUFF))
+                                                            .width(Length::FillPortion(6)).height(50.)
+                                                    )
+                                                    .push(
+                                                        text(format!("Q: {}", xxx))
+                                                            .color(Color::from_rgba(1., 1., 1., 0.6))
+                                                            .font(jezyk.get_font())
+                                                            .width(Length::FillPortion(4)).center(),
+                                                    ).height(Length::Fixed(50.)).padding(15)
+                                                    .height(Length::Fixed(50.))
+                                            }
+                                            OptMetodaKompresjiZdjecia::Bzip2(xxx) => {
+                                                Row::new()
+                                                .push(
+                                                    slider(
+                                                        1..=9,
+                                                        xxx,
+                                                        move |nowa_jakosc| {
+                                                            Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                OptRozszerzeniaPlikówZdjęciowych::Ff {
+                                                                    metoda_kompresji: OptMetodaKompresjiZdjecia::Bzip2(nowa_jakosc),
+                                                                }
+                                                            ))
+                                                        }
+                                                    ).style(styl_sliderów(KOLOR_PEACH_PUFF))
+                                                        .width(Length::FillPortion(6)).height(50.)
+                                                )
+                                                .push(
+                                                        text(format!("Q: {}", xxx))
+                                                            .color(Color::from_rgba(1., 1., 1., 0.6))
+                                                            .font(jezyk.get_font())
+                                                            .width(Length::FillPortion(4)).center(),
+                                                    ).height(Length::Fixed(50.)).padding(15)
+                                            }
+                                            OptMetodaKompresjiZdjecia::Xz(xxx) => {
+                                                Row::new()
+                                                    .push(
+                                                        slider(
+                                                            1..=9,
+                                                            xxx,
+                                                            move |nowa_jakosc| {
+                                                                Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                                                                    OptRozszerzeniaPlikówZdjęciowych::Ff {
+                                                                        metoda_kompresji: OptMetodaKompresjiZdjecia::Xz(nowa_jakosc),
+                                                                    }
+                                                                ))
+                                                            }
+                                                        ).style(styl_sliderów(KOLOR_PEACH_PUFF))
+                                                            .width(Length::FillPortion(6)).height(50.)
+                                                    )
+                                                    .push(
+                                                        text(format!("Q: {}", xxx))
+                                                            .color(Color::from_rgba(1., 1., 1., 0.6))
+                                                            .font(jezyk.get_font())
+                                                            .width(Length::FillPortion(4)).center(),
+                                                    ).height(Length::Fixed(50.)).padding(15)
+
+                                            }
+                                            OptMetodaKompresjiZdjecia::Brak => { Row::new().height(Length::Fixed(50.))}
+                                        }
+                                    )
+                                    .push(
+                                        Row::new()
+                                            .push(przycisk_wyboru_bit_kompresja_ff(
+                                                "brak",
+                                                OptMetodaKompresjiZdjecia::Brak,
+                                                &metoda_kompresji,
+                                                jezyk.get_font()
+                                            ))
+                                            .push(przycisk_wyboru_bit_kompresja_ff(
+                                                "Zstd",
+                                                OptMetodaKompresjiZdjecia::Zstd(3),
+                                                &metoda_kompresji,
+                                                jezyk.get_font()
+                                            ))
+                                            .push(przycisk_wyboru_bit_kompresja_ff(
+                                                "Bzip2",
+                                                OptMetodaKompresjiZdjecia::Bzip2(6),
+                                                &metoda_kompresji,
+                                                jezyk.get_font()
+                                            ))
+                                            .push(przycisk_wyboru_bit_kompresja_ff(
+                                                "Xz",
+                                                OptMetodaKompresjiZdjecia::Xz(6),
+                                                &metoda_kompresji,
+                                                jezyk.get_font()
+                                            ))
+
+                                    )
+                                    .push(space().height(Length::Fixed(50.)))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Qoi{ bit_depth } => {
-                            container(text("")).width(Length::Fill).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            let bdepth = bit_depth.clone();
+                            container(
+                                Column::new()
+                                    .push(space().height(Length::Fixed(50.)))
+                                    .push(
+                                        Row::new()
+                                            .push(przycisk_wyboru_bit_qoi(
+                                                "szary",
+                                                OptFormatyKoloruObrazuQoi::Color24,
+                                                &bdepth,
+                                                jezyk.get_font()
+                                            ))
+                                            .push(przycisk_wyboru_bit_qoi(
+                                                "HC16",
+                                                OptFormatyKoloruObrazuQoi::ColorA32,
+                                                &bdepth,
+                                                jezyk.get_font()
+                                            ))
+
+
+                                    )
+                                    .push(space().height(Length::Fixed(50.)))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
                         }
                     }
                 )
@@ -881,3 +1001,116 @@ pub fn view_dds(
 
     row![lewa, prawa].into()
 }
+fn przycisk_wyboru_rozszerzenia<'a>(
+    etykieta: &'static str,
+    target: OptRozszerzeniaPlikówZdjęciowych,
+    obecne: &OptRozszerzeniaPlikówZdjęciowych,
+    font: iced::Font,
+) -> Element<'a, Message> {
+    // Sprawdzamy, czy ten przycisk reprezentuje obecnie wybrany format
+    // Używamy std::mem::discriminant, żeby porównać warianty bez przejmowania się ich zawartością
+    let aktywny = std::mem::discriminant(&target) == std::mem::discriminant(obecne);
+
+    button(
+        text(etykieta)
+            .font(font)
+            .width(Length::Fill)
+            .height(Length::Fixed(40.))
+            .center()
+    )
+        .style(styl_przycisków(false, aktywny, KOLOR_COTTON_CANDY))
+        .width(Length::FillPortion(1))
+        .on_press(Message::Dds(DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(target)))
+        .into()
+}
+fn przycisk_wyboru_bit_depth_tga<'a>(
+    etykieta: &'static str,
+    bit_target: OptFormatyKoloruObrazuTga, // konkretny bit, np. HighColor16
+    obecna_lista_bitow: &Vec<OptFormatyKoloruObrazuTga>, // Twoje bdepth
+    font: iced::Font, // przekazujemy obiekt języka dla fontu
+) -> Element<'a, Message> {
+
+    // Sprawdzamy czy ten konkretny bit jest na liście
+    let aktywny = obecna_lista_bitow.contains(&bit_target);
+
+    button(
+        text(etykieta)
+            .font(font)
+            .width(Length::Fill)
+            .height(Length::Fixed(40.))
+            .center()
+    )
+        .style(styl_przycisków(false, aktywny, KOLOR_COTTON_CANDY))
+        .on_press(
+            Message::Dds(
+                DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                    OptRozszerzeniaPlikówZdjęciowych::Tga {
+                        bit_depth: Vec::from([bit_target]) // tworzymy nową listę z tym jednym bitem
+                    }
+                )
+            )
+        )
+        .height(Length::FillPortion(1))
+        .into()
+}
+fn przycisk_wyboru_bit_kompresja_ff<'a>(
+    etykieta: &'static str,
+    kompresja_target: OptMetodaKompresjiZdjecia, // konkretny bit, np. HighColor16
+    obecna_kompresja: &OptMetodaKompresjiZdjecia, // Twoje bdepth
+    font: iced::Font, // przekazujemy obiekt języka dla fontu
+) -> Element<'a, Message> {
+
+    // Sprawdzamy czy ten konkretny bit jest na liście
+    let aktywny = std::mem::discriminant(&kompresja_target) == std::mem::discriminant(obecna_kompresja);
+
+    button(
+        text(etykieta)
+            .font(font)
+            .width(Length::Fill)
+            .height(Length::Fixed(40.))
+            .center()
+    )
+        .style(styl_przycisków(false, aktywny, KOLOR_COTTON_CANDY))
+        .on_press(
+            Message::Dds(
+                DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                    OptRozszerzeniaPlikówZdjęciowych::Ff {
+                        metoda_kompresji: kompresja_target // tworzymy nową listę z tym jednym bitem
+                    }
+                )
+            )
+        )
+        .height(Length::FillPortion(1))
+        .into()
+}
+fn przycisk_wyboru_bit_qoi<'a>(
+    etykieta: &'static str,
+    bit_target: OptFormatyKoloruObrazuQoi, // konkretny bit, np. HighColor16
+    bit_teraz: &Vec<OptFormatyKoloruObrazuQoi>, // Twoje bdepth
+    font: iced::Font, // przekazujemy obiekt języka dla fontu
+) -> Element<'a, Message> {
+
+    // Sprawdzamy czy ten konkretny bit jest na liście
+    let aktywny = bit_teraz.contains(&bit_target);
+
+    button(
+        text(etykieta)
+            .font(font)
+            .width(Length::Fill)
+            .height(Length::Fixed(40.))
+            .center()
+    )
+        .style(styl_przycisków(false, aktywny, KOLOR_COTTON_CANDY))
+        .on_press(
+            Message::Dds(
+                DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(
+                    OptRozszerzeniaPlikówZdjęciowych::Qoi {
+                        bit_depth: Vec::from([bit_target]) // tworzymy nową listę z tym jednym bitem
+                    }
+                )
+            )
+        )
+        .height(Length::FillPortion(1))
+        .into()
+}
+

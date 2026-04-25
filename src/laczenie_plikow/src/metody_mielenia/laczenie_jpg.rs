@@ -10,7 +10,7 @@ pub async fn laczenie_jpg(
     nazwa_pliku: &str,
     jakość: &u8,
     progresywny: &bool,
-    bit_depth: &Vec<OptFormatyKoloruObrazOgólny>,
+    bit_depth: &OptFormatyKoloruObrazOgólny,
     alfa_rgb: &(u16, u16, u16),
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {

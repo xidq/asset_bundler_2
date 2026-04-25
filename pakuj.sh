@@ -12,6 +12,9 @@ echo "Zbudowano wersję release"
 echo "wersja $STARA_WERSJA -> $NOWA_WERSJA"
 mkdir -p export/temp
 mv target/release/app export/temp
+cargo clean
+cargo build
+printf "\033c"
 cp export/temp/app export/temp/app_kompresja
 echo "przeniesiono app do export/temp"
 upx --best --lzma export/temp/app_kompresja
@@ -47,4 +50,4 @@ mv *.AppImage export/release
 
 rm -r export/temp
 
-
+shutdown

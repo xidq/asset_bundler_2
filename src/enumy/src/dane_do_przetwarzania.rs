@@ -1,4 +1,4 @@
-use crate::opcje::{OptFormatDds, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych};
+use crate::opcje::{OptFormatDds, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use std::path::PathBuf;
 
 #[allow(dead_code)]
@@ -37,7 +37,8 @@ pub struct DaneDoŁączeniaZdjęć {
     pub sciezka_b: Option<PathBuf>,
     pub sciezka_a: Option<PathBuf>,
     pub sciezka_out: PathBuf,
-    pub out_format: OptRozszerzeniaPlikówZdjęciowych,
+    pub out_format: OptRozszerzeniaPlikówZdjęciowychPojedyncze,
+    pub tag:OptRozszerzeniaPlikówZdjęciowychZnacznik,
     pub nazwa: String,
 }
 #[allow(dead_code)]

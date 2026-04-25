@@ -15,13 +15,10 @@ pub async fn laczenie_png(
     nazwa_pliku: &str,
     kompresja: &u8,
     alfa_rgb: &(u16, u16, u16),
-    bit_depth: &Vec<OptFormatyKoloruObrazOgólny>,
+    bit_depth: &OptFormatyKoloruObrazOgólny,
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
-    let depth = bit_depth
-        .first()
-        .cloned()
-        .unwrap_or(OptFormatyKoloruObrazOgólny::B8);
+    let depth = bit_depth;
 
     let (final_img, nazwa_bd) = match depth {
         OptFormatyKoloruObrazOgólny::B8 | OptFormatyKoloruObrazOgólny::L8 => (

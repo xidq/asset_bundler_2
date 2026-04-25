@@ -5,7 +5,7 @@ use crate::metody_mielenia::laczenie_qoi::laczenie_qoi;
 use crate::metody_mielenia::laczenie_tga::laczenie_tga;
 use crate::metody_mielenia::laczenie_webp::laczenie_webp;
 use enumy::dane_do_przetwarzania::DaneDoŁączeniaZdjęć;
-use enumy::opcje::OptRozszerzeniaPlikówZdjęciowych;
+use enumy::opcje::{OptRozszerzeniaPlikówZdjęciowychPojedyncze};
 use futures::SinkExt;
 use futures::channel::mpsc;
 use image::DynamicImage;
@@ -114,7 +114,7 @@ pub async fn fn_do_laczenia_fot(
     let obrazki = Vec::from([img_r, img_g, img_b, img_a]);
 
     let wynik: Result<(), tokio::io::Error> = match dane.out_format {
-        OptRozszerzeniaPlikówZdjęciowych::Png {
+        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Png {
             bit_depth,
             kompresja,
         } => {
@@ -129,7 +129,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        OptRozszerzeniaPlikówZdjęciowych::Jpg {
+        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg {
             jakosc,
             progresywny,
             bit_depth,
@@ -146,7 +146,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        OptRozszerzeniaPlikówZdjęciowych::Webp {
+        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Webp {
             jakosc,
             lossless,
             bit_depth,
@@ -164,7 +164,7 @@ pub async fn fn_do_laczenia_fot(
             .await
         }
 
-        OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth } => {
+        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Tga { bit_depth } => {
             laczenie_tga(
                 obrazki,
                 &dane.sciezka_out,
@@ -175,7 +175,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } => {
+        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff { metoda_kompresji } => {
             laczenie_ff(
                 obrazki,
                 &dane.sciezka_out,
@@ -186,7 +186,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth } => {
+        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Qoi { bit_depth } => {
             laczenie_qoi(
                 obrazki,
                 &dane.sciezka_out,

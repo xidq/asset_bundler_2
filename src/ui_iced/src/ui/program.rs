@@ -22,13 +22,13 @@ use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds, FILTERFOTO}
 pub(crate) use enumy::enums_structs_io::{LogPakowanie, LogPrzetwarzanieFot, LogRozpakowywanie};
 // use crate::ui::program_pomniejsze::czcionki::{FONT_DEFAULT, FONT_JAPANESE, FONT_KOREAN, FONT_THAI, KOLOR_BRILIANT_CRIMSON, KOLOR_CRIMSON_GLORY, KOLORFLIRT, KOLOR_PEACH_PUFF};
 use enumy::lang::{odmiana_liczbowa, zmieniacz_ilosci_bajtow};
-use enumy::opcje::{OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptUIWariantPodstrony};
+use enumy::opcje::{OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik, OptUIWariantPodstrony};
 use enumy::statusy::{LogTxDoBathKonwersjaZdjęć, LogTxDoDekompresjiPliku, LogTxDoKompresjiPliku};
 pub(crate) use enumy::wybranie_jezykowe::{DevToolsMenu, WybórJęzyka};
 use iced::widget::{tooltip, Column, Row};
 use iced::{Border, Color, Element, Length};
 use iced_core::{Shadow, Theme, Vector};
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
+use enumy::inne_ui::{CheckActiveProcess, CheckerDoZbiorowePrzetwarzanieZdjęć, StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
 use crate::ui::wiadomosci::message_ui::Message;
 use laczenie_plikow::laczenie_fot_struct_enums::{fn_do_laczenia_fot, LogTxDoŁączeniaZdjęć};
 use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
@@ -48,6 +48,7 @@ pub struct Program {
     status_zmiany_fot_log: LogPrzetwarzanieFot,
     status_dds_pakowanie: LogPakowaniaDds,
     status_dds_rozpakowywanie: LogRozpakowywanieDds,
+    pub(crate) checker_bool_status_procesow:CheckActiveProcess,
     checker_bool_status_kompresja: bool,
     checker_bool_status_dekompresja: bool,
     checker_bool_status_zbiorowe_przetwarzanie_zdjęć: bool,
@@ -97,10 +98,12 @@ impl Program {
                     sciezka_b: None,
                     sciezka_a: None,
                     sciezka_out: PathBuf::new(),
-                    out_format: OptRozszerzeniaPlikówZdjęciowych::Png {
-                        kompresja: 0,
-                        bit_depth: vec![],
+                    out_format: OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg {
+                        jakosc: 90,
+                        bit_depth: OptFormatyKoloruObrazOgólny::B8,
+                        progresywny: false,
                     },
+                    tag: OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,
                     nazwa: String::new(),
                 },
                 dane_temp_do_kompresji_plików: DaneDoKompresjaPlików {
@@ -121,6 +124,7 @@ impl Program {
                 status_zmiany_fot_log: Default::default(),
                 status_dds_pakowanie: Default::default(),
                 status_dds_rozpakowywanie: Default::default(),
+                checker_bool_status_procesow:CheckActiveProcess::ProcessŻodyn,
                 checker_bool_status_kompresja: false,
                 checker_bool_status_dekompresja: false,
                 checker_bool_status_zbiorowe_przetwarzanie_zdjęć: false,
@@ -1787,24 +1791,19 @@ impl Program {
             }
             OptUIWariantPodstrony::DaneDoŁączeniaZdjęćo => {
                 crate::ui::program_pomniejsze::ui_laczenie_zdjec::view_laczenie(
-                    self.dane_temp_do_łączenia_zdjęć.clone(),
-                    aktualny_jezyk,
-                    self.stan_boolean_do_laczenia_zdjec.clone(),
-                    self.checker_bool_status_łączenie_zdjęć,
-                    self.main_process_check,
+                    &self.dane_temp_do_łączenia_zdjęć.clone(),
+                    &aktualny_jezyk,
+                    &self.checker_bool_status_procesow,
                 )
             }
             OptUIWariantPodstrony::ObslugaDds => view_dds(
-                self.dane_temp_do_pakowania_dds.clone(),
-                self.dane_temp_do_rozpakowywania_dds.clone(),
+                &self.dane_temp_do_pakowania_dds,
+                &self.dane_temp_do_rozpakowywania_dds,
                 &self.ui_dds_podmenu,
-                aktualny_jezyk,
-                self.checker_bool_status_dds,
-                self.status_dds_pakowanie.clone(),
-                self.status_dds_rozpakowywanie.clone(),
-                self.main_process_check,
-                self.stan_boolean_do_dds.clone(),
-                self.dane_temp_do_rozpakowania_dds_formaty_zdjec.clone(),
+                &aktualny_jezyk,
+                &self.status_dds_pakowanie,
+                &self.status_dds_rozpakowywanie,
+                &self.checker_bool_status_procesow,
             ),
             OptUIWariantPodstrony::Dev => crate::ui::program_pomniejsze::dev::ui_ustawienia(&self.ui_ustawienia),
             //_ => column![text("Opcja jest, lecz UI jeszcze nie").size(50)].into(),

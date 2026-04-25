@@ -10,16 +10,13 @@ pub async fn laczenie_webp(
     nazwa_pliku: &str,
     jakość: &u8,
     czy_lossless: bool,
-    bit_depth: &Vec<OptFormatyKoloruObrazOgólny>,
+    bit_depth: &OptFormatyKoloruObrazOgólny,
     alfa_rgb: &(u16, u16, u16),
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
     let (docelowy_wymiar, nazwa_wariantu) = (0, "");
-    let depth = bit_depth
-        .first()
-        .cloned()
-        .unwrap_or(OptFormatyKoloruObrazOgólny::B8);
-    for wybór in bit_depth {
+    let depth = bit_depth;
+
         let (final_img, nazwa_bd) = match depth {
             OptFormatyKoloruObrazOgólny::B8a | OptFormatyKoloruObrazOgólny::L8a => (
                 {
@@ -95,7 +92,7 @@ pub async fn laczenie_webp(
 
         // 3. Zapisujesz gotowe bajty do pliku (zastępuje File::create i encode_image)
         std::fs::write(&ścieżka_pliku, &*webp_data)?;
-    } // Koniec pętli rozdzielczości
+
 
     Ok(())
 }
