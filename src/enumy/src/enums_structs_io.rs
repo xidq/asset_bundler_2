@@ -53,6 +53,7 @@ pub struct LogRozpakowywanie {
 #[derive(Debug, Clone, Default)]
 pub struct LogPrzetwarzanieFot {
     pub msg_start: String,
+    pub msg_walidacja: String,
     pub msg_proces: String,
     pub msg_end: String,
     pub plik_początek: String,

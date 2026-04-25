@@ -44,13 +44,9 @@ pub fn view_foto_change<'a>(
     dane: &'a DaneDoBathKonwersjaZdjec,
     wybrane_okno: &WybraneOknoEdycjiZdjęć,
     jezyk: &WybórJęzyka,
-    wejście_check: (bool, bool),
     czy_wyjscie_te_same: bool,
-    // stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
-    czy_jest_proces_zaczety: bool,
     log: LogPrzetwarzanieFot,
     main_process_check: &CheckActiveProcess,
-    rodzaj_sciezki_wejsciowj: &FolderCzyPlik,
 ) -> Element<'a, Message> {
     let czy_sie_nada_na_wyslanie =
         *main_process_check == CheckActiveProcess::ProcessŻodyn &&
@@ -68,36 +64,27 @@ pub fn view_foto_change<'a>(
         Column::new()
         .push(
             Row::new()
-                .push(match rodzaj_sciezki_wejsciowj {
-                    FolderCzyPlik::Puste | FolderCzyPlik::Folder => button("📄")
+                .push(
+                    button(
+                        if !dane.ścieżka_wejściowa.is_file() { "📄" } else { "🖼️" })
                         .padding(10)
                         .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzPlikInFotoEdycjaPakowanie))
                         .style(styl_przycisków(
                             false,
-                            wejście_check.1,
+                            dane.ścieżka_wejściowa.is_file(),
                             KOLOR_SPANISH_ORANGE,
-                        )),
-                    FolderCzyPlik::Plik => button("🖼️")
-                        .padding(10)
-                        .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzPlikInFotoEdycjaPakowanie))
-                        .style(styl_przycisków(
-                            false,
-                            wejście_check.1,
-                            KOLOR_SPANISH_ORANGE,
-                        )),
-                })
+                        ))
+
+                )
                 .push(space().width(Length::Fixed(15.)))
-                .push(match rodzaj_sciezki_wejsciowj {
-                    FolderCzyPlik::Puste => button(folder_icon(false, 2, KOLOR_SPANISH_ORANGE))
-                        .padding(10)
-                        .on_press(Message::WybierzFolderInFotoEdycjaPakowanie)
-                        .style(styl_przycisków(false, false, KOLOR_SPANISH_ORANGE)),
-                    FolderCzyPlik::Folder | FolderCzyPlik::Plik => button(folder_icon(
+                .push(
+                    button(
+                        folder_icon(
                         true,
-                        if dane.ścieżka_wejściowa.to_string_lossy().is_empty() {
-                            0
-                        } else {
-                            2
+                        match (!dane.ścieżka_wejściowa.to_string_lossy().is_empty(),dane.ścieżka_wejściowa.is_file()){
+                            (false, false) => {2},
+                            (false,true) => {1},
+                            _ => {0}
                         },
                         KOLOR_SPANISH_ORANGE,
                     ))
@@ -105,29 +92,23 @@ pub fn view_foto_change<'a>(
                     .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderInFotoEdycjaPakowanie))
                     .style(styl_przycisków(
                         false,
-                        false,
+                        dane.ścieżka_wejściowa.is_dir(),
                         KOLOR_SPANISH_ORANGE,
                     )),
-                }),
+                ),
         )
         .push(
-            Row::new().push(match wejście_check.1 {
-                true => text_input(
-                    jezyk.t("input_folder_or_file"),
-                    &dane.ścieżka_wejściowa.to_string_lossy(),
-                )
-                .font(jezyk.get_font())
-                .padding(10)
-                .style(styl_text_input(dane.ścieżka_wejściowa.exists(),KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
-                false => text_input(
+            Row::new()
+                .push(
+                    text_input(
                     jezyk.t("input_folder_or_file"),
                     &dane.ścieżka_wejściowa.to_string_lossy(),
                 )
                 .padding(10)
                 .font(jezyk.get_font())
-                .on_input(Message::ZdjeciaZmienFolderInPathChanged)
+                .on_input(|xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderInPathChanged(xx)))
                 .style(styl_text_input(dane.ścieżka_wejściowa.exists(),KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
-            }),
+            ),
         )
         .push(
             button(
@@ -137,13 +118,13 @@ pub fn view_foto_change<'a>(
                     .center(),
             )
             .padding(10)
-            .on_press(Message::ResetujStanWejsciowychSciezekEdycjaFoto)
+            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ResetujStanWejsciowychSciezekEdycjaFoto))
             .style(styl_przycisków(false, true, KOLOR_SPANISH_ORANGE)),
         )
         .push(
             checkbox(czy_wyjscie_te_same)
                 .label("Ścieżka wejściowa będzie wyjściową")
-                .on_toggle(Message::ZdjeciaZmienFolderOutPathTenSam)
+                .on_toggle(|xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderOutPathTenSam(xx)))
                 .style(styl_checkbox(KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
         )
         .push(
@@ -174,7 +155,7 @@ pub fn view_foto_change<'a>(
                         KOLOR_SPANISH_ORANGE,
                     ))
                     .padding(10)
-                    .on_press(Message::WybierzFolderOutFotoEdycjaPakowanie)
+                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderOutFotoEdycjaPakowanie))
                     .style(styl_przycisków(
                         false,
                         czy_wyjscie_te_same,
@@ -195,7 +176,7 @@ pub fn view_foto_change<'a>(
                     )
                     .padding(10)
                     .font(jezyk.get_font())
-                    .on_input(Message::ZdjeciaZmienFolderOutPathChanged)
+                    .on_input(|xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderOutPathChanged(xx)))
                     .style(styl_text_input(dane.ścieżka_wyjściowa.exists(),KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
                 }),
         )
@@ -512,10 +493,10 @@ pub fn view_foto_change<'a>(
                         .width(Length::Fill)
                         .center(),
                 )
-                .on_press(Message::WysylkaDanychDoObrobkiZdjec)
+                .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WysylkaDanychDoObrobkiZdjec))
                 .height(Length::Fixed(40.))
                 .width(Length::Fill)
-                .style(styl_przycisków(false, false, KOLOR_SPANISH_ORANGE))
+                .style(styl_przycisków(false, *main_process_check == CheckActiveProcess::ProcessŻodyn, KOLOR_SPANISH_ORANGE))
             } else {
                 button(
                     text(if *main_process_check == CheckActiveProcess::ProcessKonwersjaZdjęć {
@@ -533,13 +514,14 @@ pub fn view_foto_change<'a>(
                 .width(Length::Fill)
                 .height(Length::Fixed(40.))
                 .style(styl_przycisków(
+                    *main_process_check == CheckActiveProcess::ProcessKonwersjaZdjęć,
                     false,
-                    czy_jest_proces_zaczety,
                     KOLOR_SPANISH_ORANGE,
                 ))
             },
         )
         .push(text(log.plik_początek))
+        .push(text(log.msg_walidacja))
         .push(if log.plik_procent != 0 {
             Row::new()
                 .push(text("Postęp procesu:  ").font(jezyk.get_font()))

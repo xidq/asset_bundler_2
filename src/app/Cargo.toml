@@ -1,6 +1,6 @@
 [package]
-name = "app"
-version = "0.1.27"
+name = "AssetBundler2"
+version = "0.1.29"
 edition = "2024"
 
 [dependencies]

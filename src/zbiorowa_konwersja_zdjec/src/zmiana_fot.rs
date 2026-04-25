@@ -20,6 +20,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
+use crate::pomocnicze::sprawdz_czy_wsio_ok;
 
 pub async fn ogarnianie_foto(
     zestaw_danych: DaneDoBathKonwersjaZdjec,
@@ -28,9 +29,11 @@ pub async fn ogarnianie_foto(
     let start_czas = Instant::now();
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
     let procent_progress: Arc<Mutex<u8>> = Arc::new(Mutex::new(0));
-    let wsio_dane = Arc::new(zestaw_danych);
+    let saf = sprawdz_czy_wsio_ok(zestaw_danych, tx.clone()).await?;
+    let wsio_dane = Arc::new(saf);
 
     let wynik = async {
+
 
 
         let ścieżki_do_zdjęć = if !wsio_dane.ścieżka_wejściowa.is_file() {
@@ -290,7 +293,7 @@ fn wez_sprawdz_sciezki(
     sciezka: PathBuf,
     tx: &mut mpsc::Sender<LogTxDoBathKonwersjaZdjęć>,
 ) -> Vec<(PathBuf, String, String)> {
-    let OptRozszerzeniaPlikówZdjęciowych: [&str; 16] =
+    let opt_rozszerzenia_plików_zdjęciowych: [&str; 16] =
         FILTERFOTO.map(|item| item.strip_prefix("ff.").unwrap_or(item));
     // FILTERFOTO
     let mut przetworzone_pliki: u32 = 0;
@@ -303,7 +306,7 @@ fn wez_sprawdz_sciezki(
         if path.is_file() {
             let ext = path.extension().and_then(|s| s.to_str()).unwrap_or("");
 
-            if OptRozszerzeniaPlikówZdjęciowych.contains(&ext.to_lowercase().as_str()) {
+            if opt_rozszerzenia_plików_zdjęciowych.contains(&ext.to_lowercase().as_str()) {
                 let pełna_ścieżka = path.to_path_buf();
 
                 // BRAMKARZ - sprawdzamy czy ścieżka jest git
@@ -345,7 +348,7 @@ fn zgarnij_dane_z_pliku(
     // println!("jestem w zgarnij dane z pliku!!!!!");
     let mut przetworzone_pliki: u32 = 0;
     let mut do_wyjscia = Vec::new();
-    let OptRozszerzeniaPlikówZdjęciowych: [&str; 16] =
+    let opt_rozszerzenia_plików_zdjęciowych: [&str; 16] =
         FILTERFOTO.map(|item| item.strip_prefix("ff.").unwrap_or(item));
     println!("jestem w zgarnij_dane_z_pliku");
 
@@ -361,7 +364,7 @@ fn zgarnij_dane_z_pliku(
                 .unwrap_or("")
                 .to_lowercase();
 
-            if OptRozszerzeniaPlikówZdjęciowych.contains(&ext.as_str()) {
+            if opt_rozszerzenia_plików_zdjęciowych.contains(&ext.as_str()) {
                 // 2. Wyciągamy ścieżkę do folderu (bez nazwy pliku)
                 // parent() zwraca ścieżkę o jeden poziom wyżej
                 let sciezka_bez_pliku = path
@@ -535,7 +538,7 @@ fn czy_sciezka_jest_git(
     tx: &mut mpsc::Sender<LogTxDoBathKonwersjaZdjęć>,
 ) -> Option<PathBuf> {
     let s = pelna.to_string_lossy();
-    let zakazane_znaki = ['／', '\0', '｢', '｣', '\\', '*', '?', '"', '<', '>', '|'];
+    // let zakazane_znaki = ['／', '\0', '｢', '｣', '\\', '*', '?', '"', '<', '>', '|'];
 
     // Szukamy pierwszego wystąpienia zakazanego znaku
     // if let Some(znaleziony_znak) = s.chars().find(|c| zakazane_znaki.contains(c)) {

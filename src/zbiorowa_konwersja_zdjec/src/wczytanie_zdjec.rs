@@ -49,8 +49,20 @@ pub fn wczytaj_zdjęcie(
     };
 
     // 2. Tworzymy Reader, który automatycznie rozpozna format (JPG, PNG, itp.)
+    // let cursor = std::io::Cursor::new(&dane_obrazu);
+    // let reader = image::ImageReader::new(cursor).with_guessed_format()?;
+    // 2. Poprawione rozpoznawanie formatu
     let cursor = std::io::Cursor::new(&dane_obrazu);
-    let reader = image::ImageReader::new(cursor).with_guessed_format()?;
+    let mut reader = image::ImageReader::new(cursor).with_guessed_format()?;
+
+    // Jeśli automatyczne rozpoznanie po bajtach zawiodło (częste dla TGA)
+    if reader.format().is_none() {
+        // Sprawdzamy czy to nie był skompresowany TGA lub czy oryginał to TGA
+        // Możemy spróbować wymusić format TGA jeśli rozszerzenie na to wskazuje
+        if rozszerzenie == "tga"  {
+            reader.set_format(image::ImageFormat::Tga);
+        }
+    }
 
     // 3. Dobieramy się do dekodera, żeby wyciągnąć EXIF
     let mut decoder = reader.into_decoder().map_err(std::io::Error::other)?;

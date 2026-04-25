@@ -44,6 +44,7 @@ pub enum LogTxDoDekompresjiPliku {
 #[derive(Debug, Clone)]
 pub enum LogTxDoBathKonwersjaZdjęć {
     StatusBathKonwersjaZdjęćStart,
+    StatusBathKonwersjaZdjęćChecking(String),
     StatusBathKonwersjaZdjęćRozpoczęto(u32, u8),
     StatusBathKonwersjaZdjęćFiltrowaniePlików(u32),
     StatusBathKonwersjaZdjęćPominiętePliki { sciezka: String, powod: String },

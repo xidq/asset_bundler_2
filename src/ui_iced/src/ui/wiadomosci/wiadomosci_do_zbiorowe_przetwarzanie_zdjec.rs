@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use futures::channel::mpsc;
 use iced::Task;
 use enumy::enums_structs_io::FILTERFOTO;
@@ -6,8 +7,6 @@ use enumy::opcje::{FolderCzyPlik, OptFormatyKoloruObrazOgólny, OptFormatyKoloru
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 impl Program {
@@ -37,7 +36,6 @@ impl Program {
                         }
                     }
                 }
-                self.checker_bool_rodzaj_wejscia_zbiorowe_przetwarzanie_zdjec = FolderCzyPlik::Plik;
             }
             ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderInFotoEdycjaPakowanie => {
                 if let Some(path) = rfd::FileDialog::new()
@@ -62,9 +60,14 @@ impl Program {
                         }
                     }
                 }
-                self.checker_bool_rodzaj_wejscia_zbiorowe_przetwarzanie_zdjec = FolderCzyPlik::Folder;
                 }
-            
+
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderInPathChanged(s) => {
+                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa = PathBuf::from(s);
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ResetujStanWejsciowychSciezekEdycjaFoto => {
+                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa = PathBuf::new();
+            }
             ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderOutPathTenSam(zdjecia_edycja_co_jest_na_out) => {
                 self.zdjecia_edycja_co_jest_na_out = zdjecia_edycja_co_jest_na_out;
                 let xoxo = if self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa.is_file() {
@@ -77,6 +80,14 @@ impl Program {
                     self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa.clone()
                 };
                 self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = xoxo
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderOutFotoEdycjaPakowanie => {
+                if let Some(path) = rfd::FileDialog::new().pick_folder() {
+                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = path;
+                }
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderOutPathChanged(s) => {
+                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = PathBuf::from(s)
             }
 
             ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(indeks, wartosc) => {
@@ -322,23 +333,6 @@ impl Program {
                     self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.tag.push(nowy_tag);
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::DopasujRozdzielczosci(rozdzielczosc) => {
-                let pozycja = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .opcje_rozdzielczości
-                    .iter()
-                    .position(|r| *r == rozdzielczosc);
-
-                match pozycja {
-                    // 2. Jeśli znaleźliśmy (już jest w wektorze) -> usuwamy ją po indeksie
-                    Some(index) => {
-                        self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.opcje_rozdzielczości.remove(index);
-                    }
-                    // 3. Jeśli nie znaleźliśmy -> dodajemy nową na koniec
-                    None => {
-                        self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.opcje_rozdzielczości.push(rozdzielczosc);
-                    }
-                }
-            }
             ZbiorowePrzetwarzanieZdjęćMessage::WysylkaDanychDoObrobkiZdjec => {
                 let dane_do_obrobki = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.clone();
                 self.checker_bool_status_procesow = CheckActiveProcess::ProcessKonwersjaZdjęć;
@@ -376,6 +370,9 @@ impl Program {
                 match progress {
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćStart => {
                         self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
+                    }
+                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćChecking(gsd) => {
+                        self.status_zmiany_fot_log.msg_walidacja = gsd;
                     }
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćRozpoczęto(
                         _,

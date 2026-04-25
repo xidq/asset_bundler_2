@@ -49,16 +49,13 @@ pub struct Program {
     status_dds_pakowanie: LogPakowaniaDds,
     status_dds_rozpakowywanie: LogRozpakowywanieDds,
     pub(crate) checker_bool_status_procesow:CheckActiveProcess,
-    pub(crate) checker_bool_rodzaj_wejscia_zbiorowe_przetwarzanie_zdjec:FolderCzyPlik,
     checker_bool_status_kompresja: bool,
     checker_bool_status_dekompresja: bool,
     checker_bool_status_zbiorowe_przetwarzanie_zdjęć: bool,
     pub(crate) checker_bool_status_łączenie_zdjęć: bool,
     pub(crate) checker_bool_status_dds: (bool, bool),
-    // procent_postepu: u8,
     ui_main_wariant_dev: bool,
     ui_ustawienia: DevToolsMenu,
-    // filtr_state: combo_box::State<OptKompresjaPlikówFiltracjaPlików>,
     ui_zbiorowe_przetwarzanie_zdjęć_podmenu: WybraneOknoEdycjiZdjęć,
     pub(crate) ui_dds_podmenu: StronyDds,
     zdjecia_edycja_co_jest_wybrane: (bool, bool),
@@ -80,7 +77,6 @@ pub struct Program {
 
 
 impl Program {
-    // 1. POPRAWKA: Sygnatura NEW (musi zwracać stan początkowy i Task)
     pub fn new() -> (Self, Task<Message>) {
         let locale = sys_locale::get_locale().unwrap_or_else(|| String::from("en-US"));
 
@@ -126,7 +122,6 @@ impl Program {
                 status_dds_pakowanie: Default::default(),
                 status_dds_rozpakowywanie: Default::default(),
                 checker_bool_status_procesow:CheckActiveProcess::ProcessŻodyn,
-                checker_bool_rodzaj_wejscia_zbiorowe_przetwarzanie_zdjec: FolderCzyPlik::Puste,
                 checker_bool_status_kompresja: false,
                 checker_bool_status_dekompresja: false,
                 checker_bool_status_zbiorowe_przetwarzanie_zdjęć: false,
@@ -957,6 +952,9 @@ impl Program {
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćStart => {
                         self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
                     }
+                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćChecking(gsd) => {
+                        self.status_zmiany_fot_log.msg_walidacja = gsd;
+                    }
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćRozpoczęto(
                         _,
                         procent,
@@ -1631,7 +1629,7 @@ impl Program {
                     .height(Length::Fill)
                     .width(Length::FillPortion(5))
                     .style(styl_przycisków(
-                        self.checker_bool_status_kompresja,
+                        self.checker_bool_status_procesow == CheckActiveProcess::ProcessPakowaniePliku,
                         self.checker_do_zbiorowe_przetwarzanie_zdjęć.zbiorowe_przetwarzanie_zdjec_rozszerzenie_zakladka_menu_wybrana.0,
                         KOLOR_BRILIANT_CRIMSON,
                     )),
@@ -1649,7 +1647,7 @@ impl Program {
                     .height(Length::Fill)
                     .width(Length::FillPortion(5))
                     .style(styl_przycisków(
-                        self.checker_bool_status_dekompresja,
+                        self.checker_bool_status_procesow == CheckActiveProcess::ProcessRozpakowaniePliku,
                         self.checker_do_zbiorowe_przetwarzanie_zdjęć.zbiorowe_przetwarzanie_zdjec_rozszerzenie_zakladka_menu_wybrana.1,
                         KOLOR_FLIRT,
                     )),
@@ -1667,7 +1665,7 @@ impl Program {
                     .height(Length::Fill)
                     .width(Length::FillPortion(5))
                     .style(styl_przycisków(
-                        self.checker_bool_status_zbiorowe_przetwarzanie_zdjęć,
+                        self.checker_bool_status_procesow == CheckActiveProcess::ProcessKonwersjaZdjęć,
                         self.checker_do_zbiorowe_przetwarzanie_zdjęć.zbiorowe_przetwarzanie_zdjec_rozszerzenie_zakladka_menu_wybrana.2,
                         KOLOR_SPANISH_ORANGE,
                     )),
@@ -1686,7 +1684,7 @@ impl Program {
                     .height(Length::Fill)
                     .width(Length::FillPortion(5))
                     .style(styl_przycisków(
-                        self.checker_bool_status_łączenie_zdjęć,
+                        self.checker_bool_status_procesow == CheckActiveProcess::ProcessŁączenieZdjęć,
                         self.checker_do_zbiorowe_przetwarzanie_zdjęć.zbiorowe_przetwarzanie_zdjec_rozszerzenie_zakladka_menu_wybrana.3,
                         KOLOR_PEACH_PUFF,
                     )),
@@ -1704,7 +1702,7 @@ impl Program {
                     .height(Length::Fill)
                     .width(Length::FillPortion(5))
                     .style(styl_przycisków(
-                        self.checker_bool_status_dds.0 || self.checker_bool_status_dds.1,
+                        self.checker_bool_status_procesow == CheckActiveProcess::ProcessDdsPakowanie || self.checker_bool_status_procesow == CheckActiveProcess::ProcessDdsRozpakowanie,
                         self.checker_do_zbiorowe_przetwarzanie_zdjęć.zbiorowe_przetwarzanie_zdjec_rozszerzenie_zakladka_menu_wybrana.4,
                         KOLOR_COTTON_CANDY,
                     )),
@@ -1770,13 +1768,9 @@ impl Program {
                     &self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć,
                     &self.ui_zbiorowe_przetwarzanie_zdjęć_podmenu,
                     &aktualny_jezyk,
-                    self.zdjecia_edycja_co_jest_wybrane,
                     self.zdjecia_edycja_co_jest_na_out,
-                    // &self.checker_do_zbiorowe_przetwarzanie_zdjęć,
-                    self.checker_bool_status_zbiorowe_przetwarzanie_zdjęć,
                     self.status_zmiany_fot_log.clone(),
                     &self.checker_bool_status_procesow,
-                    &self.checker_bool_rodzaj_wejscia_zbiorowe_przetwarzanie_zdjec,
                 )
             }
             OptUIWariantPodstrony::DaneDoŁączeniaZdjęćo => {
