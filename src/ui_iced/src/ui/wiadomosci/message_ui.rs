@@ -6,6 +6,7 @@ use enumy::statusy::{LogTxDoBathKonwersjaZdjęć, LogTxDoDekompresjiPliku, LogTx
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMessage;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
@@ -82,5 +83,6 @@ pub enum Message {
     ZdjeciaEdycjaZmianaBitDepthQoi(OptFormatyKoloruObrazuQoi),
     ZdjeciaEdycjaZmianaWybranyQoi,
     ŁączenieZdjęć(ŁączenieZdjęćMessage),
-    Dds(DdsMessage)
+    Dds(DdsMessage),
+    ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage),
 }

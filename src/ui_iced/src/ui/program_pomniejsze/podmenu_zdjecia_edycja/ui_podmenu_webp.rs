@@ -1,345 +1,160 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_SPANISH_ORANGE};
+use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
 use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
     PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
 };
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych};
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{button, container, slider, space, text, tooltip, Column, Row};
 use iced_core::{Color, Length};
 use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 pub fn podmenu_webp_wybor(
     dane: &DaneDoBathKonwersjaZdjec,
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
     jezyk: &WybórJęzyka,
 ) -> Column<'static, Message> {
-    let space_val = if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany {
-        15 // Pełne menu
-    } else {
-        0
-    };
     Column::new()
-        .push(if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany {
-            Row::new()
-                .push(
-                    button(
-                        text("webp")
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaWybranyWebp)
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5)),
-                )
-                .push(space().width(Length::FillPortion(1)))
-                .push(
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp, dane, jezyk.get_font()))
+
+        .push(
+            if let Some(OptRozszerzeniaPlikówZdjęciowych::Webp {
+                            jakosc,
+                            lossless,
+                            bit_depth,
+                        }) = dane.rozszerzenia_plików_zdjęciowych
+                .iter()
+                .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Webp { .. }))
+            {
+                container(
                     Column::new()
                         .push(
-                            slider(
-                                0..=100,
-                                match dane.rozszerzenia_plików_zdjęciowych[2] {
-                                    OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, .. } => {
+                            Row::new()
+                                .push(
+                                    slider(
+                                        0..=100,
+                                        *jakosc,
+                                        |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJakosciWebp(vv))
+                                    )
+                                        .height(20.)
+                                        .width(Length::FillPortion(6))
+                                        .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                )
+                                .push(
+                                    text(format!(
+                                        "Q: {}%",
                                         jakosc
-                                    }
-                                    _ => 0,
-                                },
-                                Message::ZdjeciaEdycjaZmianaJakosciWebp,
-                            )
-                            .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                    ))
+                                        .color(KOLOR_CZCIONKI_SREDNI)
+                                        .font(jezyk.get_font()).width(Length::FillPortion(4)).height(Length::Fill).center(),
+                                )
+                                .padding(15)
                         )
                         .push(
-                            text(format!(
-                                "{} {}%",
-                                jezyk.t("foto_edit_quality"),
-                                match dane.rozszerzenia_plików_zdjęciowych[2] {
-                                    OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, .. } =>
-                                        jakosc,
-                                    _ => 0,
-                                }
-                            ))
-                            .color(KOLOR_CZCIONKI_SREDNI)
-                            .font(jezyk.get_font()),
+                            Row::new()
+
+                                .push(
+                                    tooltip(
+                                        btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp,OptFormatyKoloruObrazOgólny::B8,dane,jezyk.get_font()),
+                                        text("rgb".to_string()),
+                                        tooltip::Position::Top,
+                                    )
+                                )
+                                .push(
+                                    tooltip(
+                                        btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp,OptFormatyKoloruObrazOgólny::B8a,dane,jezyk.get_font()),
+                                        text("rgba".to_string()),
+                                        tooltip::Position::Top,
+                                    )
+                                )
+                                .push(
+                                    Row::new()
+                                        .push(
+                                            tooltip(
+                                                button(
+                                                    text("Lossless")
+                                                        .font(jezyk.get_font())
+                                                        .width(Length::Fill)
+                                                        .height(Length::Fill)
+                                                        .center(),
+                                                )
+                                                    .padding(10)
+                                                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaLosslessWebp))
+                                                    .style(styl_przycisków(
+                                                        false,
+                                                        *lossless,
+                                                        KOLOR_SPANISH_ORANGE,
+                                                    ))
+                                                    .width(Length::FillPortion(1)),
+
+                                                "Zapis lossless on/off",
+                                                tooltip::Position::Top,
+                                            )
+                                        )
+                                )
                         )
-                        .width(Length::FillPortion(5)),
-                ) //push column qniec
-                .push(space().width(Length::FillPortion(1)))
-                .push(tooltip(
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany {
-                        button(
-                            text("los")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .center(),
-                        )
-                        .padding(10)
-                        .on_press(Message::ZdjeciaEdycjaZmianaLosslessWebp)
-                        .style(styl_przycisków(
-                            false,
-                            stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_lossless,
-                            KOLOR_SPANISH_ORANGE,
-                        ))
-                        .width(Length::FillPortion(5))
-                    } else {
-                        button(
-                            text("los")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .center(),
-                        )
-                        .padding(10)
-                        .style(styl_przycisków(
-                            false,
-                            stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_lossless,
-                            KOLOR_SPANISH_ORANGE,
-                        ))
-                        .width(Length::FillPortion(5))
-                    },
-                    "Zapis progresywny on/off",
-                    tooltip::Position::Top,
-                ))
-                .push(space().width(Length::FillPortion(1)))
-        } else {
+                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+            } else {
+                container(Row::new())
+            }
+        )
+        .push(
             Row::new()
-                .push(
-                    button(
-                        text("webp")
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaWybranyWebp)
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5)),
-                )
-                .push(space().width(Length::FillPortion(13)))
-        })
-        .push(if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany {
-            Row::new()
-                .push(tooltip(
-                    button(
-                        text(jezyk.t("foto_edit_color"))
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaKolorWebp(
-                        OptFormatyKoloruObrazOgólny::B8,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany_rgb,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                    jezyk.t("foto_edit_tooltip_webp_color"),
-                    tooltip::Position::Top,
-                ))
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    container("")
-                        .width(Length::Fixed(2.))
-                        .height(Length::Fixed(50.))
-                        .style(move |_theme| container::Style {
-                            text_color: None,
-                            background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.2).into()),
-                            border: Default::default(),
-                            shadow: Default::default(),
-                            snap: false,
-                        }),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(tooltip(
-                    button(
-                        text("alpha")
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaKolorWebp(
-                        OptFormatyKoloruObrazOgólny::B8a,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany_alpha,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                    jezyk.t("foto_edit_tooltip_webp_alpha"),
-                    tooltip::Position::Top,
-                ))
-        } else {
-            Row::new()
-        })
-        .spacing(space_val) //oesu ale to długie... a tyle krwi napsuło...
+
+        ) //oesu ale to długie... a tyle krwi napsuło...
         .padding(15)
         .width(Length::FillPortion(2))
 }
 
-pub fn podmenu_webp_misc(
+pub fn podmenu_webp_misc<'a>(
     dane: &DaneDoBathKonwersjaZdjec,
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
-) -> Row<'static, Message> {
+) -> Row<'a, Message> {
+    let webp_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
+        matches!(f, OptRozszerzeniaPlikówZdjęciowych::Webp{ .. })
+    });
+
+    let lossless_bool = || {
+        if let Some(OptRozszerzeniaPlikówZdjęciowych::Webp { lossless, .. }) = webp_data {
+            *lossless // zwracamy wartość bool
+        } else {
+            false
+        }
+    };
+    // 2. Pomocnicze sprawdzenie koloru
+    let ma_kolor = |target_bit: OptFormatyKoloruObrazOgólny| {
+        if let Some(OptRozszerzeniaPlikówZdjęciowych::Webp { bit_depth, .. }) = webp_data {
+            bit_depth.contains(&target_bit)
+        } else {
+            false
+        }
+    };
+
+    // 3. Przygotowanie jakości
+    let jakosc_str = webp_data
+        .and_then(|f| if let OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, .. } = f { Some(jakosc.to_string()) } else { None })
+        .unwrap_or_else(|| "-".to_string());
+
+    let jest_aktywny_webp = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp);
+    
     Row::new()
-        .push(
-            text("Webp")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany { 0.5 } else { 0.2 },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("Webp".to_string(),jest_aktywny_webp))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("C")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany_rgb && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("|".to_string(),false))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("A")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany_alpha && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("RGB".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8)))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("|")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(1., 1., 1., 0.3))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("RGBa".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8a)))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text(format!(
-                "{}%",
-                match dane.rozszerzenia_plików_zdjęciowych[2] {
-                    OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, .. } => jakosc,
-                    _ => 2,
-                }
-            ))
-            .font(iced::Font {
-                family: iced::font::Family::Name("VT323"),
-                ..Default::default()
-            })
-            .color(Color::from_rgba(
-                1.,
-                1.,
-                1.,
-                if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany && !stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_lossless {
-                    0.5
-                } else {
-                    0.2
-                },
-            ))
-            .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("|".to_string(),false))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("|")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(1., 1., 1., 0.3))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male(jakosc_str,jest_aktywny_webp))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("Lossless")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_lossless {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(
-            text("/")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(1., 1., 1., 0.2))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(
-            text("Lossy")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany && !stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_lossless {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("|".to_string(),false))
+        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("Lossless".to_string(),lossless_bool()))
 }

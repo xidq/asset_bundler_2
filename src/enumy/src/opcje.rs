@@ -206,6 +206,13 @@ pub enum OptEfektZaszumiania {
     Nie,
 }
 #[allow(dead_code)]
+#[derive(Clone)]
+pub enum FolderCzyPlik{
+    Folder,
+    Plik,
+    Puste
+}
+#[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum OptUIWariantPodstrony {
     Pakowanie,

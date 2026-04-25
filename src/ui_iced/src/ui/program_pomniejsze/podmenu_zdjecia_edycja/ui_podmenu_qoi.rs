@@ -3,167 +3,72 @@ use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
     PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
 };
-use enumy::opcje::OptFormatyKoloruObrazuQoi;
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{button, container, space, text, Column, Row};
 use iced_core::{Color, Length};
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
 use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_kolor_qoi, btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::wiadomosci::message_ui::Message;
 
-pub fn podmenu_qoi_wybor(
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
+pub fn podmenu_qoi_wybor<'a>(
+    dane: &DaneDoBathKonwersjaZdjec,
     jezyk: &WybórJęzyka,
-) -> Column<'static, Message> {
-    let space_val = if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany {15} else {0};
+) -> Column<'a, Message> {
     Column::new()
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi, dane, jezyk.get_font()))
+
         .push(
-            Row::new()
-                .push(
-                    button(
-                        text("qoi")
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaWybranyQoi)
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5)),
-                )
-                .push(space().width(Length::FillPortion(13))),
-        )
-        .push(if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany {
-            Row::new()
-                // row![
-                .push(
-                    button(
-                        text("Color")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::ZdjeciaEdycjaZmianaBitDepthQoi(
-                        OptFormatyKoloruObrazuQoi::Color24,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany_24b,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    container("")
-                        .width(Length::Fixed(2.))
-                        .height(Length::Fixed(50.))
-                        .style(move |_theme| container::Style {
-                            text_color: None,
-                            background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.2).into()),
-                            border: Default::default(),
-                            shadow: Default::default(),
-                            snap: false,
-                        }),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    button(
-                        text("ColorA")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::ZdjeciaEdycjaZmianaBitDepthQoi(
-                        OptFormatyKoloruObrazuQoi::ColorA32,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany_32b,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                )
-        } else {
-            Row::new().push(space())
-        })
-        .spacing(space_val) //oesu ale to długie... a tyle krwi napsuło...
-        .padding(15)
-        .width(Length::FillPortion(2))
+            if let Some(OptRozszerzeniaPlikówZdjęciowych::Qoi {
+                            bit_depth,
+                        }) = dane.rozszerzenia_plików_zdjęciowych
+                .iter()
+                .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Qoi { .. }))
+            {
+                container(
+                    Column::new()
+                        .push(
+                            Row::new()
+                                .push(space()).height(Length::FillPortion(1))
+                        )
+                        .push(
+                        Row::new()
+                            .push(btn_zbiorowe_kolor_qoi(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi,OptFormatyKoloruObrazuQoi::Color24,dane,jezyk.get_font()))
+                            .push(btn_zbiorowe_kolor_qoi(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi,OptFormatyKoloruObrazuQoi::ColorA32,dane,jezyk.get_font()))
+                        )
+                    
+                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+            }else{container(Column::new())}
+        ).padding(15).width(Length::FillPortion(2))
+    
 }
 
 pub fn podmenu_qoi_misc(
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
+    dane: &DaneDoBathKonwersjaZdjec,
 ) -> Row<'static, Message> {
+    let qoi_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
+        matches!(f, OptRozszerzeniaPlikówZdjęciowych::Qoi { .. })
+    });
+    // 2. Pomocnicze sprawdzenie koloru
+    let ma_kolor = |target_bit: OptFormatyKoloruObrazuQoi| {
+        if let Some(OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth, .. }) = qoi_data {
+            bit_depth.contains(&target_bit)
+        } else {
+            false
+        }
+    };
+
+    let jest_aktywny_jpg = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi {});
+
+
     Row::new()
-        .push(
-            text("Qoi")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany { 0.5 } else { 0.2 },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("Qoi".to_string(),jest_aktywny_jpg))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("|")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(1., 1., 1., 0.3))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("|".to_string(),false))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("24b")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany_24b && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("Color24".to_string(),ma_kolor(OptFormatyKoloruObrazuQoi::Color24)))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("32a")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany_32b && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("Color32".to_string(),ma_kolor(OptFormatyKoloruObrazuQoi::ColorA32)))
 }

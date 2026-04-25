@@ -1,289 +1,160 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_SPANISH_ORANGE};
+use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych};
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{Column, Row, button, container, slider, space, text, tooltip};
 use iced::{Color, Length};
 use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
+use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
 use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
-pub fn podmenu_jpg_wybor_top(
+pub fn podmenu_jpg_wybor_top<'a>(
     dane: &DaneDoBathKonwersjaZdjec,
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
     jezyk: &WybórJęzyka,
-) -> Column<'static, Message> {
-    let space_val = if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany {15} else {0};
+) -> Column<'a, Message> {
+     Column::new()
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg, dane, jezyk.get_font()))
 
-    Column::new()
-        .push(if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany {
-            Row::new()
-                .push(
-                    button(
-                        text("jpg")
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaWybranyJpg)
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5)),
-                )
-                .push(space().width(Length::FillPortion(1)))
-                .push(
+        .push(
+            if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg {
+                            jakosc,
+                            progresywny,
+                            bit_depth,
+                        }) = dane.rozszerzenia_plików_zdjęciowych
+                .iter()
+                .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                {
+                container(
                     Column::new()
-                        .push(
-                            slider(
-                                0..=100,
-                                match dane.rozszerzenia_plików_zdjęciowych[0] {
-                                    OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, .. } => {
-                                        jakosc
-                                    }
-                                    _ => 0,
-                                },
-                                Message::ZdjeciaEdycjaZmianaJakosciJpg,
+                    .push(
+                        Row::new()
+                            .push(
+                                slider(
+                                    0..=100,
+                                    *jakosc,
+                                    |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJakosciJpg(vv))
+                                )
+                                    .height(20.)
+                                    .width(Length::FillPortion(6))
+                                .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
                             )
-                            .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                            .push(
+                                text(format!(
+                                    "Q: {}%",
+                                    jakosc
+                                ))
+                                .color(KOLOR_CZCIONKI_SREDNI)
+                                .font(jezyk.get_font()).width(Length::FillPortion(4)).height(Length::Fill).center(),
+                            )
+                            .padding(15)
+                    )
+                    .push(
+                        Row::new()
+
+                        .push(
+                            tooltip(
+                                btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,OptFormatyKoloruObrazOgólny::B8,dane,jezyk.get_font()),
+                                text(jezyk.t("foto_edit_tooltip_jpg_color").to_string()),
+                                tooltip::Position::Top,
+                            )
                         )
                         .push(
-                            text(format!(
-                                "{} {}%",
-                                jezyk.t("foto_edit_quality"),
-                                match dane.rozszerzenia_plików_zdjęciowych[0] {
-                                    OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, .. } =>
-                                        jakosc,
-                                    _ => 0,
-                                }
-                            ))
-                            .color(KOLOR_CZCIONKI_SREDNI)
-                            .font(jezyk.get_font()),
+                            tooltip(
+                                btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,OptFormatyKoloruObrazOgólny::L8,dane,jezyk.get_font()),
+                                text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
+                                tooltip::Position::Top,
+                            )
                         )
-                        .width(Length::FillPortion(5)),
-                ) //push column qniec
-                .push(space().width(Length::FillPortion(1)))
-                .push(tooltip(
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany {
-                        button(
-                            text("Prog.")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .center(),
+                        .push(
+                            Row::new()
+                                .push(
+                                    tooltip(
+                                        button(
+                                            text("Prog.")
+                                                .font(jezyk.get_font())
+                                                .width(Length::Fill)
+                                                .height(Length::Fill)
+                                                .center(),
+                                        )
+                                            .padding(10)
+                                            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaProgresJpg))
+                                            .style(styl_przycisków(
+                                                false,
+                                                *progresywny,
+                                                KOLOR_SPANISH_ORANGE,
+                                            ))
+                                            .width(Length::FillPortion(1)),
+
+                                        "Zapis progresywny on/off",
+                                        tooltip::Position::Top,
+                                    )
+                                )
                         )
-                        .padding(10)
-                        .on_press(Message::ZdjeciaEdycjaZmianaProgresJpg)
-                        .style(styl_przycisków(
-                            false,
-                            stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_progres,
-                            KOLOR_SPANISH_ORANGE,
-                        ))
-                        .width(Length::FillPortion(5))
-                    } else {
-                        button(
-                            text("Prog.")
-                                .font(jezyk.get_font())
-                                .width(Length::Fill)
-                                .center(),
-                        )
-                        .padding(10)
-                        .style(styl_przycisków(
-                            false,
-                            stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_progres,
-                            KOLOR_SPANISH_ORANGE,
-                        ))
-                        .width(Length::FillPortion(5))
-                    },
-                    "Zapis progresywny on/off",
-                    tooltip::Position::Top,
-                ))
-                .push(space().width(Length::FillPortion(1)))
-        } else {
-            Row::new()
-                .push(
-                    button(
-                        text("jpg")
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
                     )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaWybranyJpg)
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5)),
-                )
-                .push(space().width(Length::FillPortion(13)))
-        })
+                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+            } else {
+                    container(Row::new())
+            }
+        )
         // MENU Z WYBORAMI
         // DRUGI ROW
-        .push(if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany {
+        .push(
             Row::new()
-                .push(tooltip(
-                    button(
-                        text(jezyk.t("foto_edit_color").to_string())
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaKolorJpg(
-                        OptFormatyKoloruObrazOgólny::B8,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany_rgb,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                    text(jezyk.t("foto_edit_tooltip_jpg_color").to_string()),
-                    tooltip::Position::Top,
-                ))
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    container("")
-                        .width(Length::Fixed(2.))
-                        .height(Length::Fixed(50.))
-                        .style(move |_theme| container::Style {
-                            text_color: None,
-                            background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.2).into()),
-                            border: Default::default(),
-                            shadow: Default::default(),
-                            snap: false,
-                        }),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(tooltip(
-                    button(
-                        text("bw")
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaKolorJpg(
-                        OptFormatyKoloruObrazOgólny::L8,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany_bw,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                    text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
-                    tooltip::Position::Top,
-                ))
-        } else {
-            Row::new()
-        })
-        .spacing(space_val) //oesu ale to długie... a tyle krwi napsuło...
+
+        ) //oesu ale to długie... a tyle krwi napsuło...
         .padding(15)
         .width(Length::FillPortion(2))
 }
 
-pub fn podmenu_jpg_misc(
+pub fn podmenu_jpg_misc<'a>(
     dane: &DaneDoBathKonwersjaZdjec,
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
-) -> Row<'static, Message> {
+) -> Row<'a, Message> {
+    let jpg_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
+        matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. })
+    });
+    // 2. Pomocnicze sprawdzenie koloru
+    let ma_kolor = |target_bit: OptFormatyKoloruObrazOgólny| {
+        if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { bit_depth, .. }) = jpg_data {
+            bit_depth.contains(&target_bit)
+        } else {
+            false
+        }
+    };
+    let prog_bool = || {
+        if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { progresywny, .. }) = jpg_data {
+            *progresywny // zwracamy wartość bool
+        } else {
+            false
+        }
+    };
+
+    // 3. Przygotowanie jakości
+    let jakosc_str = jpg_data
+        .and_then(|f| if let OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, .. } = f { Some(jakosc.to_string()) } else { None })
+        .unwrap_or_else(|| "-".to_string());
+
+    let jest_aktywny_jpg = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg);
+
+
     Row::new()
-        .push(
-            text("Jpg")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany { 0.5 } else { 0.2 },
-                ))
-                .size(crate::ui::program_pomniejsze::ui_zdjecia_edycja::ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(
-            crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN,
-        )))
-        .push(
-            text("C")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany_rgb && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(crate::ui::program_pomniejsze::ui_zdjecia_edycja::ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(
-            crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN,
-        )))
-        .push(
-            text("BW")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany_bw && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(crate::ui::program_pomniejsze::ui_zdjecia_edycja::ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(
-            crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN,
-        )))
-        .push(
-            text("|")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(1., 1., 1., 0.3))
-                .size(crate::ui::program_pomniejsze::ui_zdjecia_edycja::ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(
-            crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN,
-        )))
-        .push(
-            text(format!(
-                "{}%",
-                match dane.rozszerzenia_plików_zdjęciowych[0] {
-                    OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, .. } => jakosc,
-                    _ => 0,
-                }
-            ))
-            .font(iced::Font {
-                family: iced::font::Family::Name("VT323"),
-                ..Default::default()
-            })
-            .color(Color::from_rgba(
-                1.,
-                1.,
-                1.,
-                if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany { 0.5 } else { 0.2 },
-            ))
-            .size(crate::ui::program_pomniejsze::ui_zdjecia_edycja::ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("Jpg".to_string(),jest_aktywny_jpg))
+        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("|".to_string(),false))
+        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("C".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8)))
+        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("BW".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L8)))
+        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("|".to_string(),false))
+        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male(jakosc_str,jest_aktywny_jpg))
+        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("|".to_string(),false))
+        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("Progresywny".to_string(),prog_bool()))
 }

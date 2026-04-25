@@ -18,14 +18,14 @@ pub struct DaneDoDekompresjaPlików {
     pub ścieżka_docelowa: PathBuf,
 }
 #[allow(dead_code)]
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct DaneDoBathKonwersjaZdjec {
     pub ścieżka_wejściowa: PathBuf,
     pub ścieżka_wyjściowa: PathBuf,
     pub opcje_rozdzielczości: Vec<OptRozdzielczościObrazów>,
-    // dane_exif: DaneExif,
     pub noising: Option<u8>,
     pub rozszerzenia_plików_zdjęciowych: Vec<OptRozszerzeniaPlikówZdjęciowych>,
+    pub tag:Vec<OptRozszerzeniaPlikówZdjęciowychZnacznik>,
     pub inter: OptInterpolacja,
     pub alfa_rgb: (u16, u16, u16),
 }

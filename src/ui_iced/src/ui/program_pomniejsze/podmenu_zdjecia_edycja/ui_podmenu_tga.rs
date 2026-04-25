@@ -1,274 +1,121 @@
-use crate::ui::program_pomniejsze::kolory::KOLOR_SPANISH_ORANGE;
+use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_SPANISH_ORANGE};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
     PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
 };
-use enumy::opcje::OptFormatyKoloruObrazuTga;
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuTga, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, container, space, text, Column, Row};
+use iced::widget::{button, container, slider, space, text, tooltip, Column, Row};
 use iced_core::{Color, Length};
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
 use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_kolor_tga, btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
+use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
 use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 pub fn podmenu_tga_wybor(
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
+    dane: &DaneDoBathKonwersjaZdjec,
     jezyk: &WybórJęzyka,
 ) -> Column<'static, Message> {
-    let space_val = if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany {15 } else { 0 };
     Column::new()
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga, dane, jezyk.get_font()))
+
+        .push(
+            if let Some(OptRozszerzeniaPlikówZdjęciowych::Tga {
+                            bit_depth,
+                        }) = dane.rozszerzenia_plików_zdjęciowych
+                .iter()
+                .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Tga { .. }))
+            {
+                container(
+                    Column::new()
+                        .push(
+                            Row::new()
+                                .push(
+                                    text("bez kompresji")
+                                        .color(KOLOR_CZCIONKI_SREDNI)
+                                        .font(jezyk.get_font()).width(Length::Fill).height(Length::Fill).center(),
+                                )
+                                .height(Length::FillPortion(1)).padding(15)
+                        )
+                        .push(
+                            Row::new()
+                                .push(
+                                    tooltip(
+                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::Szary8,dane,jezyk.get_font()),
+                                        text(jezyk.t("foto_edit_tooltip_jpg_color").to_string()),
+                                        tooltip::Position::Top,
+                                    )
+                                )
+                                .push(
+                                    tooltip(
+                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::HighColor16,dane,jezyk.get_font()),
+                                        text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
+                                        tooltip::Position::Top,
+                                    )
+                                )
+                                .push(
+                                    tooltip(
+                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::TrueColor24,dane,jezyk.get_font()),
+                                        text(jezyk.t("foto_edit_tooltip_jpg_color").to_string()),
+                                        tooltip::Position::Top,
+                                    )
+                                )
+                                .push(
+                                    tooltip(
+                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::TrueColorA32,dane,jezyk.get_font()),
+                                        text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
+                                        tooltip::Position::Top,
+                                    )
+                                )
+                                .height(Length::FillPortion(1))
+                        )
+                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+            } else {
+                container(Row::new())
+            }
+        )
+        // MENU Z WYBORAMI
+        // DRUGI ROW
         .push(
             Row::new()
-                .push(
-                    button(
-                        text("tga")
-                            .font(jezyk.get_font())
-                            .width(Length::Fill)
-                            .center(),
-                    )
-                    .padding(10)
-                    .on_press(Message::ZdjeciaEdycjaZmianaWybranyTga)
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5)),
-                )
-                .push(space().width(Length::FillPortion(13))),
-        )
-        .push(if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany {
-            Row::new()
-                // row![
-                .push(
-                    button(
-                        text("szary8")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::ZdjeciaEdycjaZmianaBitDepthTga(
-                        OptFormatyKoloruObrazuTga::Szary8,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_szary,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    container("")
-                        .width(Length::Fixed(2.))
-                        .height(Length::Fixed(50.))
-                        .style(move |_theme| container::Style {
-                            text_color: None,
-                            background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.2).into()),
-                            border: Default::default(),
-                            shadow: Default::default(),
-                            snap: false,
-                        }),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    button(
-                        text("HC16")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::ZdjeciaEdycjaZmianaBitDepthTga(
-                        OptFormatyKoloruObrazuTga::HighColor16,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_16b,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    container("")
-                        .width(Length::Fixed(2.))
-                        .height(Length::Fixed(50.))
-                        .style(move |_theme| container::Style {
-                            text_color: None,
-                            background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.2).into()),
-                            border: Default::default(),
-                            shadow: Default::default(),
-                            snap: false,
-                        }),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    button(
-                        text("TC24")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::ZdjeciaEdycjaZmianaBitDepthTga(
-                        OptFormatyKoloruObrazuTga::TrueColor24,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_24b,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    container("")
-                        .width(Length::Fixed(2.))
-                        .height(Length::Fixed(50.))
-                        .style(move |_theme| container::Style {
-                            text_color: None,
-                            background: Some(Color::from_rgba(1.0, 1.0, 1.0, 0.2).into()),
-                            border: Default::default(),
-                            shadow: Default::default(),
-                            snap: false,
-                        }),
-                )
-                .push(space().width(Length::Fixed(5.)))
-                .push(
-                    button(
-                        text("TC32")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::ZdjeciaEdycjaZmianaBitDepthTga(
-                        OptFormatyKoloruObrazuTga::TrueColorA32,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_32b,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .width(Length::FillPortion(5))
-                    .height(Length::Fixed(50.)),
-                )
-        } else {
-            Row::new().push(space())
-        })
-        .spacing(space_val) //oesu ale to długie... a tyle krwi napsuło...
+
+        ) //oesu ale to długie... a tyle krwi napsuło...
         .padding(15)
         .width(Length::FillPortion(2))
 }
 
 pub fn podmenu_tga_misc(
-    // dane: &DaneDoBathKonwersjaZdjec,
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
+    dane: &DaneDoBathKonwersjaZdjec,
+    // stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
 ) -> Row<'static, Message> {
+    let tga_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
+        matches!(f, OptRozszerzeniaPlikówZdjęciowych::Tga { .. })
+    });
+    // 2. Pomocnicze sprawdzenie koloru
+    let ma_kolor = |target_bit: OptFormatyKoloruObrazuTga| {
+        if let Some(OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth, .. }) = tga_data {
+            bit_depth.contains(&target_bit)
+        } else {
+            false
+        }
+    };
+
+    let jest_aktywny_jpg = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga);
+
+
     Row::new()
-        .push(
-            text("Tga")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany { 0.5 } else { 0.2 },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("Jpg".to_string(),jest_aktywny_jpg))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("|")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(1., 1., 1., 0.3))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("|".to_string(),false))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("8b")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_szary && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("G8".to_string(),ma_kolor(OptFormatyKoloruObrazuTga::Szary8)))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("16a")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_16b && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("HC16".to_string(),ma_kolor(OptFormatyKoloruObrazuTga::HighColor16)))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("24b")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_24b && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("TC24".to_string(),ma_kolor(OptFormatyKoloruObrazuTga::TrueColor24)))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("32a")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_32b && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male("TC32".to_string(),ma_kolor(OptFormatyKoloruObrazuTga::TrueColorA32)))
 }

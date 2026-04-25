@@ -22,7 +22,7 @@ use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds, FILTERFOTO}
 pub(crate) use enumy::enums_structs_io::{LogPakowanie, LogPrzetwarzanieFot, LogRozpakowywanie};
 // use crate::ui::program_pomniejsze::czcionki::{FONT_DEFAULT, FONT_JAPANESE, FONT_KOREAN, FONT_THAI, KOLOR_BRILIANT_CRIMSON, KOLOR_CRIMSON_GLORY, KOLORFLIRT, KOLOR_PEACH_PUFF};
 use enumy::lang::{odmiana_liczbowa, zmieniacz_ilosci_bajtow};
-use enumy::opcje::{OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik, OptUIWariantPodstrony};
+use enumy::opcje::{FolderCzyPlik, OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik, OptUIWariantPodstrony};
 use enumy::statusy::{LogTxDoBathKonwersjaZdjęć, LogTxDoDekompresjiPliku, LogTxDoKompresjiPliku};
 pub(crate) use enumy::wybranie_jezykowe::{DevToolsMenu, WybórJęzyka};
 use iced::widget::{tooltip, Column, Row};
@@ -42,13 +42,14 @@ pub struct Program {
     dane_temp_do_dekompresji_plików: DaneDoDekompresjaPlików,
 
     // UI state
-    log_prawe_okno: Vec<String>,
+    pub(crate) log_prawe_okno: Vec<String>,
     status_pakowanie_log: LogPakowanie,
     status_rozpakowywania_log: LogRozpakowywanie,
-    status_zmiany_fot_log: LogPrzetwarzanieFot,
+    pub(crate) status_zmiany_fot_log: LogPrzetwarzanieFot,
     status_dds_pakowanie: LogPakowaniaDds,
     status_dds_rozpakowywanie: LogRozpakowywanieDds,
     pub(crate) checker_bool_status_procesow:CheckActiveProcess,
+    pub(crate) checker_bool_rodzaj_wejscia_zbiorowe_przetwarzanie_zdjec:FolderCzyPlik,
     checker_bool_status_kompresja: bool,
     checker_bool_status_dekompresja: bool,
     checker_bool_status_zbiorowe_przetwarzanie_zdjęć: bool,
@@ -61,8 +62,8 @@ pub struct Program {
     ui_zbiorowe_przetwarzanie_zdjęć_podmenu: WybraneOknoEdycjiZdjęć,
     pub(crate) ui_dds_podmenu: StronyDds,
     zdjecia_edycja_co_jest_wybrane: (bool, bool),
-    zdjecia_edycja_co_jest_na_out: bool,
-    dane_temp_do_zbiorowe_przetwarzanie_zdjęć: DaneDoBathKonwersjaZdjec,
+    pub(crate) zdjecia_edycja_co_jest_na_out: bool,
+    pub(crate) dane_temp_do_zbiorowe_przetwarzanie_zdjęć: DaneDoBathKonwersjaZdjec,
     do_nothing: bool,
     checker_do_zbiorowe_przetwarzanie_zdjęć: CheckerDoZbiorowePrzetwarzanieZdjęć,
     main_process_check: bool,
@@ -125,6 +126,7 @@ impl Program {
                 status_dds_pakowanie: Default::default(),
                 status_dds_rozpakowywanie: Default::default(),
                 checker_bool_status_procesow:CheckActiveProcess::ProcessŻodyn,
+                checker_bool_rodzaj_wejscia_zbiorowe_przetwarzanie_zdjec: FolderCzyPlik::Puste,
                 checker_bool_status_kompresja: false,
                 checker_bool_status_dekompresja: false,
                 checker_bool_status_zbiorowe_przetwarzanie_zdjęć: false,
@@ -145,27 +147,9 @@ impl Program {
                             jakosc: 90,
                             progresywny: false,
                             bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
-                        },
-                        OptRozszerzeniaPlikówZdjęciowych::Png {
-                            kompresja: 3,
-                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
-                        },
-                        OptRozszerzeniaPlikówZdjęciowych::Webp {
-                            jakosc: 90,
-                            lossless: false,
-                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
-                        },
-                        OptRozszerzeniaPlikówZdjęciowych::Tga {
-                            bit_depth: Vec::from([OptFormatyKoloruObrazuTga::TrueColor24]),
-                        },
-                        OptRozszerzeniaPlikówZdjęciowych::Ff {
-                            metoda_kompresji: OptMetodaKompresjiZdjecia::Brak,
-                        },
-                        OptRozszerzeniaPlikówZdjęciowych::Qoi {
-                            bit_depth: Vec::from([OptFormatyKoloruObrazuQoi::Color24]),
-                        },
+                        }
                     ]),
-
+                    tag: Vec::from([OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg]),
                     inter: OptInterpolacja::Lanczos3,
                     alfa_rgb: (0, 0, 0),
                 },
@@ -1569,6 +1553,11 @@ impl Program {
                         .retain(|x| x != &rozdzielczosc);
                 }
             }
+            Message::ZbiorowePrzetwarzanieZdjęć(msg) => {
+                // let _ =self.update_message_łączenie_zdjęć(msg).map(Message::ŁączenieZdjęć);
+                return self.update_message_zbiorowe_przetwarzanie_zdjec(msg)
+                    .map(|m| Message::ZbiorowePrzetwarzanieZdjęć(m));
+            },
 
             Message::ŁączenieZdjęć(msg) => {
                 // let _ =self.update_message_łączenie_zdjęć(msg).map(Message::ŁączenieZdjęć);
@@ -1778,15 +1767,16 @@ impl Program {
             ),
             OptUIWariantPodstrony::KonwersjaFoto => {
                 crate::ui::program_pomniejsze::ui_zdjecia_edycja::view_foto_change(
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.clone(),
+                    &self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć,
                     &self.ui_zbiorowe_przetwarzanie_zdjęć_podmenu,
-                    aktualny_jezyk,
+                    &aktualny_jezyk,
                     self.zdjecia_edycja_co_jest_wybrane,
                     self.zdjecia_edycja_co_jest_na_out,
-                    self.checker_do_zbiorowe_przetwarzanie_zdjęć.clone(),
+                    // &self.checker_do_zbiorowe_przetwarzanie_zdjęć,
                     self.checker_bool_status_zbiorowe_przetwarzanie_zdjęć,
                     self.status_zmiany_fot_log.clone(),
-                    self.main_process_check,
+                    &self.checker_bool_status_procesow,
+                    &self.checker_bool_rodzaj_wejscia_zbiorowe_przetwarzanie_zdjec,
                 )
             }
             OptUIWariantPodstrony::DaneDoŁączeniaZdjęćo => {

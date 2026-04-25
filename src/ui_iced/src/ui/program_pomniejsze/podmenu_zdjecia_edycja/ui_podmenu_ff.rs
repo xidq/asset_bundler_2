@@ -1,6 +1,4 @@
-use crate::ui::program_pomniejsze::kolory::{
-    KOLOR_CZCIONKI_SREDNI, KOLOR_SPANISH_ORANGE, KOLOR_TŁA,
-};
+use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::style_fn::pick_lista::{styl_menu_pick, styl_pick_list};
 use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
@@ -8,268 +6,155 @@ use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
     PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
 };
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych};
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, pick_list, slider, space, text, Column, Row};
+use iced::widget::{button, container, pick_list, slider, space, text, Column, Row};
 use iced::{Color, Length};
 use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 pub fn podmenu_ff_wybor(
     dane: &DaneDoBathKonwersjaZdjec,
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
     jezyk: &WybórJęzyka,
 ) -> Column<'static, Message> {
 
 
     let opcje = vec![
         OptMetodaKompresjiZdjecia::Brak,
-        OptMetodaKompresjiZdjecia::Zstd(3), // Domyślny poziom
-        OptMetodaKompresjiZdjecia::Bzip2(1),
+        OptMetodaKompresjiZdjecia::Zstd(3),
+        OptMetodaKompresjiZdjecia::Bzip2(6),
         OptMetodaKompresjiZdjecia::Xz(6),
     ];
+    let wybrana= Some(OptMetodaKompresjiZdjecia::Brak);
 
-    // 2. Pobieramy aktualnie wybraną metodę z Twoich danych
-    let wybrana = if let OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } =
-        &dane.rozszerzenia_plików_zdjęciowych[4]
-    {
-        Some(*metoda_kompresji)
-    } else {
-        None
-    };
-    // let aktualna_wartosc_zstd = match &dane.rozszerzenia_plików_zdjęciowych[4] {
-    //     rozszerzenia_plików_zdjęciowych::Ff { metoda_kompresji } => {
-    //         metoda_kompresji.iter().find_map(|m| {
-    //             if let OptMetodaKompresjiZdjecia::Zstd(v) = m { Some(*v) } else { None }
-    //         }).unwrap_or(3) // Domyślnie 3, jeśli nie ma na liście
-    //     },
-    //     _ => 0,
-    // };
-
-    // .push(
-    //     slider(0..=198,
-    //            match dane.rozszerzenia_plików_zdjęciowych[4] {
-    //         rozszerzenia_plików_zdjęciowych::Ff { metoda_kompresji:OptMetodaKompresjiZdjecia::Zstd(v)} =>  v,
-    //         _ => 0
-    //     },
-    //        Message::ZdjeciaEdycjaZmianaKompresjaWartoscFF)
-    //         .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
-    //     )
-    // )
-
-    Column::new().push(if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany {
-        Row::new()
-            .push(
-                button(
-                    text("ff")
-                        .font(jezyk.get_font())
-                        .width(Length::Fill)
-                        .center(),
-                )
-                .padding(10)
-                .on_press(Message::ZdjeciaEdycjaZmianaWybranyFF)
-                .style(styl_przycisków(
-                    false,
-                    stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany,
-                    KOLOR_SPANISH_ORANGE,
-                ))
-                .width(Length::FillPortion(5)),
-            )
-            .push(space().width(Length::FillPortion(1)))
-            .push(
-                pick_list(opcje, wybrana, Message::ZdjeciaEdycjaZmianaKompresjaFF)
-                    .width(Length::FillPortion(5))
-                    .padding(2)
-                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
-                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
-            )
-            .spacing(5)
-            .push(space().width(Length::FillPortion(1)))
-            .push(
-                if matches!(
-                    dane.rozszerzenia_plików_zdjęciowych[4],
-                    OptRozszerzeniaPlikówZdjęciowych::Ff {
-                        metoda_kompresji: OptMetodaKompresjiZdjecia::Brak
-                    }
-                ) {
-                    Column::new().width(Length::FillPortion(5))
-                } else {
-                    Column::new()
-                        .push(
-                            slider(
-                                1..=198,
-                                match dane.rozszerzenia_plików_zdjęciowych[4] {
-                                    OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } => {
-                                        match metoda_kompresji {
-                                            OptMetodaKompresjiZdjecia::Zstd(v)
-                                            | OptMetodaKompresjiZdjecia::Bzip2(v)
-                                            | OptMetodaKompresjiZdjecia::Xz(v) => v,
-                                            OptMetodaKompresjiZdjecia::Brak => 0,
-                                        }
-                                    }
-                                    _ => 0,
-                                },
-                                Message::ZdjeciaEdycjaZmianaKompresjaWartoscFF,
+    Column::new()
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff, dane, jezyk.get_font()))
+        .push(
+            if let Some(OptRozszerzeniaPlikówZdjęciowych::Ff {
+                            metoda_kompresji
+                        }) = dane.rozszerzenia_plików_zdjęciowych
+                .iter()
+                .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Ff { .. }))
+        {
+            container(
+                Column::new()
+                    .push(
+                        Row::new()
+                            .push(
+                                pick_list(opcje, Some(*metoda_kompresji), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaFF(hh)))
+                                    .width(Length::FillPortion(5))
+                                    .padding(2)
+                                    .text_line_height(1.5)
+                                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .width(Length::FillPortion(4))
                             )
-                            .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
-                        )
-                        .push(
-                            text(format!(
-                                "{}: {}",
-                                jezyk.t("foto_edit_quality"),
-                                match dane.rozszerzenia_plików_zdjęciowych[4] {
-                                    OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } =>
-                                        match metoda_kompresji {
-                                            OptMetodaKompresjiZdjecia::Zstd(v) => {
-                                                (v as f32 / 9.).round().clamp(1., 22.) as u8
-                                            }
-                                            OptMetodaKompresjiZdjecia::Bzip2(v) => {
-                                                (v as f32 / 22.).round().clamp(1., 9.) as u8
-                                            }
-                                            OptMetodaKompresjiZdjecia::Xz(v) => {
-                                                (v as f32 / 22.).round().clamp(1., 9.) as u8
-                                            }
-                                            OptMetodaKompresjiZdjecia::Brak => 0,
-                                        },
-                                    _ => 0,
+                            .push(space().width(Length::Fixed(15.)))
+                            .push(
+                            match metoda_kompresji{
+                                OptMetodaKompresjiZdjecia::Zstd(bb) => {
+                                    Row::new()
+                                        .push(
+                                            slider(
+                                                1..=22,
+                                                *bb,
+                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaWartoscFF(xx)),
+                                            )
+                                                .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                        )
+                                        .push(
+                                            text(format!(
+                                                "C: {}",
+                                                bb
+                                            ))
+                                                .color(Color::from_rgba(1., 1., 1., 0.5))
+                                                .font(jezyk.get_font()).center().width(Length::FillPortion(4)).height(Length::Fixed(20.)),
+                                        ).height(Length::Fixed(20.)).width(Length::FillPortion(6))
                                 }
-                            ))
-                            .color(KOLOR_CZCIONKI_SREDNI)
-                            .font(jezyk.get_font()),
-                        )
-                        .width(Length::FillPortion(5))
-                },
-            )
-            .padding(15)
-    } else {
-        Row::new()
-            .push(
-                button(
-                    text("ff")
-                        .font(jezyk.get_font())
-                        .width(Length::Fill)
-                        .center(),
-                )
-                .padding(10)
-                .on_press(Message::ZdjeciaEdycjaZmianaWybranyFF)
-                .style(styl_przycisków(
-                    false,
-                    stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany,
-                    KOLOR_SPANISH_ORANGE,
-                ))
-                .width(Length::FillPortion(5)),
-            )
-            .push(space().width(Length::FillPortion(13)))
-            .padding(15)
-    })
+                                OptMetodaKompresjiZdjecia::Bzip2(bb) => {
+                                    Row::new()
+                                        .push(
+                                            slider(
+                                                1..=9,
+                                                *bb,
+                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaWartoscFF(xx)),
+                                            )
+                                                .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                        )
+                                        .push(
+                                            text(format!(
+                                                "C: {}",
+                                                bb
+                                            ))
+                                                .color(Color::from_rgba(1., 1., 1., 0.5))
+                                                .font(jezyk.get_font()).center().width(Length::FillPortion(4)).height(Length::Fixed(20.)),
+                                        ).height(Length::Fixed(20.)).width(Length::FillPortion(6))
+                                }
+                                OptMetodaKompresjiZdjecia::Xz(bb) => {
+                                    Row::new()
+                                        .push(
+                                            slider(
+                                                1..=9,
+                                                *bb,
+                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaWartoscFF(xx)),                                            )
+                                                .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                        )
+                                        .push(
+                                            text(format!(
+                                                "C: {}",
+                                                bb
+                                            ))
+                                                .color(Color::from_rgba(1., 1., 1., 0.5))
+                                                .font(jezyk.get_font()).center().width(Length::FillPortion(4)).height(Length::Fixed(20.)),
+                                        ).height(Length::Fixed(20.)).width(Length::FillPortion(6))
+                                }
+                                OptMetodaKompresjiZdjecia::Brak => {
+                                    Row::new().width(Length::FillPortion(6))
+                                }
+                            }
+                        ).padding(15)
+
+                    )
+                    .push(
+                        Row::new().height(Length::Fixed(50.))
+                    )
+            ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+
+        }else {container(Column::new())}).padding(15).width(Length::FillPortion(2))
 
     // MENU Z WYBORAMI
     // DRUGI ROW
 }
 
-pub fn podmenu_ff_misc(
-    stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
-) -> Row<'static, Message> {
+pub fn podmenu_ff_misc<'a>(
+    dane:&DaneDoBathKonwersjaZdjec,
+) -> Row<'a, Message> {
+    let ff_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
+        matches!(f, OptRozszerzeniaPlikówZdjęciowych::Ff { .. })
+    });
+
+    // 2. Wyciągnięcie nazwy metody i jej poziomu (wartości)
+    let (nazwa_metody, wartosc_metody) = match ff_data {
+        Some(OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji }) => {
+            match metoda_kompresji {
+                OptMetodaKompresjiZdjecia::Zstd(v)  => ("Zstd".to_string(), v.to_string()),
+                OptMetodaKompresjiZdjecia::Bzip2(v) => ("Bzip2".to_string(), v.to_string()),
+                OptMetodaKompresjiZdjecia::Xz(v)    => ("Xz".to_string(), v.to_string()),
+                OptMetodaKompresjiZdjecia::Brak     => ("Brak".to_string(), "-".to_string()),
+            }
+        }
+        _ => ("-".to_string(), "-".to_string()),
+    };
+    let jest_aktywny_ff = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff);
+
     Row::new()
-        .push(
-            text("FF")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany { 0.5 } else { 0.2 },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("Ff".to_string(),jest_aktywny_ff))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("|")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(1., 1., 1., 0.3))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
+        .push(info_male("|".to_string(),false))
         .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("Brak")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_kompresja_brak && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("Zstd")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_kompresja_zstd && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("Bzip2")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_kompresja_bzip2 && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(
-            text("Xz")
-                .font(iced::Font {
-                    family: iced::font::Family::Name("VT323"),
-                    ..Default::default()
-                })
-                .color(Color::from_rgba(
-                    1.,
-                    1.,
-                    1.,
-                    if stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_kompresja_xz && stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany {
-                        0.5
-                    } else {
-                        0.2
-                    },
-                ))
-                .size(ROZMIARWYBRANYCHROZSZERZEN),
-        )
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        .push(info_male(nazwa_metody + ": " + &*wartosc_metody,jest_aktywny_ff))
 }

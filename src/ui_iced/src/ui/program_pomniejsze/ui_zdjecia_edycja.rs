@@ -23,89 +23,63 @@ use crate::ui::program_pomniejsze::style_fn::text_input::styl_text_input;
 use crate::ui::program_pomniejsze::ui_standard::oddzielacz::ui_standard_oddzielacz;
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
 use enumy::ikony::folder_icon;
-use enumy::opcje::{OptInterpolacja, OptRozdzielczościObrazów};
+use enumy::opcje::{FolderCzyPlik, OptInterpolacja, OptRozdzielczościObrazów};
 use iced::widget::{
     button, checkbox, container, pick_list, progress_bar, scrollable, slider, space, text, text_input,
     Column, Grid, Row,
 };
 use iced::{Border, Color, Element, Length};
-use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use enumy::inne_ui::{CheckActiveProcess, CheckerDoZbiorowePrzetwarzanieZdjęć};
 pub(crate) use enumy::inne_ui::WybraneOknoEdycjiZdjęć;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::btn_rozdzielczosci;
 use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 pub(crate) const ROZMIARWYBRANYCHROZSZERZEN: iced::Pixels = iced::Pixels(14.);
 pub(crate) const PRZERWAWYBRANYCHROZSZERZEN: f32 = 3.;
 
 
 
-pub fn view_foto_change(
-    dane: DaneDoBathKonwersjaZdjec,
+pub fn view_foto_change<'a>(
+    dane: &'a DaneDoBathKonwersjaZdjec,
     wybrane_okno: &WybraneOknoEdycjiZdjęć,
-    jezyk: WybórJęzyka,
+    jezyk: &WybórJęzyka,
     wejście_check: (bool, bool),
     czy_wyjscie_te_same: bool,
-    stan_klikaczy: CheckerDoZbiorowePrzetwarzanieZdjęć,
+    // stan_klikaczy: &CheckerDoZbiorowePrzetwarzanieZdjęć,
     czy_jest_proces_zaczety: bool,
     log: LogPrzetwarzanieFot,
-    main_process_check: bool,
-) -> Element<'_, Message> {
-    let czy_sie_nada_na_wyslanie = (stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_16
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_32
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_64
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_128
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_256
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_512
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_1k
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_2k
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_4k
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_6k
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_8k
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_16k
-        || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_org)
-        && (dane.ścieżka_wejściowa.is_file() || dane.ścieżka_wejściowa.is_dir())
-        && dane.ścieżka_wyjściowa.is_dir()
-        && (stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany
-            && (stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany_rgb || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany_bw)
-            || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrany
-                && (stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_8bit
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_16bit
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_8bita
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_16bita
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_l8bit
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_l8bita
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_l16bit
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_l16bita)
-            || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany
-                && (stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_szary
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_16b
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_24b
-                    || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_32b)
-            || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany
-                && (stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany_rgb || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany_alpha)
-            || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany
-            || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany
-                && (stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany_24b || stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany_32b));
+    main_process_check: &CheckActiveProcess,
+    rodzaj_sciezki_wejsciowj: &FolderCzyPlik,
+) -> Element<'a, Message> {
+    let czy_sie_nada_na_wyslanie =
+        *main_process_check == CheckActiveProcess::ProcessŻodyn &&
+            (dane.ścieżka_wejściowa.is_dir() || dane.ścieżka_wejściowa.is_file()) &&
+            dane.ścieżka_wyjściowa.is_dir() &&
+            dane.opcje_rozdzielczości.len() > 0 &&
+            dane.rozszerzenia_plików_zdjęciowych.len() > 0;
 
     let opcje_interpolacja: Vec<String> = OptInterpolacja::WSIOINTERPOLACJI
         .iter()
         .map(|p| jezyk.t(p.klucz()).to_string())
         .collect();
 
-    let menu_ścieżki = Column::new()
+    let menu_ścieżki =
+        Column::new()
         .push(
             Row::new()
-                .push(match wejście_check.0 {
-                    true => button("📄")
+                .push(match rodzaj_sciezki_wejsciowj {
+                    FolderCzyPlik::Puste | FolderCzyPlik::Folder => button("📄")
                         .padding(10)
-                        .on_press(Message::WybierzPlikInFotoEdycjaPakowanie)
+                        .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzPlikInFotoEdycjaPakowanie))
                         .style(styl_przycisków(
                             false,
                             wejście_check.1,
                             KOLOR_SPANISH_ORANGE,
                         )),
-                    false => button("🖼️")
+                    FolderCzyPlik::Plik => button("🖼️")
                         .padding(10)
-                        .on_press(Message::WybierzPlikInFotoEdycjaPakowanie)
+                        .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzPlikInFotoEdycjaPakowanie))
                         .style(styl_przycisków(
                             false,
                             wejście_check.1,
@@ -113,12 +87,12 @@ pub fn view_foto_change(
                         )),
                 })
                 .push(space().width(Length::Fixed(15.)))
-                .push(match wejście_check.1 {
-                    true => button(folder_icon(false, 2, KOLOR_SPANISH_ORANGE))
+                .push(match rodzaj_sciezki_wejsciowj {
+                    FolderCzyPlik::Puste => button(folder_icon(false, 2, KOLOR_SPANISH_ORANGE))
                         .padding(10)
                         .on_press(Message::WybierzFolderInFotoEdycjaPakowanie)
                         .style(styl_przycisków(false, false, KOLOR_SPANISH_ORANGE)),
-                    false => button(folder_icon(
+                    FolderCzyPlik::Folder | FolderCzyPlik::Plik => button(folder_icon(
                         true,
                         if dane.ścieżka_wejściowa.to_string_lossy().is_empty() {
                             0
@@ -128,7 +102,7 @@ pub fn view_foto_change(
                         KOLOR_SPANISH_ORANGE,
                     ))
                     .padding(10)
-                    .on_press(Message::WybierzFolderInFotoEdycjaPakowanie)
+                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderInFotoEdycjaPakowanie))
                     .style(styl_przycisków(
                         false,
                         false,
@@ -234,7 +208,6 @@ pub fn view_foto_change(
             Row::new()
                 .push(
                     Column::new()
-                        // Slider dla R (indeks 0)
                         .push(
                             Row::new()
                                 .push(
@@ -429,19 +402,19 @@ pub fn view_foto_change(
         .push(scrollable(
             Column::new()
                 .push(ui_standard_oddzielacz())
-                .push(podmenu_jpg_wybor_top(&dane, &stan_klikaczy, &jezyk))
+                .push(podmenu_jpg_wybor_top(&dane, &jezyk))
                 .push(ui_standard_oddzielacz())
-                .push(podmenu_png_wybor(&dane, &stan_klikaczy, &jezyk))
+                .push(podmenu_png_wybor(&dane,  &jezyk))
                 .push(ui_standard_oddzielacz())
-                .push(podmenu_webp_wybor(&dane, &stan_klikaczy, &jezyk))
+                .push(podmenu_webp_wybor(&dane,  &jezyk))
                 .push(ui_standard_oddzielacz())
-                .push(podmenu_tga_wybor(&stan_klikaczy, &jezyk))
+                .push(podmenu_tga_wybor(&dane, &jezyk))
                 .push(ui_standard_oddzielacz())
-                .push(podmenu_ff_wybor(&dane, &stan_klikaczy, &jezyk))
+                .push(podmenu_ff_wybor(&dane, &jezyk))
                 .push(ui_standard_oddzielacz())
-                .push(podmenu_qoi_wybor( &stan_klikaczy, &jezyk))
+                .push(podmenu_qoi_wybor( &dane, &jezyk))
                 .push(ui_standard_oddzielacz())
-                .push(Row::new().push(text("WIP")))
+                // .push(Row::new().push(text("WIP")))
                 .spacing(15) //oesu ale to długie... a tyle krwi napsuło...
                 .padding(15)
                 .width(Length::FillPortion(2)),
@@ -452,240 +425,31 @@ pub fn view_foto_change(
 
     let menu_rozdzielczosci = Column::new()
         .push(scrollable(
-            Grid::new()
+            Column::new()
                 .push(
-                    button(
-                        text("16px")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R16,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_16,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
+                    Row::new()
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R16, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R32, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R64, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R128, jezyk.get_font())).spacing(10)
                 )
                 .push(
-                    button(
-                        text("32px")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R32,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_32,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
+                    Row::new()
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R256, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R512, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R1k, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R2k, jezyk.get_font())).spacing(10)
                 )
                 .push(
-                    button(
-                        text("64px")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R64,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_64,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
+                    Row::new()
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R4k, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R6k, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R8k, jezyk.get_font()))
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::R16k, jezyk.get_font())).spacing(10)
                 )
                 .push(
-                    button(
-                        text("128px")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R128,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_128,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text("256px")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R256,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_256,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text("512px")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R512,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_512,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text("1kpx")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R1k,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_1k,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text("2kpx")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R2k,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_2k,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text("4kpx")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R4k,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_4k,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text("6kpx")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R6k,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_6k,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text("8kpx")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R8k,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_8k,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text("16kpx")
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::R16k,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_16k,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
-                )
-                .push(
-                    button(
-                        text(jezyk.t("foto_edit_resolution_oryginal"))
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .font(jezyk.get_font())
-                            .center(),
-                    )
-                    .on_press(Message::DopasujRozdzielczosci(
-                        OptRozdzielczościObrazów::Oryginalna,
-                    ))
-                    .style(styl_przycisków(
-                        false,
-                        stan_klikaczy.zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_org,
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10),
+                    Row::new()
+                        .push(btn_rozdzielczosci(dane, OptRozdzielczościObrazów::Oryginalna, jezyk.get_font())).spacing(10)
                 )
                 .spacing(10),
         ))
@@ -731,16 +495,16 @@ pub fn view_foto_change(
         // Przycisk Ścieżki
         .push(podmenu_lewe_wybor(wybrane_okno, &jezyk))
         .push(space().height(Length::Fixed(50.)))
-        .push(podmenu_jpg_misc(&dane, &stan_klikaczy))
-        .push(podmenu_png_misc(&dane, &stan_klikaczy))
-        .push(podmenu_webp_misc(&dane, &stan_klikaczy))
-        .push(podmenu_tga_misc( &stan_klikaczy))
-        .push(podmenu_ff_misc(&stan_klikaczy))
-        .push(podmenu_qoi_misc(&stan_klikaczy))
-        .push(podmenu_lewe_rozdzielczosci(&stan_klikaczy))
+        .push(podmenu_jpg_misc(&dane))
+        .push(podmenu_png_misc(&dane))
+        .push(podmenu_webp_misc(&dane))
+        .push(podmenu_tga_misc( &dane))
+        .push(podmenu_ff_misc(&dane))
+        .push(podmenu_qoi_misc(&dane))
+        .push(podmenu_lewe_rozdzielczosci(&dane))
         .push(space().height(Length::Fixed(10.)))
         .push(
-            if czy_sie_nada_na_wyslanie && !czy_jest_proces_zaczety && !main_process_check {
+            if czy_sie_nada_na_wyslanie  {
                 button(
                     text(jezyk.t("process_btn_start"))
                         .font(jezyk.get_font())
@@ -754,9 +518,9 @@ pub fn view_foto_change(
                 .style(styl_przycisków(false, false, KOLOR_SPANISH_ORANGE))
             } else {
                 button(
-                    text(if czy_jest_proces_zaczety {
+                    text(if *main_process_check == CheckActiveProcess::ProcessKonwersjaZdjęć {
                         jezyk.t("btn_bussy_processing")
-                    } else if main_process_check {
+                    } else if *main_process_check != CheckActiveProcess::ProcessŻodyn {
                         jezyk.t("btn_bussy_processing_other")
                     } else {
                         jezyk.t("btn_gib_data")
