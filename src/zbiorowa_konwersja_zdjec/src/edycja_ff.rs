@@ -1,6 +1,4 @@
-use crate::pomocnicze::usun_kanal_alpha;
 use crate::wczytanie_zdjec::aktualizuj_postep;
-use crate::zmiana_fot::zaszumianie;
 use bzip2::Compression;
 use bzip2::write::BzEncoder;
 use enumy::opcje::{OptInterpolacja, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów};
@@ -16,6 +14,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use xz2::write::XzEncoder;
+use encodery::halper::{usun_kanal_alpha, zaszumianie};
 
 pub async fn edycja_ff(
     mut bufor: DynamicImage,

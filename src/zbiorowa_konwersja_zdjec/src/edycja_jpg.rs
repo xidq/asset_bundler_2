@@ -1,6 +1,4 @@
-use crate::pomocnicze::usun_kanal_alpha;
 use crate::wczytanie_zdjec::aktualizuj_postep;
-use crate::zmiana_fot::zaszumianie;
 use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptInterpolacja, OptRozdzielczościObrazów};
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 use futures::SinkExt;
@@ -13,6 +11,7 @@ use std::fs::{File, create_dir, create_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use encodery::halper::{usun_kanal_alpha, zaszumianie};
 
 pub async fn edycja_jpg(
     mut bufor: DynamicImage,
@@ -21,7 +20,7 @@ pub async fn edycja_jpg(
     ścieżka_dopełniająca: &String,
     OptInterpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
-    exif_data: &Option<Vec<u8>>,
+    // exif_data: &Option<Vec<u8>>,
     jakość: &u8,
     progresywny: &bool,
     bit_depth: &Vec<OptFormatyKoloruObrazOgólny>,
@@ -162,11 +161,11 @@ pub async fn edycja_jpg(
             let mut encoder =
                 image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output_file, *jakość);
 
-            if let Some(data) = exif_data {
-                // Używamy metody z traitu ImageEncoder
-                // Ważne: musisz mieć 'use image::ImageEncoder;' na górze pliku!
-                let _ = encoder.set_exif_metadata(data.clone());
-            }
+            // if let Some(data) = exif_data {
+            //     // Używamy metody z traitu ImageEncoder
+            //     // Ważne: musisz mieć 'use image::ImageEncoder;' na górze pliku!
+            //     let _ = encoder.set_exif_metadata(data.clone());
+            // }
 
             // encoder.encode_image(&final_finalv3_temp_final_ostatecznyv5).map_err(std::io::Error::other)?;
             let width = final_finalv3_temp_final_ostatecznyv5.width();

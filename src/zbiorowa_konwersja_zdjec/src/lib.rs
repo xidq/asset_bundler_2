@@ -1,6 +1,6 @@
-use std::sync::{Arc, mpsc};
-use std::time::Instant;
-// use crate::zmiana_fot::{DaneDoBathKonwersjaZdjec, LogTxDoBathKonwersjaZdjęć, rozszerzenia_plików_zdjęciowych};
+
+
+
 
 mod edycja_ff;
 mod edycja_jpg;
@@ -11,3 +11,6 @@ mod edycja_webp;
 pub mod pomocnicze;
 mod wczytanie_zdjec;
 pub mod zmiana_fot;
+pub mod edycja_avif;
+
+

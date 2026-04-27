@@ -11,15 +11,15 @@ printf "\033c"
 echo "Zbudowano wersję release"
 echo "wersja $STARA_WERSJA -> $NOWA_WERSJA"
 mkdir -p export/temp
-mv target/release/app export/temp
+mv target/release/Asset-bundler-2 export/temp
 cargo clean
 cargo build
 printf "\033c"
-cp export/temp/app export/temp/app_kompresja
+cp export/temp/Asset-bundler-2 export/temp/Asset-bundler-2_kompresja
 echo "przeniesiono app do export/temp"
-upx --best --lzma export/temp/app_kompresja
+upx --best --lzma export/temp/Asset-bundler-2_kompresja
 #echo "skompresowano"
-mv export/temp/app_kompresja export/release/${NAZWA_PLIKU}
+mv export/temp/Asset-bundler-2_kompresja export/release/${NAZWA_PLIKU}
 
 echo "przeniesione do export/release"
 
@@ -38,7 +38,7 @@ export VERSION=$NOWA_WERSJA
 # --i: ścieżka do ikony (np. app-icon.png)
 # --d: ścieżka do pliku .desktop
 ./linuxdeploy-x86_64.AppImage --appdir AppDir \
-    --executable "export/temp/app" \
+    --executable "export/temp/Asset-bundler-2" \
     --icon-file "export/resources/align-justify.png" \
     --icon-filename "app-icon" \
     --desktop-file "app.desktop" \

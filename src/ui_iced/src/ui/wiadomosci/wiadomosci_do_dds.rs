@@ -169,6 +169,7 @@ impl Program {
                         self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
                             OptRozszerzeniaPlikówZdjęciowych::Qoi{ bit_depth }
                     }
+                    OptRozszerzeniaPlikówZdjęciowych::Avif { .. } => {}
                 };
             }
             _ => {}

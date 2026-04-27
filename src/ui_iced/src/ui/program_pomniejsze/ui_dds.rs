@@ -986,6 +986,7 @@ pub fn view_dds<'a>(
                                     .push(space().height(Length::Fixed(50.)))
                             ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
                         }
+                        OptRozszerzeniaPlikówZdjęciowych::Avif { .. } => {container(Column::new())}
                     }
                 )
         )

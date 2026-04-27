@@ -10,7 +10,7 @@ members = [
     "src/laczenie_plikow",
     "src/enumy",
     "src/pass",
-    "src/dds_ops",
+    "src/dds_ops", "src/encodery", "tests",
 ]
 
 
@@ -29,6 +29,7 @@ serde = { version = "1.0.228", features = ["derive"] }
 tokio = { version = "1.52.1", features = ["full"] }
 zstd = "0.13.3"
 image = { version = "0.25.10", features = ["tga","qoi"] }
+libavif = "0.14.0"
 rand = "0.10.1"
 walkdir = "2.5.0"
 webp = "0.3.1"
@@ -42,3 +43,7 @@ bzip2 = "0.6.1"
 kamadak-exif = "0.6.1"
 dds = "0.2.0"
 strum = { version = "0.28.0", features = ["derive"] }
+#ravif = "0.13.0"
+#v_frame = "0.5.2"
+#rav1e = { version = "0.8.1", default-features = false }
+libheif-rs = { version = "2.7.0", features = ["embedded-libheif"] }

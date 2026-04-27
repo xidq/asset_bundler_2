@@ -6,3 +6,4 @@ pub mod ui_podmenu_qoi;
 pub mod ui_podmenu_tga;
 pub mod ui_podmenu_webp;
 pub mod inne;
+pub mod ui_podmenu_avif;

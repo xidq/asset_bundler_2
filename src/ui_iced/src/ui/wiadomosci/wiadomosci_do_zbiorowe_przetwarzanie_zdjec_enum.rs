@@ -1,4 +1,4 @@
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 
 #[derive(Debug,Clone)]
@@ -10,7 +10,13 @@ pub enum ZbiorowePrzetwarzanieZdjęćMessage{
     ZdjeciaEdycjaZmianaKolorAlpha(u8, u16),
     DopasujRozdzielczosci(OptRozdzielczościObrazów),
     ZdjeciaEdycjaZmianaBitDepthTga(OptFormatyKoloruObrazuTga),
+    ZdjeciaEdycjaZmianaBitDepthAvif(OptFormatyKoloruObrazuAvif),
+    ZdjeciaEdycjaZmianaAvifSpeed(i32),
     ZdjeciaEdycjaZmianaLosslessWebp,
+    ZdjeciaEdycjaZmianaAvifToggleLossy,
+    ZdjeciaEdycjaZmianaAvifLossy(u8),
+    ZdjeciaEdycjaZmianaAvifKompresja(AvifMetodaKompresji),
+    ZdjeciaEdycjaZmianaAvifChroma(AvifChroma),
     ZdjeciaEdycjaZmianaJakosciWebp(u8),
     ZdjeciaEdycjaZmianaKompresjaFF(OptMetodaKompresjiZdjecia),
     ZdjeciaEdycjaZmianaKompresjaWartoscFF(u8),

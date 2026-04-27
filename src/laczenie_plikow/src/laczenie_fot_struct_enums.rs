@@ -5,18 +5,21 @@ use crate::metody_mielenia::laczenie_qoi::laczenie_qoi;
 use crate::metody_mielenia::laczenie_tga::laczenie_tga;
 use crate::metody_mielenia::laczenie_webp::laczenie_webp;
 use enumy::dane_do_przetwarzania::DaneDoŁączeniaZdjęć;
-use enumy::opcje::{OptRozszerzeniaPlikówZdjęciowychPojedyncze};
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptRozszerzeniaPlikówZdjęciowychPojedyncze};
 use futures::SinkExt;
 use futures::channel::mpsc;
 use image::DynamicImage;
-use zbiorowa_konwersja_zdjec::zmiana_fot::wczytaj_zdjęcie;
-use std::path::PathBuf;
+use encodery::wczytaj_foto::wczytaj_zdjęcie;
 pub use enumy::statusy::LogTxDoŁączeniaZdjęć;
+use crate::metody_mielenia::laczenie::{laczenie_vac_to_dyn, ogarnij_sciezki_w_koncu};
+use crate::metody_mielenia::laczenie_avif::laczenie_avif;
 
 pub async fn fn_do_laczenia_fot(
     dane: DaneDoŁączeniaZdjęć,
     mut tx: mpsc::Sender<LogTxDoŁączeniaZdjęć>,
 ) -> Result<(), tokio::io::Error> {
+    
+    let kolor_alfa=(0_u16,0_u16,0_u16);
     let _ = tx.send(LogTxDoŁączeniaZdjęć::Start).await;
 
     let start_czas = std::time::Instant::now();
@@ -34,7 +37,7 @@ pub async fn fn_do_laczenia_fot(
     // --- ETAP 1: SZUKAMY MAKSYMALNYCH WYMIARÓW ---
     for (i, opt_p) in sciezki.iter().enumerate() {
         if let Some(p) = opt_p {
-            let (img, _, _) = wczytaj_zdjęcie(p.clone())?;
+            let (img, _) = wczytaj_zdjęcie(p.clone())?;
             if img.width() > max_x {
                 max_x = img.width();
             }
@@ -196,6 +199,25 @@ pub async fn fn_do_laczenia_fot(
                 wymiar,
             )
             .await
+        }
+
+        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Avif { 
+            chroma, 
+            speed, 
+            metoda_kompresji, 
+            lossy, 
+            bit_depth 
+        } => {
+            let wrzód  =match bit_depth{
+                OptFormatyKoloruObrazuAvif::B8 => {OptFormatyKoloruObrazOgólny::B8}
+                OptFormatyKoloruObrazuAvif::B8a => {OptFormatyKoloruObrazOgólny::B8a}
+                OptFormatyKoloruObrazuAvif::B10 => {OptFormatyKoloruObrazOgólny::B16}
+                OptFormatyKoloruObrazuAvif::B10a => {OptFormatyKoloruObrazOgólny::B16a}
+            };
+            let obrazeczek = laczenie_vac_to_dyn(obrazki, &wrzód, wymiar).await?;
+            let sciezka_vinal_final_chyba_v1 = ogarnij_sciezki_w_koncu(dane.sciezka_out, dane.nazwa).await?;
+            laczenie_avif(obrazeczek, &sciezka_vinal_final_chyba_v1 , lossy, bit_depth, None, metoda_kompresji, speed, chroma)
+                .await
         }
     };
 

@@ -13,3 +13,5 @@ bzip2 = { workspace = true }
 xz2 = { workspace = true }
 webp = { workspace = true }
 zstd = { workspace = true }
+encodery = { path = "../encodery" }
+libheif-rs = "2.7.0"

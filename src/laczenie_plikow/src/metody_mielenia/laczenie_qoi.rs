@@ -1,9 +1,9 @@
 use enumy::opcje::OptFormatyKoloruObrazuQoi;
 use image::ImageEncoder;
 use image::{DynamicImage, GenericImageView};
-use zbiorowa_konwersja_zdjec::pomocnicze::usun_kanal_alpha;
 use std::fs::{File, create_dir_all};
 use std::path::Path;
+use encodery::halper::usun_kanal_alpha;
 
 pub async fn laczenie_qoi(
     mut bufor: Vec<DynamicImage>,

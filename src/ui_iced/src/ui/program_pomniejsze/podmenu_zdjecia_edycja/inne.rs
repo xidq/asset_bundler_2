@@ -2,7 +2,7 @@ use iced::Element;
 use iced::widget::{button, text};
 use iced_core::{Color, Length};
 use enumy::dane_do_przetwarzania::{DaneDoBathKonwersjaZdjec, DaneDoŁączeniaZdjęć};
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use crate::ui::program_pomniejsze::kolory::{KOLOR_PEACH_PUFF, WYSOKOSC_CZCIONEK_PRZYCISKI,KOLOR_SPANISH_ORANGE};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::ui_zdjecia_edycja::ROZMIARWYBRANYCHROZSZERZEN;
@@ -19,6 +19,7 @@ pub fn btn_zbiorowe_rozszerzenia<'a>(lell:OptRozszerzeniaPlikówZdjęciowychZnac
         OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga => "Tga",
         OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff => "FF",
         OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi => "Qoi",
+        OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif => "Avif",
     };
     button(
         text(
@@ -70,6 +71,39 @@ pub fn btn_zbiorowe_kolor_ogolny<'a>(rozs: OptRozszerzeniaPlikówZdjęciowychZna
             .center(),
     )
         .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjecieEdycjaZmianaWybraneToggleKolor(rozs,lell.clone()),
+        ))
+        .style(styl_przycisków(
+            false,
+            czy_wybrany, //jeżeli istnieje rozszerzenie, a w nim dany wariant koloru to true
+            KOLOR_SPANISH_ORANGE,
+        )).into()
+}
+pub fn btn_zbiorowe_kolor_avif<'a>(rozs: OptRozszerzeniaPlikówZdjęciowychZnacznik,lell:OptFormatyKoloruObrazuAvif, co_istnieje:&DaneDoBathKonwersjaZdjec, font:iced::Font) -> Element<'a, Message>{
+    // OptRozszerzeniaPlikówZdjęciowychZnacznik zawiera tylko enumy z mozliwymi rozszerzeniami, OptRozszerzeniaPlikówZdjęciowych który jest w co_istnieje zawiera enumy z polami i vec dla OptFormatyKoloruObrazOgólny
+    let nazwa = match lell {
+        OptFormatyKoloruObrazuAvif::B8 => {"8bit"}
+        OptFormatyKoloruObrazuAvif::B8a => {"8abit"}
+        OptFormatyKoloruObrazuAvif::B10 => {"10bit"}
+        OptFormatyKoloruObrazuAvif::B10a => {"10abit"}
+    };
+    let czy_wybrany = co_istnieje.rozszerzenia_plików_zdjęciowych.iter().any(|format| {
+        match (format, &rozs) {
+
+            (OptRozszerzeniaPlikówZdjęciowych::Avif { bit_depth, .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif) => bit_depth.contains(&lell),
+            // TGA i QOI mają własne enumy kolorów, więc tutaj pewnie nie będą trafiać,
+            _ => false,
+        }
+    });
+    button(
+        text(
+            nazwa)
+            .color(Color::from_rgba(1., 1., 1., 0.6))
+            .font(font)
+            .height(WYSOKOSC_CZCIONEK_PRZYCISKI)
+            .width(Length::Fill)
+            .center(),
+    )
+        .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaBitDepthAvif(lell.clone()),
         ))
         .style(styl_przycisków(
             false,

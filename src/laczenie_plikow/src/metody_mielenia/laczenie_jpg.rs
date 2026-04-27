@@ -1,8 +1,8 @@
 use enumy::opcje::OptFormatyKoloruObrazOgólny;
 use image::{DynamicImage, ImageEncoder};
-use zbiorowa_konwersja_zdjec::pomocnicze::usun_kanal_alpha;
 use std::fs::{File, create_dir_all};
 use std::path::Path;
+use encodery::halper::usun_kanal_alpha;
 
 pub async fn laczenie_jpg(
     mut bufor: Vec<DynamicImage>,

@@ -875,7 +875,10 @@ fn btn_zmiany_rozszerzenia<'a>(lell:OptRozszerzeniaPlikówZdjęciowychZnacznik, 
         ),
         OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi=> ("Qoi",
             OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi
-        )
+        ),
+        OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif => ("Avif",
+            OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif)
+        
     };
     button(
         text(

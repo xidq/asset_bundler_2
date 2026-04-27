@@ -4,19 +4,21 @@ version = "0.6.4"
 edition = "2024"
 
 [dependencies]
-iced = "0.14.0"
 tokio = { workspace = true }
 zstd = { workspace = true }
 futures = { workspace = true }
-sys-locale = "0.3.2"
-rfd = "0.17.2"
-chrono = "0.4.44"
 image = { workspace = true }
 walkdir = { workspace = true }
-iced_core = "0.14.0"
 rand = { workspace = true }
 webp = { workspace = true }
 rayon = { workspace = true }
 enumy = { path = "../enumy" }
 bzip2 = { workspace = true }
 xz2 = { workspace = true }
+#libavif = { workspace = true }
+#ravif = { workspace = true }
+#v_frame = { workspace = true }
+#rav1e = { workspace = true }
+libheif-rs = { workspace = true }
+iced = { workspace = true }
+encodery = { path = "../encodery" }

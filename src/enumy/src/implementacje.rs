@@ -1,7 +1,4 @@
-use crate::opcje::{
-    OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd,
-    OptMetodaKompresjiZdjecia,
-};
+use crate::opcje::{AvifChroma, AvifMetodaKompresji, OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia};
 use std::fmt;
 
 impl OptKompresjaPlikówPoziomKompresjiZstd {
@@ -35,6 +32,7 @@ impl OptKompresjaPlikówFiltracjaPlików {
         }
     }
 }
+
 impl fmt::Display for OptMetodaKompresjiZdjecia {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -42,6 +40,31 @@ impl fmt::Display for OptMetodaKompresjiZdjecia {
             OptMetodaKompresjiZdjecia::Bzip2(_) => write!(f, "Bzip2"),
             OptMetodaKompresjiZdjecia::Xz(_) => write!(f, "Xz"),
             OptMetodaKompresjiZdjecia::Brak => write!(f, "Brak"),
+        }
+    }
+}impl fmt::Display for AvifChroma {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AvifChroma::C444 => write!(f, "4:4:4"),
+            AvifChroma::C422 => write!(f, "4:2:2"),
+            AvifChroma::C420 => write!(f, "4:2:0"),
+        }
+    }
+}
+impl fmt::Display for AvifMetodaKompresji {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            AvifMetodaKompresji::Undefined => write!(f, "Undefined"),
+            AvifMetodaKompresji::Hevc => write!(f, "Hevc"),
+            AvifMetodaKompresji::Avc => write!(f, "Avc"),
+            AvifMetodaKompresji::Jpeg => write!(f, "Jpeg"),
+            AvifMetodaKompresji::Av1 => write!(f, "Av1"),
+            AvifMetodaKompresji::Vvc => write!(f, "Vvc"),
+            AvifMetodaKompresji::Evc => write!(f, "Evc"),
+            AvifMetodaKompresji::Jpeg2000 => write!(f, "Jpeg2000"),
+            AvifMetodaKompresji::Uncompressed => write!(f, "Uncompressed"),
+            AvifMetodaKompresji::Mask => write!(f, "Mask"),
+            AvifMetodaKompresji::HtJ2k => write!(f, "HtJ2k"),
         }
     }
 }

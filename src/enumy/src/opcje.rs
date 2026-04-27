@@ -107,6 +107,13 @@ pub enum OptRozszerzeniaPlikówZdjęciowych {
     Qoi {
         bit_depth: Vec<OptFormatyKoloruObrazuQoi>,
     },
+    Avif{
+        chroma:AvifChroma,
+        speed:i32,
+        metoda_kompresji:AvifMetodaKompresji,
+        lossy:Option<u8>,
+        bit_depth: Vec<OptFormatyKoloruObrazuAvif>,
+    }
 }
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
@@ -134,6 +141,36 @@ pub enum OptRozszerzeniaPlikówZdjęciowychPojedyncze {
     Qoi {
         bit_depth: OptFormatyKoloruObrazuQoi,
     },
+    Avif{
+        chroma:AvifChroma,
+        speed:i32,
+        metoda_kompresji:AvifMetodaKompresji,
+        lossy:Option<u8>,
+        bit_depth: OptFormatyKoloruObrazuAvif,
+    }
+}
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq)]
+pub enum AvifChroma{
+    C444,
+    C422,
+    C420,
+
+}
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq)]
+pub enum AvifMetodaKompresji {
+    Undefined,
+    Hevc,
+    Avc,
+    Jpeg,
+    Av1, //default
+    Vvc,
+    Evc,
+    Jpeg2000,
+    Uncompressed,
+    Mask,
+    HtJ2k,
 }
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
@@ -143,7 +180,8 @@ pub enum OptRozszerzeniaPlikówZdjęciowychZnacznik{
     Webp,
     Tga,
     Ff,
-    Qoi
+    Qoi,
+    Avif
 }
 
 #[allow(dead_code)]
@@ -167,6 +205,16 @@ pub enum OptFormatyKoloruObrazOgólny {
     B16a,
     B32,
     B32a,
+}
+#[allow(dead_code)]
+#[derive(Debug, Copy, Clone, PartialEq)]
+pub enum OptFormatyKoloruObrazuAvif {
+    B8,
+    B8a,
+    B10,
+    B10a,
+    // B12,
+    // B12a,
 }
 #[allow(dead_code)]
 #[derive(Debug, Copy, Clone, PartialEq)]

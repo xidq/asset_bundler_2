@@ -3,7 +3,7 @@ use futures::channel::mpsc;
 use iced::Task;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::CheckActiveProcess;
-use enumy::opcje::{FolderCzyPlik, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, FolderCzyPlik, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
 use crate::ui::program::Program;
@@ -223,6 +223,85 @@ impl Program {
                     }
                 }
             }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaBitDepthAvif(fdvcx) => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { bit_depth, .. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut()
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                {
+                    // 2. Szukamy, czy ten konkretny bit_depth już jest w wektorze TGA
+                    let pozycja = bit_depth.iter().position(|x| *x == fdvcx);
+
+                    match pozycja {
+                        // Jeśli jest – usuwamy go (odznaczamy)
+                        Some(index) => {
+                            bit_depth.remove(index);
+                        }
+                        // Jeśli go nie ma – dodajemy go (zaznaczamy)
+                        None => {
+                            bit_depth.push(fdvcx);
+                        }
+                    }
+                }
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifSpeed(das) => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { speed, .. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut() // Tworzymy mutowalny iterator
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                {
+                    *speed = das; // Jeśli znaleziono, aktualizujemy wartość
+                }
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifToggleLossy => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut()
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                {
+                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
+
+                    if lossy.is_some(){
+                        *lossy = None;
+                    }else{
+                        *lossy = Some(90);
+                    }
+                }
+
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifLossy(das) => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut() // Tworzymy mutowalny iterator
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                {
+                    *lossy = Some(das); // Jeśli znaleziono, aktualizujemy wartość
+                }
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifKompresja(metoda) => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { metoda_kompresji,.. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut() // Tworzymy mutowalny iterator
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                {
+                    *metoda_kompresji = metoda;
+                }
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifChroma(chromchrom) => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { chroma,.. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut() // Tworzymy mutowalny iterator
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                {
+                    *chroma = chromchrom;
+                }
+            }
             ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaZaszumiania(procent) => {
                 self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.noising =
                     if procent == 0u8 { None } else { Some(procent) };
@@ -294,6 +373,7 @@ impl Program {
                         (OptRozszerzeniaPlikówZdjęciowych::Tga { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga) => true,
                         (OptRozszerzeniaPlikówZdjęciowych::Ff { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff) => true,
                         (OptRozszerzeniaPlikówZdjęciowych::Qoi { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi) => true,
+                        (OptRozszerzeniaPlikówZdjęciowych::Avif { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif) => true,
                         _ => false
                     });
                 if let Some(idx) = pozycja_tag {
@@ -328,6 +408,13 @@ impl Program {
                         OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi => (OptRozszerzeniaPlikówZdjęciowych::Qoi{
                             bit_depth: Vec::from([OptFormatyKoloruObrazuQoi::Color24])
                         }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi),
+                        OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif => (OptRozszerzeniaPlikówZdjęciowych::Avif {
+                            chroma: AvifChroma::C420,
+                            speed: 3,
+                            metoda_kompresji: AvifMetodaKompresji::Av1,
+                            lossy: Some(90),
+                            bit_depth: Vec::from([OptFormatyKoloruObrazuAvif::B10])
+                        }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif)
                     };
                     self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.rozszerzenia_plików_zdjęciowych.push(nowy_format);
                     self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.tag.push(nowy_tag);

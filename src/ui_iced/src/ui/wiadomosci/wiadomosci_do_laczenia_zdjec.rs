@@ -3,7 +3,7 @@ use crate::ui::program::Program;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::CheckActiveProcess;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoŁączeniaZdjęć;
 use futures::channel::mpsc;
 use iced::Task;
@@ -140,6 +140,19 @@ impl Program {
                 OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi  => {
                     let piksidipsi = OptRozszerzeniaPlikówZdjęciowychPojedyncze::Qoi {
                         bit_depth: OptFormatyKoloruObrazuQoi::Color24,
+                    };
+                    if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
+                        self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;
+                        self.dane_temp_do_łączenia_zdjęć.tag = huehue;
+                    }
+                }
+                OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif => {
+                    let piksidipsi = OptRozszerzeniaPlikówZdjęciowychPojedyncze::Avif {
+                        chroma: AvifChroma::C420,
+                        speed: 0,
+                        metoda_kompresji: AvifMetodaKompresji::Av1,
+                        lossy: Some(90),
+                        bit_depth: OptFormatyKoloruObrazuAvif::B10,
                     };
                     if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
                         self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;

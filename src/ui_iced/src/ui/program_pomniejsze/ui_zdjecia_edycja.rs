@@ -32,6 +32,7 @@ use iced::{Border, Color, Element, Length};
 use enumy::inne_ui::{CheckActiveProcess, CheckerDoZbiorowePrzetwarzanieZdjęć};
 pub(crate) use enumy::inne_ui::WybraneOknoEdycjiZdjęć;
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::btn_rozdzielczosci;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::ui_podmenu_avif::podmenu_avif_wybor;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
@@ -193,7 +194,7 @@ pub fn view_foto_change<'a>(
                             Row::new()
                                 .push(
                                     slider(0..=65535, dane.alfa_rgb.0, |v| {
-                                        Message::ZdjeciaEdycjaZmianaKolorPng(0, v)
+                                        Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(2, v))
                                     })
                                     .style(
                                         move |_theme, _status| slider::Style {
@@ -239,7 +240,7 @@ pub fn view_foto_change<'a>(
                             Row::new()
                                 .push(
                                     slider(0..=65535, dane.alfa_rgb.1, |v| {
-                                        Message::ZdjeciaEdycjaZmianaKolorPng(1, v)
+                                        Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(2, v))
                                     })
                                     .style(
                                         move |_theme, _status| slider::Style {
@@ -286,7 +287,7 @@ pub fn view_foto_change<'a>(
                                 // Slider dla B (indeks 2)
                                 .push(
                                     slider(0..=65535, dane.alfa_rgb.2, |v| {
-                                        Message::ZdjeciaEdycjaZmianaKolorPng(2, v)
+                                        Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(2, v))
                                     })
                                     .style(
                                         move |_theme, _status| slider::Style {
@@ -382,6 +383,8 @@ pub fn view_foto_change<'a>(
         .width(Length::FillPortion(5))
         .push(scrollable(
             Column::new()
+                .push(ui_standard_oddzielacz())
+                .push(podmenu_avif_wybor(&dane, &jezyk))
                 .push(ui_standard_oddzielacz())
                 .push(podmenu_jpg_wybor_top(&dane, &jezyk))
                 .push(ui_standard_oddzielacz())

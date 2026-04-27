@@ -1,6 +1,4 @@
-use crate::pomocnicze::usun_kanal_alpha;
 use crate::wczytanie_zdjec::aktualizuj_postep;
-use crate::zmiana_fot::zaszumianie;
 use enumy::opcje::{OptFormatyKoloruObrazuQoi, OptInterpolacja, OptRozdzielczościObrazów};
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 use futures::SinkExt;
@@ -12,6 +10,7 @@ use std::fs::{File, create_dir_all};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use encodery::halper::{usun_kanal_alpha, zaszumianie};
 
 pub async fn edycja_qoi(
     bufor: DynamicImage,

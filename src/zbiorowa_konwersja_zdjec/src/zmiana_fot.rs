@@ -4,7 +4,6 @@ use crate::edycja_png::edycja_png;
 use crate::edycja_qoi::edycja_qoi;
 use crate::edycja_tga::edycja_tga;
 use crate::edycja_webp::edycja_webp;
-pub use crate::wczytanie_zdjec::wczytaj_zdjęcie;
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::opcje::OptRozszerzeniaPlikówZdjęciowych;
@@ -20,6 +19,8 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
+use encodery::wczytaj_foto::wczytaj_zdjęcie;
+use crate::edycja_avif::edycja_avif;
 use crate::pomocnicze::sprawdz_czy_wsio_ok;
 
 pub async fn ogarnianie_foto(
@@ -72,6 +73,9 @@ pub async fn ogarnianie_foto(
                 OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth } => {
                     suma_wariantow_bit_depth += bit_depth.len() as u32;
                 }
+                OptRozszerzeniaPlikówZdjęciowych::Avif { bit_depth,.. } => {
+                    suma_wariantow_bit_depth += bit_depth.len() as u32;
+                }
             }
         }
 
@@ -89,7 +93,7 @@ pub async fn ogarnianie_foto(
             ścieżki_do_zdjęć.par_iter().try_for_each(|p| {
                 // let (bufor, nazwa) = wczytaj_zdjęcie(p.0.clone())?;
 
-                let (bufor, nazwa,exif) = match wczytaj_zdjęcie(p.0.clone()) {
+                let (bufor, nazwa) = match wczytaj_zdjęcie(p.0.clone()) {
                     Ok(dane) => dane,
                     Err(e) => {
                         eprintln!("Pomijam uszkodzony plik {:?}: {}", p.0, e);
@@ -136,10 +140,7 @@ pub async fn ogarnianie_foto(
                     }
                 };
                 let cimcirimcim = false;
-                let exif_data = match cimcirimcim{
-                    true => {exif}
-                    false => {None}
-                };
+
 
 
                 for r in &wsio_dane.rozszerzenia_plików_zdjęciowych {
@@ -156,7 +157,6 @@ pub async fn ogarnianie_foto(
                                     &p.2, //ścieżka dopełniająca
                                     &wsio_dane.inter,
                                     &nazwa,
-                                    &exif_data,
                                     jakosc,
                                     progresywny,
                                     bit_depth,
@@ -255,6 +255,33 @@ pub async fn ogarnianie_foto(
                                     obecna_operacja.clone(),
                                     procent_progress.clone(),
                                     tx_zadanie,
+                                ).await?;
+                            }
+                            OptRozszerzeniaPlikówZdjęciowych::Avif {
+                                chroma,
+                                speed,
+                                metoda_kompresji,
+                                lossy,
+                                bit_depth
+                            } => {
+                                edycja_avif(
+                                    bufor.clone(),
+                                    &wsio_dane.opcje_rozdzielczości,
+                                    &wsio_dane.ścieżka_wyjściowa,
+                                    &p.2,
+                                    &wsio_dane.inter,
+                                    &nazwa,
+                                    lossy,
+                                    bit_depth,
+                                    None,
+                                    &wsio_dane.alfa_rgb,
+                                    metoda_kompresji,
+                                    *speed,
+                                    chroma,
+                                    metryka_operacji,
+                                    obecna_operacja.clone(),
+                                    procent_progress.clone(),
+                                    tx_zadanie
                                 ).await?;
                             }
                         }
@@ -393,125 +420,7 @@ fn zgarnij_dane_z_pliku(
     do_wyjscia
 }
 
-pub fn zaszumianie(noising: u8, mut bufor: DynamicImage) -> DynamicImage {
-    // let mut xoxo = bufor.clone();
-    let mut rng = rand::rng();
-    let (w, h) = bufor.dimensions();
-    let n_factor = noising as f64 / 100.0;
-    let bit_depth = bufor.color().bits_per_pixel() / bufor.color().channel_count() as u16;
 
-    let max_val: f64 = match bit_depth {
-        8 => 255.0,
-        16 => 65535.0,
-        32 => 1.0, // Dla obrazów HDR (f32)
-        _ => 255.0,
-    };
-
-    // 2. Obliczamy zakres szumu na podstawie % (noising)
-    // Jeśli noising = 100, to max_delta = max_val
-    let max_delta = (max_val * (noising as f64 / 100.0));
-
-    match bufor {
-        // --- OBSŁUGA 8-BIT ---
-        DynamicImage::ImageRgba8(mut img) => {
-            let max_val = 255.0;
-            let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                for i in 0..3 {
-                    // Tylko R, G, B
-                    let v = pixel.0[i] as f64;
-                    let delta = rng.random_range(-max_delta..=max_delta);
-                    pixel.0[i] = (v + delta).clamp(0.0, max_val) as u8;
-                }
-            }
-            DynamicImage::ImageRgba8(img)
-        }
-
-        // --- OBSŁUGA 16-BIT ---
-        DynamicImage::ImageRgba16(mut img) => {
-            let max_val = 65535.0;
-            let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                for i in 0..3 {
-                    let v = pixel.0[i] as f64;
-                    let delta = rng.random_range(-max_delta..=max_delta);
-                    pixel.0[i] = (v + delta).clamp(0.0, max_val) as u16;
-                }
-            }
-            DynamicImage::ImageRgba16(img)
-        }
-
-        // --- OBSŁUGA 32-BIT (F32) ---
-        DynamicImage::ImageRgba32F(mut img) => {
-            let max_val = 1.0;
-            let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                for i in 0..3 {
-                    let v = pixel.0[i] as f64;
-                    let delta = rng.random_range(-max_delta..=max_delta);
-                    pixel.0[i] = (v + delta).clamp(0.0, max_val) as f32;
-                }
-            }
-            DynamicImage::ImageRgba32F(img)
-        }
-
-        // Jeśli wpadnie format bez Alfy (RGB), traktujemy go tak samo
-        DynamicImage::ImageRgb8(mut img) => {
-            let max_val = 255.0;
-            let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                for i in 0..3 {
-                    let v = pixel.0[i] as f64;
-                    let delta = rng.random_range(-max_delta..=max_delta);
-                    pixel.0[i] = (v + delta).clamp(0.0, max_val) as u8;
-                }
-            }
-            DynamicImage::ImageRgb8(img)
-        }
-        DynamicImage::ImageLuma8(mut img) => {
-            let max_val = 255.0;
-            let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                let v = pixel.0[0] as f64;
-                let delta = rng.random_range(-max_delta..=max_delta);
-                pixel.0[0] = (v + delta).clamp(0.0, max_val) as u8;
-            }
-            DynamicImage::ImageLuma8(img)
-        }
-        DynamicImage::ImageLumaA8(mut img) => {
-            let max_val = 255.0;
-            let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                let v = pixel.0[0] as f64;
-                let delta = rng.random_range(-max_delta..=max_delta);
-                pixel.0[0] = (v + delta).clamp(0.0, max_val) as u8;
-            }
-            DynamicImage::ImageLumaA8(img)
-        }
-        DynamicImage::ImageLuma16(mut img) => {
-            let max_val = 65535.0;
-            let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                let v = pixel.0[0] as f64;
-                let delta = rng.random_range(-max_delta..=max_delta);
-                pixel.0[0] = (v + delta).clamp(0.0, max_val) as u16;
-            }
-            DynamicImage::ImageLuma16(img)
-        }
-        DynamicImage::ImageLumaA16(mut img) => {
-            let max_val = 65535.0;
-            let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                let v = pixel.0[0] as f64;
-                let delta = rng.random_range(-max_delta..=max_delta);
-                pixel.0[0] = (v + delta).clamp(0.0, max_val) as u16;
-            }
-            DynamicImage::ImageLumaA16(img)
-        }
-
-        _ => bufor, // Reszta formatów bez zmian
-    }
-}
 // fn losuj_i_wyrownaj(v: f64, rng: &mut impl Rng, max_delta: f64, max_val: f64) -> f64 {
 //
 //     let delta: f64 = rng.random_range(-max_delta..=max_delta);
