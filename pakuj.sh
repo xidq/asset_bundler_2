@@ -50,4 +50,4 @@ mv *.AppImage export/release
 
 rm -r export/temp
 
-shutdown
+shutdown + 15

@@ -76,6 +76,34 @@ pub fn podmenu_avif_wybor<'a>(
                             .padding(15)
                     )
                     .push(
+                        if lossy.is_some() {
+                            Row::new()
+                                .push(
+                                    slider(
+                                        0..=100,
+                                        lossy.unwrap_or(90),
+                                        |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifLossy(vv))
+                                    )
+                                        .height(20.)
+                                        .width(Length::FillPortion(6))
+                                        .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                )
+                                .push(
+                                    text(format!(
+                                        "Q: {}%",
+                                        lossy.unwrap_or(90)
+                                    ))
+                                        .color(KOLOR_CZCIONKI_SREDNI)
+                                        .font(jezyk.get_font()).width(Length::FillPortion(4)).height(Length::Fill).center(),
+                                )
+                                .padding(15).spacing(10).height(Length::Fixed(50.))
+                        }else{
+                            Row::new()
+                                .push(space().height(Length::Fixed(50.)))
+                        }
+
+                    )
+                    .push(
                         Row::new()
 
                         .push(
@@ -107,59 +135,30 @@ pub fn podmenu_avif_wybor<'a>(
                             )
                         )
                         .push(
-                            Row::new()
-                                .push(
-                                    tooltip(
-                                        button(
-                                            text("lossless.")
-                                                .font(jezyk.get_font())
-                                                .width(Length::Fill)
-                                                .height(Length::Fill)
-                                                .center(),
-                                        )
-                                            .padding(10)
-                                            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifToggleLossy))
-                                            .style(styl_przycisków(
-                                                false,
-                                                lossy.is_none(),
-                                                KOLOR_SPANISH_ORANGE,
-                                            ))
-                                            .width(Length::FillPortion(1)),
 
-                                        "Zapis progresywny on/off",
-                                        tooltip::Position::Top,
-                                    )
+                            tooltip(
+                                button(
+                                    text("lossless.")
+                                        .font(jezyk.get_font())
+                                        .width(Length::Fill)
+                                        .height(Length::Fill)
+                                        .center(),
                                 )
-                        )
-                    )
-                    .push(
-                        if lossy.is_some() {
-                            Row::new()
-                                .push(
-                                    slider(
-                                        0..=100,
-                                        lossy.unwrap_or(90),
-                                        |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifLossy(vv))
-                                    )
-                                        .height(20.)
-                                        .width(Length::FillPortion(6))
-                                        .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
-                                )
-                                    .push(
-                                        text(format!(
-                                            "Q: {}%",
-                                            lossy.unwrap_or(90)
-                                        ))
-                                            .color(KOLOR_CZCIONKI_SREDNI)
-                                            .font(jezyk.get_font()).width(Length::FillPortion(4)).height(Length::Fill).center(),
-                                    )
-                                    .padding(15)
-                        }else{
-                            Row::new()
-                            .push(space().height(Length::Fixed(50.)))
-                        }
+                                    .padding(10)
+                                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifToggleLossy))
+                                    .style(styl_przycisków(
+                                        false,
+                                        lossy.is_none(),
+                                        KOLOR_SPANISH_ORANGE,
+                                    ))
+                                    .width(Length::FillPortion(1)),
 
+                                "Zapis progresywny on/off",
+                                tooltip::Position::Top,
+                            )
+                        ).height(Length::Fixed(50.))
                     )
+
                     .push(
                         Row::new()
                             .push(
@@ -179,7 +178,7 @@ pub fn podmenu_avif_wybor<'a>(
                                     .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
                                     .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
                                     .width(Length::FillPortion(4))
-                            )
+                            ).padding(15)
                     )
                 ).height(200.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
             } else {
@@ -196,22 +195,22 @@ pub fn podmenu_avif_wybor<'a>(
         .width(Length::FillPortion(2))
 }
 
-pub fn podmenu_jpg_misc<'a>(
+pub fn podmenu_avif_misc<'a>(
     dane: &DaneDoBathKonwersjaZdjec,
 ) -> Row<'a, Message> {
-    let jpg_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
+    let avif_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
         matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. })
     });
     // 2. Pomocnicze sprawdzenie koloru
     let ma_kolor = |target_bit: OptFormatyKoloruObrazuAvif| {
-        if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { bit_depth, .. }) = jpg_data {
+        if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { bit_depth, .. }) = avif_data {
             bit_depth.contains(&target_bit)
         } else {
             false
         }
     };
     let prog_bool = || {
-        if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = jpg_data {
+        if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = avif_data {
             lossy.is_some() // zwracamy wartość bool
         } else {
             false
@@ -219,7 +218,7 @@ pub fn podmenu_jpg_misc<'a>(
     };
 
     // 3. Przygotowanie jakości
-    let jakosc_str = jpg_data
+    let jakosc_str = avif_data
         .and_then(|f| if let OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. } = f { Some(lossy.unwrap_or(0).to_string()) } else { None })
         .unwrap_or_else(|| "-".to_string());
 

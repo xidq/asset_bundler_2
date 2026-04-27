@@ -194,7 +194,7 @@ pub fn view_foto_change<'a>(
                             Row::new()
                                 .push(
                                     slider(0..=65535, dane.alfa_rgb.0, |v| {
-                                        Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(2, v))
+                                        Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(0, v))
                                     })
                                     .style(
                                         move |_theme, _status| slider::Style {
@@ -240,7 +240,7 @@ pub fn view_foto_change<'a>(
                             Row::new()
                                 .push(
                                     slider(0..=65535, dane.alfa_rgb.1, |v| {
-                                        Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(2, v))
+                                        Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(1, v))
                                     })
                                     .style(
                                         move |_theme, _status| slider::Style {
