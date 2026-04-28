@@ -52,7 +52,7 @@ pub async fn sprawdz_czy_wsio_ok(
 
     for format in &mut dane.rozszerzenia_plików_zdjęciowych {
         match format {
-            OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth } => {
+            OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans } => {
                 // 1. Korygowanie jakości (0-100)
                 if *jakosc > 100 { *jakosc = 100; }
                 if *jakosc == 0 { *jakosc = 1; }
@@ -85,6 +85,10 @@ pub async fn sprawdz_czy_wsio_ok(
                         format!("Niepoprawny format koloru dla JPG: {:?}", bit_depth)
                     ));
                 }
+
+                *scans = (*scans).clamp(2_u8,64_u8);
+
+                
                 let _ =wyslij_update_status("Sprawdzanie danych Jpg: Git!".to_string()).await.ok();
             }
 

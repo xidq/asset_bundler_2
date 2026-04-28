@@ -1,6 +1,6 @@
 use std::mem::discriminant;
 use crate::ui::program_pomniejsze::kolory::{
-    KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE, KOLOR_TŁA,
+    KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_TŁA,
     WYSOKOSC_CZCIONEK_PRZYCISKI,
 };
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
@@ -12,13 +12,16 @@ use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
 use enumy::dane_do_przetwarzania::DaneDoŁączeniaZdjęć;
 use enumy::ikony::folder_icon;
-use enumy::inne_ui::CheckActiveProcess;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::inne_ui::{CheckActiveProcess, RodzajeContainer};
+use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, container, scrollable, slider, space, text, text_input, Column, Row};
+use iced::widget::{button, container, pick_list, scrollable, slider, space, text, text_input, Column, Row};
 use iced::Element;
 use iced_core::{Color, Length};
 use std::path::PathBuf;
+use crate::ui::program_pomniejsze::style_fn::pick_lista::{styl_menu_pick, styl_pick_list};
+use crate::ui::program_pomniejsze::style_fn::scroll::styl_scrollable;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 pub fn view_laczenie<'a>(
     dane: &DaneDoŁączeniaZdjęć,
@@ -26,6 +29,29 @@ pub fn view_laczenie<'a>(
 
     main_process_check: &CheckActiveProcess,
 ) -> Element<'a, Message> {
+    let opcje_sampling = Vec::from([
+        JpgSamplingFac::R444,
+        JpgSamplingFac::R440,
+        JpgSamplingFac::R441,
+        JpgSamplingFac::R422,
+        JpgSamplingFac::R420,
+        JpgSamplingFac::R421,
+        JpgSamplingFac::R411,
+        JpgSamplingFac::R410,
+    ]);
+    let opcje_qua = Vec::from([
+        JpgQuant::Default,
+        JpgQuant::Flat,
+        JpgQuant::CustomMsSsim,
+        JpgQuant::CustomPsnrHvs,
+        JpgQuant::ImageMagick,
+        JpgQuant::KleinSilversteinCarney,
+        JpgQuant::DentalXRays,
+        JpgQuant::VisualDetectionModel,
+        JpgQuant::ImprovedDetectionModel,
+    ]);
+    
+    let tematyczny_kolor = KOLOR_PEACH_PUFF;
 
     
     let check_opcjonalne_ścieżki=
@@ -56,7 +82,7 @@ pub fn view_laczenie<'a>(
                     button(text("📄").width(Length::Fill).center())
                         .padding(10)
                         .on_press(Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieR))
-                        .style(styl_przycisków(false, false, KOLOR_PEACH_PUFF))
+                        .style(styl_przycisków(false, false, tematyczny_kolor))
                         .width(Length::FillPortion(2))
                         .height(Length::Fixed(40.)),
                 )
@@ -71,7 +97,7 @@ pub fn view_laczenie<'a>(
                         .padding(10)
                         .font(jezyk.get_font())
                         .on_input(|xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieRPathChanged(xx)))
-                        .style(styl_text_input(check_opcjonalne_ścieżki,KOLOR_PEACH_PUFF, KOLOR_TŁA))
+                        .style(styl_text_input(check_opcjonalne_ścieżki,tematyczny_kolor, KOLOR_TŁA))
                         .width(Length::Fill),
                     )
                     .height(Length::Fixed(40.))
@@ -97,7 +123,7 @@ pub fn view_laczenie<'a>(
                     button(text("📄").width(Length::Fill).center())
                         .padding(10)
                         .on_press(Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieG))
-                        .style(styl_przycisków(false, false, KOLOR_PEACH_PUFF))
+                        .style(styl_przycisków(false, false, tematyczny_kolor))
                         .width(Length::FillPortion(2))
                         .height(Length::Fixed(40.)),
                 )
@@ -112,7 +138,7 @@ pub fn view_laczenie<'a>(
                         .padding(10)
                         .font(jezyk.get_font())
                         .on_input(|xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieGPathChanged(xx)))
-                        .style(styl_text_input(check_opcjonalne_ścieżki,KOLOR_PEACH_PUFF, KOLOR_TŁA))
+                        .style(styl_text_input(check_opcjonalne_ścieżki,tematyczny_kolor, KOLOR_TŁA))
                         .width(Length::Fill),
                     )
                     .height(Length::Fixed(40.))
@@ -138,7 +164,7 @@ pub fn view_laczenie<'a>(
                     button(text("📄").width(Length::Fill).center())
                         .padding(10)
                         .on_press(Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieB))
-                        .style(styl_przycisków(false, false, KOLOR_PEACH_PUFF))
+                        .style(styl_przycisków(false, false, tematyczny_kolor))
                         .width(Length::FillPortion(2))
                         .height(Length::Fixed(40.)),
                 )
@@ -157,7 +183,7 @@ pub fn view_laczenie<'a>(
                         .padding(10)
                         .font(jezyk.get_font())
                         .on_input(|xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieBPathChanged(xx)))
-                        .style(styl_text_input(check_opcjonalne_ścieżki,KOLOR_PEACH_PUFF, KOLOR_TŁA))
+                        .style(styl_text_input(check_opcjonalne_ścieżki,tematyczny_kolor, KOLOR_TŁA))
                         .width(Length::Fill),
                     )
                     .height(Length::Fixed(40.))
@@ -183,7 +209,7 @@ pub fn view_laczenie<'a>(
                     button(text("📄").width(Length::Fill).center())
                         .padding(10)
                         .on_press(Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieA))
-                        .style(styl_przycisków(false, false, KOLOR_PEACH_PUFF))
+                        .style(styl_przycisków(false, false, tematyczny_kolor))
                         .width(Length::FillPortion(2))
                         .height(Length::Fixed(40.)),
                 )
@@ -201,7 +227,7 @@ pub fn view_laczenie<'a>(
                         .padding(10)
                         .font(jezyk.get_font())
                         .on_input(|xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieAPathChanged(xx)))
-                        .style(styl_text_input(check_opcjonalne_ścieżki,KOLOR_PEACH_PUFF, KOLOR_TŁA))
+                        .style(styl_text_input(check_opcjonalne_ścieżki,tematyczny_kolor, KOLOR_TŁA))
                         .width(Length::Fill),
                     )
                     .height(Length::Fixed(40.))
@@ -227,11 +253,11 @@ pub fn view_laczenie<'a>(
                         } else {
                             2
                         },
-                        KOLOR_PEACH_PUFF,
+                        tematyczny_kolor,
                     ))
                     .padding(10)
                     .on_press(Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzFolderOutFotoLaczenie))
-                    .style(styl_przycisków(false, false, KOLOR_PEACH_PUFF))
+                    .style(styl_przycisków(false, false, tematyczny_kolor))
                     .width(Length::FillPortion(2))
                     .height(Length::Fixed(40.)),
                 )
@@ -245,7 +271,7 @@ pub fn view_laczenie<'a>(
                         .padding(10)
                         .font(jezyk.get_font())
                         .on_input(|xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieOutPathChanged(xx)))
-                        .style(styl_text_input(dane.sciezka_out.exists(),KOLOR_PEACH_PUFF, KOLOR_TŁA))
+                        .style(styl_text_input(dane.sciezka_out.exists(),tematyczny_kolor, KOLOR_TŁA))
                         .width(Length::Fill),
                     )
                     .height(Length::Fixed(40.))
@@ -258,7 +284,7 @@ pub fn view_laczenie<'a>(
                     .padding(10)
                     .font(jezyk.get_font())
                     .on_input(|xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WybierzPlikInFotoLaczenieNazwaChanged(xx)))
-                    .style(styl_text_input(!dane.nazwa.is_empty(),KOLOR_PEACH_PUFF, KOLOR_TŁA))
+                    .style(styl_text_input(!dane.nazwa.is_empty(),tematyczny_kolor, KOLOR_TŁA))
                     .width(Length::Fill),
             )
             .height(Length::Fixed(40.))
@@ -275,7 +301,7 @@ pub fn view_laczenie<'a>(
             .on_press(Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::WysylkaDanychDoLaczeniaZdjec))
             .height(Length::Fixed(40.))
             .width(Length::Fill)
-            .style(styl_przycisków(false, false, KOLOR_SPANISH_ORANGE))
+            .style(styl_przycisków(false, false, tematyczny_kolor))
         } else {
             button(
                 text(if *main_process_check == CheckActiveProcess::ProcessŁączenieZdjęć {
@@ -292,7 +318,7 @@ pub fn view_laczenie<'a>(
             )
             .width(Length::Fill)
             .height(Length::Fixed(40.))
-            .style(styl_przycisków(false, *main_process_check == CheckActiveProcess::ProcessŁączenieZdjęć, KOLOR_SPANISH_ORANGE))
+            .style(styl_przycisków(false, *main_process_check == CheckActiveProcess::ProcessŁączenieZdjęć, tematyczny_kolor))
         })
         .padding(15)
         .spacing(15)
@@ -309,7 +335,7 @@ pub fn view_laczenie<'a>(
             //     OptRozszerzeniaPlikówZdjęciowych::Qoi { .. } => {}
             // } => {}
             .push(btn_zmiany_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg, dane,jezyk.get_font()))
-            .push(if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg { jakosc, .. } = &dane.out_format {
+            .push(if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg { jakosc, sampling, quant, scans, .. } = &dane.out_format {
                 container(
                     Column::new()
                         .push(
@@ -320,7 +346,7 @@ pub fn view_laczenie<'a>(
                                         *jakosc,
                                         |xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaJakosciJpg(xx)),
                                     )
-                                        .style(styl_sliderów(KOLOR_PEACH_PUFF))
+                                        .style(styl_sliderów(tematyczny_kolor))
                                         .width(Length::FillPortion(6)).height(50.),
                                 )
                                 .push(space().width(Length::FillPortion(1)))
@@ -332,10 +358,50 @@ pub fn view_laczenie<'a>(
                                 ).height(Length::FillPortion(1)).padding(15)
                         )
                         .push(
-                            text("Rgb").font(jezyk.get_font()).color(KOLOR_CZCIONKI_SREDNI).width(Length::Fill).height(Length::FillPortion(1)).center()
+                            Row::new()
+                                .push(
+                                    pick_list(opcje_sampling, Some(*sampling), |hh|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaEdycjaZmianaJpgSampling(hh)))
+                                        .width(Length::FillPortion(5))
+                                        .padding(2)
+                                        .text_line_height(1.5)
+                                        .style(styl_pick_list(tematyczny_kolor, KOLOR_TŁA))
+                                        .menu_style(styl_menu_pick(tematyczny_kolor, KOLOR_TŁA))
+                                        .width(Length::FillPortion(4))
+                                )
+                                .push(
+                                    pick_list(opcje_qua, Some(*quant), |hh|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaEdycjaZmianaJpgQua(hh)))
+                                        .width(Length::FillPortion(5))
+                                        .padding(2)
+                                        .text_line_height(1.5)
+                                        .style(styl_pick_list(tematyczny_kolor, KOLOR_TŁA))
+                                        .menu_style(styl_menu_pick(tematyczny_kolor, KOLOR_TŁA))
+                                        .width(Length::FillPortion(4))
+                                ).padding(15).spacing(10)
+                        )
+                        .push(
+                            Row::new()
+                                .push(
+                                    slider(
+                                        2..=64,
+                                        *scans,
+                                        |vv|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaEdycjaZmianaJpgScans(vv))
+                                    )
+                                        .height(20.)
+                                        .width(Length::FillPortion(6))
+                                        .style(styl_sliderów(tematyczny_kolor)),
+                                )
+                                .push(
+                                    text(format!(
+                                        "Sc: {}",
+                                        scans
+                                    ))
+                                        .color(KOLOR_CZCIONKI_SREDNI)
+                                        .font(jezyk.get_font()).width(Length::FillPortion(4)).height(Length::Fill).center(),
+                                )
+                                .padding(15)
                         )
 
-                ).height(100.).style(styl_kontenera(true, KOLOR_PEACH_PUFF))
+                ).height(150.).style(styl_kontenera(true, tematyczny_kolor,RodzajeContainer::Góra))
 
             } else {
                 container(Column::new())
@@ -357,7 +423,7 @@ pub fn view_laczenie<'a>(
                                         *kompresja,
                                         |xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiPng(xx)),
                                     )
-                                        .style(styl_sliderów(KOLOR_PEACH_PUFF)).width(Length::FillPortion(6)).height(20.),
+                                        .style(styl_sliderów(tematyczny_kolor)).width(Length::FillPortion(6)).height(20.),
                                 )
                                 .push(
                                     text(format!("C: {}", kompresja))
@@ -387,7 +453,7 @@ pub fn view_laczenie<'a>(
                                     .style(styl_przycisków(
                                         false,
                                         *bit_depth == OptFormatyKoloruObrazOgólny::B8,
-                                        KOLOR_PEACH_PUFF,
+                                        tematyczny_kolor,
                                     )),
                                 )
                                 .push(
@@ -406,7 +472,7 @@ pub fn view_laczenie<'a>(
                                     .style(styl_przycisków(
                                         false,
                                         *bit_depth == OptFormatyKoloruObrazOgólny::B8a,
-                                        KOLOR_PEACH_PUFF,
+                                        tematyczny_kolor,
                                     )),
                                 )
                                 .push(
@@ -425,7 +491,7 @@ pub fn view_laczenie<'a>(
                                     .style(styl_przycisków(
                                         false,
                                         *bit_depth == OptFormatyKoloruObrazOgólny::B16,
-                                        KOLOR_PEACH_PUFF,
+                                        tematyczny_kolor,
                                     )),
                                 )
                                 .push(
@@ -444,14 +510,14 @@ pub fn view_laczenie<'a>(
                                     .style(styl_przycisków(
                                         false,
                                         *bit_depth == OptFormatyKoloruObrazOgólny::B16a,
-                                        KOLOR_PEACH_PUFF,
+                                        tematyczny_kolor,
                                     )),
                                 )
 
                         ).height(Length::FillPortion(1))
 
 
-                ).height(100.).style(styl_kontenera(true, KOLOR_PEACH_PUFF))
+                ).height(100.).style(styl_kontenera(true, tematyczny_kolor,RodzajeContainer::Góra))
             } else {
                 container(Column::new())
             })
@@ -473,7 +539,7 @@ pub fn view_laczenie<'a>(
                                     jakosc,
                                     |xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaJakosciWebp(xx)),
                                 )
-                                    .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                    .style(styl_sliderów(tematyczny_kolor)).height(20.).width(Length::FillPortion(6)),
                             )
                             .push(
                                 text(format!(
@@ -503,7 +569,7 @@ pub fn view_laczenie<'a>(
                                     .style(styl_przycisków(
                                         false,
                                         bit_depth == OptFormatyKoloruObrazOgólny::B8,
-                                        KOLOR_PEACH_PUFF,
+                                        tematyczny_kolor,
                                     )).height(Length::Fill),
                                 )
                                 .push(
@@ -522,7 +588,7 @@ pub fn view_laczenie<'a>(
                                     .style(styl_przycisków(
                                         false,
                                         bit_depth == OptFormatyKoloruObrazOgólny::B8a,
-                                        KOLOR_PEACH_PUFF,
+                                        tematyczny_kolor,
                                     )).height(Length::Fill),
                                 )
                                 .push(
@@ -543,12 +609,12 @@ pub fn view_laczenie<'a>(
                                     .style(styl_przycisków(
                                         false,
                                         lossless,
-                                        KOLOR_PEACH_PUFF,
+                                        tematyczny_kolor,
                                     )).height(Length::Fixed(50.)),
                                 ).height(Length::FillPortion(1))
 
                         )
-                ).height(100.).style(styl_kontenera(true, KOLOR_PEACH_PUFF))
+                ).height(100.).style(styl_kontenera(true, tematyczny_kolor,RodzajeContainer::Góra))
             } else {
                 container(Column::new())
             })
@@ -581,7 +647,7 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 bit_depth == OptFormatyKoloruObrazuTga::HighColor16,
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
                                     .push(
@@ -600,7 +666,7 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 bit_depth == OptFormatyKoloruObrazuTga::TrueColor24,
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
                                     .push(
@@ -619,11 +685,11 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 bit_depth == OptFormatyKoloruObrazuTga::TrueColorA32,
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
                             ).height(Length::FillPortion(1))
-                    ).height(100.).style(styl_kontenera(true, KOLOR_PEACH_PUFF))
+                    ).height(100.).style(styl_kontenera(true, tematyczny_kolor,RodzajeContainer::Góra))
                 }else{
                     container(Column::new())
                 }
@@ -650,7 +716,7 @@ pub fn view_laczenie<'a>(
                                                     bb,
                                                     |xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfZstd(xx)),
                                                 )
-                                                    .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                                    .style(styl_sliderów(tematyczny_kolor)).height(20.).width(Length::FillPortion(6)),
                                             )
                                             .push(
                                                 text(format!(
@@ -670,7 +736,7 @@ pub fn view_laczenie<'a>(
                                                     bb,
                                                     |xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfBzip2(xx)),
                                                 )
-                                                    .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                                    .style(styl_sliderów(tematyczny_kolor)).height(20.).width(Length::FillPortion(6)),
                                             )
                                             .push(
                                                 text(format!(
@@ -689,7 +755,7 @@ pub fn view_laczenie<'a>(
                                                     bb,
                                                     |xx|Message::ŁączenieZdjęć(ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfXz(xx)),
                                                 )
-                                                    .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                                    .style(styl_sliderów(tematyczny_kolor)).height(20.).width(Length::FillPortion(6)),
                                             )
                                             .push(
                                                 text(format!(
@@ -723,7 +789,7 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 metoda_kompresji == OptMetodaKompresjiZdjecia::Brak,
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
                                     .push(
@@ -742,7 +808,7 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 discriminant(&metoda_kompresji) == discriminant(&OptMetodaKompresjiZdjecia::Zstd(3)),
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
                                     .push(
@@ -761,7 +827,7 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 discriminant(&metoda_kompresji) == discriminant(&OptMetodaKompresjiZdjecia::Bzip2(6)),
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
                                     .push(
@@ -780,11 +846,11 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 discriminant(&metoda_kompresji) == discriminant(&OptMetodaKompresjiZdjecia::Xz(6)),
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
                             ).height(Length::FillPortion(1))
-                    ).height(100.).style(styl_kontenera(true, KOLOR_PEACH_PUFF))
+                    ).height(100.).style(styl_kontenera(true, tematyczny_kolor,RodzajeContainer::Góra))
                 }else{
                     container(Column::new())
                 }
@@ -818,7 +884,7 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 bit_depth == OptFormatyKoloruObrazuQoi::Color24,
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
                                     .push(
@@ -837,12 +903,12 @@ pub fn view_laczenie<'a>(
                                             .style(styl_przycisków(
                                                 false,
                                                 bit_depth == OptFormatyKoloruObrazuQoi::ColorA32,
-                                                KOLOR_PEACH_PUFF,
+                                                tematyczny_kolor,
                                             )).height(Length::Fill),
                                     )
 
                             ).height(Length::FillPortion(1))
-                    ).height(100.).style(styl_kontenera(true, KOLOR_PEACH_PUFF))
+                    ).height(100.).style(styl_kontenera(true, tematyczny_kolor,RodzajeContainer::Góra))
                 }else{
                     container(Column::new())
                 }
@@ -850,7 +916,7 @@ pub fn view_laczenie<'a>(
             .padding(15)
             // .spacing(15)
             .width(Length::FillPortion(2)),
-    );
+    ).style(styl_scrollable(tematyczny_kolor));
 
     Row::new().push(lewa_kolumna).push(prawa_kolumna).into()
 }

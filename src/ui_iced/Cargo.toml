@@ -18,3 +18,5 @@ laczenie_plikow = { path = "../laczenie_plikow" }
 dds = { workspace = true }
 strum = { workspace = true }
 dds_ops = { path = "../dds_ops" }
+rand = { workspace = true }
+noise = { workspace = true }

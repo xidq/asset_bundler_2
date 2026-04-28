@@ -23,12 +23,26 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
         OptKompresjaDds::High => {dds::CompressionQuality::High}
         OptKompresjaDds::Unreasonable => {dds::CompressionQuality::Unreasonable}
     };
+    let mut przerób: f32 = 0.;
+
+    let max_plikow =
+        if dane.ścieżka_wejściowa.is_file(){
+            13 as usize
+        } else {
+            WalkDir::new(&dane.ścieżka_wejściowa)
+                .into_iter()
+                .filter_map(|e| e.ok())
+                .filter(|e| e.file_type().is_file())
+                .count() * 13// Zwraca usize
+        };
+    let mut percent: u8 = 0;
 
     let wynik: Result<(), std::io::Error> = async {
         let mut images_data = Vec::new();
         let mut width = 0;
         let mut height = 0;
         let mut first_image = true;
+
 
         for entry in WalkDir::new(dane.ścieżka_wejściowa)
             .into_iter()
@@ -109,6 +123,9 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
             height,
             &dane.format,
             kompresja,
+            &mut przerób,
+            max_plikow,
+            &mut percent,
             tx.clone(),
         )
         .unwrap_or(());

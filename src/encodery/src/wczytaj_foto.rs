@@ -1,3 +1,4 @@
+use image::ImageDecoder;
 use std::io::Read;
 use std::path::PathBuf;
 use image::DynamicImage;
@@ -102,9 +103,10 @@ pub fn wczytaj_zdjęcie(
         }
     }
 
+
     // 3. Dobieramy się do dekodera, żeby wyciągnąć EXIF
     let mut decoder = reader.into_decoder().map_err(std::io::Error::other)?;
-
+    // let profil_icc = decoder.icc_profile().map_err(std::io::Error::other)?;
     // Tutaj wyciągamy EXIF (metoda z traitu ImageDecoder, który wrzuciłeś)
     // let exif = decoder.exif_metadata().ok().flatten();
 

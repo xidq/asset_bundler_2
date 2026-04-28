@@ -5,6 +5,8 @@ use enumy::opcje::OptFormatDds;
 use enumy::statusy::LogTxDoPakowanieDds;
 use futures::channel::mpsc::Sender;
 use std::fs::File;
+use std::thread::sleep;
+use std::time::Duration;
 
 pub fn save_rgba_image_with_mipmaps(
     file: &mut File,
@@ -13,12 +15,21 @@ pub fn save_rgba_image_with_mipmaps(
     height: u32,
     format: &OptFormatDds,
     kompresja: CompressionQuality,
+    mut przerób: &mut f32,
+    max_plikow:usize,
+    mut percent:&mut u8,
     mut tx: Sender<LogTxDoPakowanieDds>,
 ) -> Result<(), EncodingError> {
     dbg!("jestem w save_rgba_image_with_mipmaps");
-    let mut przerób: f32 = 0.;
-    let max_plikow = image_data.len();
-    let mut percent: u8 = 0;
+
+    let mut licznik_w_pętli:u32 = 0;
+
+    *przerób += 1.;
+    dbg!(&przerób);
+    if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
+        *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
+        let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(*percent));
+    }
 
     let (formatowanko_dxgi, formatowanko_format) = match format {
         OptFormatDds::DxgiFormatBc1Unorm => (DxgiFormat::BC1_UNORM, Format::BC1_UNORM),
@@ -49,7 +60,7 @@ pub fn save_rgba_image_with_mipmaps(
         OptFormatDds::DxgiFormatBc7UnormSrgb => (DxgiFormat::BC7_UNORM_SRGB, Format::BC7_UNORM),
         OptFormatDds::DxgiFormatBc7Typeless => (DxgiFormat::BC7_TYPELESS, Format::BC7_UNORM),
     };
-    dbg!(&formatowanko_dxgi, &formatowanko_format);
+    // dbg!(&formatowanko_dxgi, &formatowanko_format);
     // let x: dds::Format = dds::Format::;
     let format = formatowanko_dxgi; // BC5, BC7
     let ilosc_tekstur = image_data.len() as u32;
@@ -64,18 +75,71 @@ pub fn save_rgba_image_with_mipmaps(
     encoder.encoding.quality = kompresja; // CompressionQuality::Fast
     encoder.mipmaps.generate = true;
 
-    for data in image_data {
+    *przerób += 1.;
+    dbg!(&przerób);
+    if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
+        *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
+        let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(*percent));
+    }
+    dbg!(&image_data.len());
+    let dziamdziaramdzia = image_data.len();
+    let kwant = (dziamdziaramdzia / 10).max(1);
+
+    if dziamdziaramdzia == 0 {
+        for i in 0..=10{
+            *przerób += 1. ;
+            dbg!(&przerób);
+            if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
+                *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
+                let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(*percent));
+            }
+            sleep(Duration::from_millis(100));
+        }
+    }
+
+
+    for (i,data) in image_data.iter().enumerate() {
         let view = ImageView::new(data, Size::new(width, height), ColorFormat::RGBA_U8)
             .expect("Błąd danych obrazka");
 
         encoder.write_surface(view)?;
 
-        if percent < (przerób / max_plikow as f32 * 100.).round() as u8 {
-            percent = (przerób / max_plikow as f32 * 100.).round() as u8;
-            let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(percent));
+        let licznik_do_dziesieciu = i  / kwant;
+        if licznik_do_dziesieciu > licznik_w_pętli as usize {
+            licznik_w_pętli +=1;
+            *przerób += 1. ;
+            dbg!(&przerób);
+            if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
+                *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
+                let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(*percent));
+            }
+
+        }else if dziamdziaramdzia < 10{
+            let hugabuga = 10 - dziamdziaramdzia;
+            for i in 0..=hugabuga{
+                *przerób += 1. ;
+                dbg!(&przerób);
+                if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
+                    *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
+                    let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(*percent));
+                }
+                sleep(Duration::from_millis(100));
+            }
+        }else {
+            *przerób += 1.;
+            dbg!(&przerób);
+            if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
+                *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
+                let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(*percent));
+            }
         }
     }
-
+    *przerób += 1.;
+    dbg!(&przerób);
+    if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
+        *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
+        let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(*percent));
+    }
     encoder.finish()?;
     Ok(())
 }

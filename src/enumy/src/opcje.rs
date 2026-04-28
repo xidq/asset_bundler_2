@@ -88,6 +88,9 @@ pub enum OptRozszerzeniaPlikówZdjęciowych {
         jakosc: u8,
         progresywny: bool,
         bit_depth: Vec<OptFormatyKoloruObrazOgólny>,
+        sampling: JpgSamplingFac,
+        quant: JpgQuant,
+        scans:u8,
     },
     Png {
         kompresja: u8,
@@ -122,6 +125,9 @@ pub enum OptRozszerzeniaPlikówZdjęciowychPojedyncze {
         jakosc: u8,
         progresywny: bool,
         bit_depth: OptFormatyKoloruObrazOgólny,
+        sampling: JpgSamplingFac,
+        quant: JpgQuant,
+        scans:u8,
     },
     Png {
         kompresja: u8,
@@ -149,6 +155,32 @@ pub enum OptRozszerzeniaPlikówZdjęciowychPojedyncze {
         bit_depth: OptFormatyKoloruObrazuAvif,
     }
 }
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum JpgSamplingFac{
+    R444,
+    R440,
+    R441,
+    R422,
+    R420,
+    R421,
+    R411,
+    R410,
+}
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum JpgQuant{
+    Default,
+    Flat,
+    CustomMsSsim,
+    CustomPsnrHvs,
+    ImageMagick,
+    KleinSilversteinCarney,
+    DentalXRays,
+    VisualDetectionModel,
+    ImprovedDetectionModel,
+}
+
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
 pub enum AvifChroma{

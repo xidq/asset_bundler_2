@@ -3,7 +3,7 @@ use crate::ui::program::Program;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::CheckActiveProcess;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoŁączeniaZdjęć;
 use futures::channel::mpsc;
 use iced::Task;
@@ -92,6 +92,9 @@ impl Program {
                         jakosc:90,
                         progresywny:false,
                         bit_depth: OptFormatyKoloruObrazOgólny::B8,
+                        sampling: JpgSamplingFac::R420,
+                        quant: JpgQuant::Default,
+                        scans: 4,
                     };
                     if discriminant(&self.dane_temp_do_łączenia_zdjęć.out_format) != discriminant(&piksidipsi) {
                         self.dane_temp_do_łączenia_zdjęć.out_format = piksidipsi;
@@ -167,6 +170,30 @@ impl Program {
                     *jakosc = procent
                 };
 
+            }
+            ŁączenieZdjęćMessage::ZdjeciaEdycjaZmianaJpgSampling(xx) => {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg { ref mut sampling, .. } = self
+                    .dane_temp_do_łączenia_zdjęć.out_format
+                {
+                    *sampling = xx;
+                }
+
+            }
+            ŁączenieZdjęćMessage::ZdjeciaEdycjaZmianaJpgQua(xx) => {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg { ref mut quant, .. } = self
+                    .dane_temp_do_łączenia_zdjęć.out_format
+                {
+                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
+                    *quant = xx;
+                }
+
+            }
+            ŁączenieZdjęćMessage::ZdjeciaEdycjaZmianaJpgScans(skany) => {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg { ref mut scans, .. } = self
+                    .dane_temp_do_łączenia_zdjęć.out_format
+                {
+                    *scans = skany; // Jeśli znaleziono, aktualizujemy wartość
+                }
             }
             ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaRozszerzeniePng(lejlejlej) =>  {
                 if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Png {ref mut bit_depth,..} = self.dane_temp_do_łączenia_zdjęć.out_format{

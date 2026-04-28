@@ -22,10 +22,10 @@ use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds, FILTERFOTO}
 pub(crate) use enumy::enums_structs_io::{LogPakowanie, LogPrzetwarzanieFot, LogRozpakowywanie};
 // use crate::ui::program_pomniejsze::czcionki::{FONT_DEFAULT, FONT_JAPANESE, FONT_KOREAN, FONT_THAI, KOLOR_BRILIANT_CRIMSON, KOLOR_CRIMSON_GLORY, KOLORFLIRT, KOLOR_PEACH_PUFF};
 use enumy::lang::{odmiana_liczbowa, zmieniacz_ilosci_bajtow};
-use enumy::opcje::{FolderCzyPlik, OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik, OptUIWariantPodstrony};
+use enumy::opcje::{FolderCzyPlik, JpgQuant, JpgSamplingFac, OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik, OptUIWariantPodstrony};
 use enumy::statusy::{LogTxDoBathKonwersjaZdjęć, LogTxDoDekompresjiPliku, LogTxDoKompresjiPliku};
 pub(crate) use enumy::wybranie_jezykowe::{DevToolsMenu, WybórJęzyka};
-use iced::widget::{tooltip, Column, Row};
+use iced::widget::{image, shader, stack, tooltip, Column, Row};
 use iced::{Border, Color, Element, Length};
 use iced_core::{Shadow, Theme, Vector};
 use enumy::inne_ui::{CheckActiveProcess, CheckerDoZbiorowePrzetwarzanieZdjęć, StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
@@ -46,7 +46,7 @@ pub struct Program {
     status_pakowanie_log: LogPakowanie,
     status_rozpakowywania_log: LogRozpakowywanie,
     pub(crate) status_zmiany_fot_log: LogPrzetwarzanieFot,
-    status_dds_pakowanie: LogPakowaniaDds,
+    pub(crate) status_dds_pakowanie: LogPakowaniaDds,
     status_dds_rozpakowywanie: LogRozpakowywanieDds,
     pub(crate) checker_bool_status_procesow:CheckActiveProcess,
     checker_bool_status_kompresja: bool,
@@ -70,7 +70,106 @@ pub struct Program {
     pub(crate) dane_temp_do_pakowania_dds: DaneDoPakowaniaDds,
     pub(crate) dane_temp_do_rozpakowywania_dds: DaneDoRozpakowaniaDds,
     pub(crate) dane_temp_do_rozpakowania_dds_formaty_zdjec: WybranyFormatZdjecia,
-    
+    halp_menu:bool,
+    uchwyt_szumu: image::Handle,
+
+}
+// pub fn generuj_szum() -> image::Handle {
+//     let width = 1024;
+//     let height = 1024;
+//     let total_pixels = width * height;
+//     let mut pixels = Vec::with_capacity((total_pixels * 4) as usize);
+//
+//     for i in 0..total_pixels {
+//         // Prosty generator pseudo-losowy, żeby nie dodawać crate'a `rand`
+//         let seed = i as f32 * 12.9898;
+//         let noise_val = ((seed.sin() * 43758.5453).fract() * 255.0) as u8;
+//
+//         // Kanały R, G, B
+//         pixels.push(noise_val);
+//         pixels.push(noise_val);
+//         pixels.push(noise_val);
+//
+//         // Kanał Alpha - ustawiamy na bardzo niski (np. 10 na 255)
+//         // To jest klucz! Tu sterujesz przezroczystością szumu.
+//         pixels.push(8);
+//     }
+//
+//     // Tworzymy uchwyt z wygenerowanych pikseli
+//     image::Handle::from_rgba(width, height, pixels)
+// }
+use noise::{NoiseFn, Fbm, Perlin};
+use rand::Rng;
+
+
+// pub fn generuj_szum_pro() -> image::Handle {
+//     let width = 1024;
+//     let height = 1024;
+//
+//     // 1. Pobieramy ziarno całkowicie bez użycia 'thread_rng' i słowa 'gen'
+//     // rand::random() to najprostszy sposób na u32 w nowym randzie
+//     let ziarno_dla_szumu: u32 = rand::random();
+//
+//     // 2. Inicjalizacja Fbm (Fractal Brownian Motion)
+//     let fbm = Fbm::<Perlin>::new(ziarno_dla_szumu);
+//
+//     let mut pixels = Vec::with_capacity(width * height * 4);
+//     let skala_zoom = 0.08;
+//
+//     for y in 0..height {
+//         for x in 0..width {
+//             // noise::NoiseFn wykorzystuje metodę .get() - to jest bezpieczne
+//             let wartosc_szumu = fbm.get([x as f64 * skala_zoom, y as f64 * skala_zoom]);
+//
+//             // Mapujemy [-1.0, 1.0] na zakres [0, 255]
+//             let n = (((wartosc_szumu + 1.0) / 2.0) * 255.0).clamp(0.0, 255.0) as u8;
+//
+//             pixels.push(n); // R
+//             pixels.push(n); // G
+//             pixels.push(n); // B
+//
+//             // Bardzo niski alpha (przezroczystość), żeby tylko "rozbić" banding
+//             pixels.push(5);
+//         }
+//     }
+//
+//     // Handle::from_rgba w nowym Iced jest standardem
+//     image::Handle::from_rgba(width as u32, height as u32, pixels)
+// }
+pub fn generuj_ziarno() -> image::Handle {
+    let width = 512;
+    let height = 512;
+    let mut pixels = Vec::with_capacity(width * height * 4);
+
+
+    let mnożnik = (u16::MAX as f64 / u8::MAX as f64).round()  ;
+    for _ in 0..(width * height) {
+        // let baza: u16 = rand::random();
+        // let r_rand: u16 = rand::random();
+        // let g_rand: u16 = rand::random();
+        // let b_rand: u16 = rand::random();
+        //
+        // // Twoja logika: (Random_kanału + Baza/2) / 2
+        // // Przesunięcie o 8 bitów w prawo (>> 8) to najszybsze dzielenie przez 256
+        // let r = ((r_rand / 2 + baza / 4) >> 7) as u8;
+        // let g = ((g_rand / 2 + baza / 4) >> 7) as u8;
+        // let b = ((b_rand / 2 + baza / 4) >> 7) as u8;
+
+        let ziarno: u16 = rand::random();
+        let r: u8 = ((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(0., u8::MAX as f64)  as u8 ;
+        let g: u8 = ((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(0., u8::MAX as f64)  as u8 ;
+        let b: u8 = ((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(0., u8::MAX as f64)  as u8 ;
+        let a: u8 = (((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(1., u8::MAX as f64) / 15. ).round()  as u8 ;
+
+
+        pixels.push(r);
+        pixels.push(g);
+        pixels.push(b);
+
+        pixels.push(a);
+    }
+
+    image::Handle::from_rgba(width as u32, height as u32, pixels)
 }
 
 
@@ -98,7 +197,10 @@ impl Program {
                     out_format: OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg {
                         jakosc: 90,
                         bit_depth: OptFormatyKoloruObrazOgólny::B8,
+                        sampling: JpgSamplingFac::R444,
                         progresywny: false,
+                        quant: JpgQuant::Default,
+                        scans:4,
                     },
                     tag: OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,
                     nazwa: String::new(),
@@ -119,7 +221,7 @@ impl Program {
                 status_pakowanie_log: LogPakowanie::default(),
                 status_rozpakowywania_log: LogRozpakowywanie::default(),
                 status_zmiany_fot_log: Default::default(),
-                status_dds_pakowanie: Default::default(),
+                status_dds_pakowanie: LogPakowaniaDds{w_trakcie: 0, koniec:"".to_string(), err:"".to_string()},
                 status_dds_rozpakowywanie: Default::default(),
                 checker_bool_status_procesow:CheckActiveProcess::ProcessŻodyn,
                 checker_bool_status_kompresja: false,
@@ -142,6 +244,9 @@ impl Program {
                             jakosc: 90,
                             progresywny: false,
                             bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
+                            sampling: JpgSamplingFac::R420,
+                            quant: JpgQuant::Default,
+                            scans: 4,
                         }
                     ]),
                     tag: Vec::from([OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg]),
@@ -281,10 +386,15 @@ impl Program {
                         jakosc: 90,
                         progresywny: false,
                         bit_depth: vec![OptFormatyKoloruObrazOgólny::B8],
+                        sampling: JpgSamplingFac::R420,
+                        quant: JpgQuant::Default,
+                        scans: 4,
                     },
                 },
                 checker_bool_status_dds: (false, false),
                 dane_temp_do_rozpakowania_dds_formaty_zdjec: WybranyFormatZdjecia::Jpg,
+                halp_menu: false,
+                uchwyt_szumu: generuj_ziarno(),
             },
             Task::batch(Vec::from([
                 Task::done(Message::InitLogStartowy),
@@ -329,7 +439,9 @@ impl Program {
                     self.startowy_jezyk // tutaj masz już dostęp przez self
                 );
                 self.log_prawe_okno.push(powitanie);
+
             }
+
             Message::UsuńLogi => self.log_prawe_okno = Vec::new(),
             Message::DevZmienJezyk(nowy) => {
                 self.ui_ustawienia = DevToolsMenu::UstawieniaJęzyka { jezyk: nowy };
@@ -1023,6 +1135,11 @@ impl Program {
                     self.log_prawe_okno
                         .push(format!("Dev Mode: {}", self.ui_main_wariant_dev));
                 }
+                if modifiers.control() && key == iced::keyboard::Key::Character("h".into()) {
+                    self.halp_menu = !self.halp_menu;
+                    // Opcjonalnie dodaj log, żebyś wiedział, że zadziałało
+                    self.log_prawe_okno.push(format!("Halp Mode: {}", self.halp_menu));
+                }
             }
 
             _ => {}
@@ -1046,6 +1163,11 @@ impl Program {
             // Fallback jeśli dodasz inne warianty dev menu
             _ => WybórJęzyka::EN,
         };
+        let nakladka_szum = iced::widget::image(self.uchwyt_szumu.clone())
+            .width(iced::Length::Fill)
+            .height(iced::Length::Fill)
+            .opacity(1.)
+            .content_fit(iced::ContentFit::Cover);
 
         // --- LEWA STRONA ---
         let przyciski_menu = container(
@@ -1203,6 +1325,7 @@ impl Program {
                     self.zdjecia_edycja_co_jest_na_out,
                     self.status_zmiany_fot_log.clone(),
                     &self.checker_bool_status_procesow,
+                    &self.halp_menu,
                 )
             }
             OptUIWariantPodstrony::DaneDoŁączeniaZdjęćo => {
@@ -1225,19 +1348,21 @@ impl Program {
             //_ => column![text("Opcja jest, lecz UI jeszcze nie").size(50)].into(),
         };
 
-        let lewa_kolumna = container(
-            Column::new()
-                .push(przyciski_menu)
-                .push(Space::new().height(30))
-                .push(content_lewy)
-                .padding(20),
-        )
+        let lewa_kolumna =
+            stack![
+            container(
+                Column::new()
+                    .push(przyciski_menu)
+                    .push(Space::new().height(30))
+                    .push(content_lewy)
+                    .padding(20),
+            )
         .width(Length::FillPortion(2))
         .height(Length::Fill)
         .style(move |_theme: &Theme| {
             container::Style {
-                // Tło: r: 0.1, g: 0.15, b: 0.2, alpha: 1.0 (zakładam pełne krycie)
-                background: Some(Color::from_rgb(0.11, 0.11, 0.10).into()),
+                // Tło: r: 0.11, g: 0.11, b: 0.1, alpha: 1.0 (zakładam pełne krycie)
+                background: Some(Color::from_rgb(0.07, 0.07, 0.06).into()),
 
                 // Cień o tym samym kolorze
                 shadow: Shadow {
@@ -1252,7 +1377,7 @@ impl Program {
                 },
                 ..container::Style::default()
             }
-        });
+        }), nakladka_szum];
         // self.log_prawe_okno.push(format!("{}!!!!!\n {}: {}\n  {}: {}\n   {}, \n    {}: {}\n---------------------------------------",aktualny_jezyk.t("log_status_welcome_msg_welcome"),aktualny_jezyk.t("log_status_welcome_msg_today"),Local::now().format("%d.%m.%Y"),aktualny_jezyk.t("log_status_welcome_msg_today"), Local::now().format("%H:%M:%S"),aktualny_jezyk.t("log_status_welcome_msg_sys_rdy"),aktualny_jezyk.t("log_status_welcome_msg_lang_detected"),self.startowy_jezyk));
 
         // --- PRAWA STRONA (Logi zostawiamy tutaj, bo są proste) ---

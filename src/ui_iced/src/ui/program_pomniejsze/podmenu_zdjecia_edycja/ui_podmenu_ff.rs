@@ -10,7 +10,7 @@ use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptMetodaKompresjiZdjecia, OptR
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{button, container, pick_list, slider, space, text, Column, Row};
 use iced::{Color, Length};
-use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::wiadomosci::message_ui::Message;
@@ -122,7 +122,7 @@ pub fn podmenu_ff_wybor(
                     .push(
                         Row::new().height(Length::Fixed(50.))
                     )
-            ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+            ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
 
         }else {container(Column::new())}).padding(15).width(Length::FillPortion(2))
 

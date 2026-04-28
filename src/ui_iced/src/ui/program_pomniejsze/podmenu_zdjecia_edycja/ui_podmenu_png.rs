@@ -1,3 +1,4 @@
+use dds::Dithering::Color;
 use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
@@ -8,8 +9,8 @@ use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
 use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{button, container, slider, space, text, Column, Row};
-use iced_core::{Color, Length};
-use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use iced_core::{Length};
+use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::wiadomosci::message_ui::Message;
@@ -65,7 +66,7 @@ pub fn podmenu_png_wybor<'a>(
                                 .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L16,dane,jezyk.get_font()))
                                 .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L16a,dane,jezyk.get_font()))
                         )
-                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
             } else {
                 container(Column::new())
             }
@@ -78,7 +79,7 @@ pub fn podmenu_png_wybor<'a>(
 
 pub fn podmenu_png_misc<'a>(
     dane: &DaneDoBathKonwersjaZdjec,
-) -> Row<'a, Message> {
+) -> Column<'a, Message> {
 
     let png_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
         matches!(f, OptRozszerzeniaPlikówZdjęciowych::Png { .. })
@@ -99,30 +100,49 @@ pub fn podmenu_png_misc<'a>(
 
     let jest_aktywny_png = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Png);
 
-
-    Row::new()
+    Column::new()
         .push(info_male("Png".to_string(),jest_aktywny_png))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("|".to_string(),false))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8a)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L8)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L8a)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B16)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B16a)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L16)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L16a)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("|".to_string(),false))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("Kompresja: ".to_string() + &*kompresja_str, jest_aktywny_png))
+        .push(
+            Row::new()
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                .push(info_male("|".to_string(),false))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8)))
+                
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8a)))
+                
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L8)))
+                
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L8a)))
+                
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B16)))
+                
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B16a)))
+                
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L16)))
+                
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L16a)))
+                
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                .push(info_male("|".to_string(),false))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                
+                .push(info_male("Kompresja: ".to_string() + &*kompresja_str, jest_aktywny_png))
+        )
 
 }

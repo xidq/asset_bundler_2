@@ -6,7 +6,7 @@ use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazOgólny
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{Column, Row, button, container, slider, space, text, tooltip, pick_list};
 use iced::{Color, Length};
-use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_avif, btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::program_pomniejsze::style_fn::pick_lista::{styl_menu_pick, styl_pick_list};
@@ -67,7 +67,7 @@ pub fn podmenu_avif_wybor<'a>(
                             )
                             .push(
                                 text(format!(
-                                    "s: {}%",
+                                    "S: {}",
                                     speed
                                 ))
                                 .color(KOLOR_CZCIONKI_SREDNI)
@@ -180,7 +180,7 @@ pub fn podmenu_avif_wybor<'a>(
                                     .width(Length::FillPortion(4))
                             ).padding(15)
                     )
-                ).height(200.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+                ).height(200.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
             } else {
                     container(Row::new())
             }
@@ -197,7 +197,7 @@ pub fn podmenu_avif_wybor<'a>(
 
 pub fn podmenu_avif_misc<'a>(
     dane: &DaneDoBathKonwersjaZdjec,
-) -> Row<'a, Message> {
+) -> Column<'a, Message> {
     let avif_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
         matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. })
     });
@@ -209,40 +209,56 @@ pub fn podmenu_avif_misc<'a>(
             false
         }
     };
-    let prog_bool = || {
-        if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = avif_data {
-            lossy.is_some() // zwracamy wartość bool
-        } else {
-            false
-        }
-    };
+
 
     // 3. Przygotowanie jakości
     let jakosc_str = avif_data
-        .and_then(|f| if let OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. } = f { Some(lossy.unwrap_or(0).to_string()) } else { None })
+        .and_then(|f| {
+            if let OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. } = f {
+                // Mapujemy u8 na String, a jeśli lossy to None -> dany "lelele"
+                Some(lossy.map(|v| v.to_string()).unwrap_or_else(|| "Lossless".to_string()))
+            } else {
+                None
+            }
+        })
         .unwrap_or_else(|| "-".to_string());
 
-    let jest_aktywny_jpg = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif);
+    let jest_aktywny_avif = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif);
+    let kompresja = match avif_data {
+        Some(OptRozszerzeniaPlikówZdjęciowych::Avif { metoda_kompresji, .. }) => metoda_kompresji.to_string(),
+        _ => "---".to_string(),
+    };
+    let chrum = match avif_data {
+        Some(OptRozszerzeniaPlikówZdjęciowych::Avif {chroma, .. }) => chroma.to_string(),
+        _ => "---".to_string(),
+    };
 
+    Column::new()
+        /*tekst*/.push(info_male("Avif".to_string(),jest_aktywny_avif))
+        .push(
+            Row::new()
 
-    Row::new()
-        .push(info_male("Avif".to_string(),jest_aktywny_jpg))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("|".to_string(),false))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("C".to_string(),ma_kolor(OptFormatyKoloruObrazuAvif::B8)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("C".to_string(),ma_kolor(OptFormatyKoloruObrazuAvif::B8a)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("C".to_string(),ma_kolor(OptFormatyKoloruObrazuAvif::B10)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("C".to_string(),ma_kolor(OptFormatyKoloruObrazuAvif::B10a)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("|".to_string(),false))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male(jakosc_str,jest_aktywny_jpg))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("|".to_string(),false))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("Progresywny".to_string(),prog_bool()))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                .push(info_male("|".to_string(),false))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        /*tekst*/.push(info_male("8".to_string(),ma_kolor(OptFormatyKoloruObrazuAvif::B8)))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        /*tekst*/.push(info_male("8a".to_string(),ma_kolor(OptFormatyKoloruObrazuAvif::B8a)))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        /*tekst*/.push(info_male("10".to_string(),ma_kolor(OptFormatyKoloruObrazuAvif::B10)))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        /*tekst*/.push(info_male("10a".to_string(),ma_kolor(OptFormatyKoloruObrazuAvif::B10a)))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                .push(info_male("|".to_string(),false))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        /*tekst*/.push(info_male(jakosc_str,jest_aktywny_avif))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                .push(info_male("|".to_string(),false))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        /*tekst*/.push(info_male(kompresja,jest_aktywny_avif))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+                .push(info_male("|".to_string(),false))
+                .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+        /*tekst*/.push(info_male(chrum,jest_aktywny_avif))
+        )
 }

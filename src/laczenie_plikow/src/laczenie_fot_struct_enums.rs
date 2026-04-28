@@ -135,7 +135,7 @@ pub async fn fn_do_laczenia_fot(
         OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg {
             jakosc,
             progresywny,
-            bit_depth,
+            bit_depth, sampling, quant, scans,
         } => {
             laczenie_jpg(
                 obrazki,

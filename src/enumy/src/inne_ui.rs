@@ -21,6 +21,13 @@ pub enum WybranyFormatZdjecia{
     Ff,
     Qoi,
 }
+#[allow(dead_code)]
+#[derive(Clone, Copy, Debug, PartialEq)]
+pub enum RodzajeContainer{
+    Góra,
+    Dół,
+    Oba,
+}
 
 #[allow(dead_code)]
 #[derive(Debug, Clone,PartialEq)]

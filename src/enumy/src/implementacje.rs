@@ -1,4 +1,4 @@
-use crate::opcje::{AvifChroma, AvifMetodaKompresji, OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia};
+use crate::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptMetodaKompresjiZdjecia};
 use std::fmt;
 
 impl OptKompresjaPlikówPoziomKompresjiZstd {
@@ -65,6 +65,35 @@ impl fmt::Display for AvifMetodaKompresji {
             AvifMetodaKompresji::Uncompressed => write!(f, "Uncompressed"),
             AvifMetodaKompresji::Mask => write!(f, "Mask"),
             AvifMetodaKompresji::HtJ2k => write!(f, "HtJ2k"),
+        }
+    }
+}
+impl fmt::Display for JpgSamplingFac {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            JpgSamplingFac::R444 => write!(f, "4:4:4 full"),
+            JpgSamplingFac::R440 => write!(f, "4:4:0"),
+            JpgSamplingFac::R441 => write!(f, "4:4:1"),
+            JpgSamplingFac::R422 => write!(f, "4:2:2"),
+            JpgSamplingFac::R420 => write!(f, "4:2:0 internet"),
+            JpgSamplingFac::R421 => write!(f, "4:2:1"),
+            JpgSamplingFac::R411 => write!(f, "4:1:1"),
+            JpgSamplingFac::R410 => write!(f, "4:1:0"),
+        }
+    }
+}
+impl fmt::Display for JpgQuant {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            JpgQuant::Default => write!(f, "Default"),
+            JpgQuant::Flat => write!(f, "Flat"),
+            JpgQuant::CustomMsSsim => write!(f, "MS-SSIM"),
+            JpgQuant::CustomPsnrHvs => write!(f, "PSNR-HVS"),
+            JpgQuant::ImageMagick => write!(f, "ImageMagick table"),
+            JpgQuant::KleinSilversteinCarney => write!(f, "JPEG-DCT"),
+            JpgQuant::DentalXRays => write!(f, "X-Rays"),
+            JpgQuant::VisualDetectionModel => write!(f, "DCT coefficient"),
+            JpgQuant::ImprovedDetectionModel => write!(f, "Improved DCT coefficient"),
         }
     }
 }

@@ -1,14 +1,16 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE};
+use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{Column, Row, button, container, slider, space, text, tooltip};
+use iced::widget::{Column, Row, button, container, slider, space, text, tooltip, pick_list};
 use iced::{Color, Length};
-use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
+use enumy::opcje::JpgSamplingFac::R444;
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
+use crate::ui::program_pomniejsze::style_fn::pick_lista::{styl_menu_pick, styl_pick_list};
 use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
@@ -17,6 +19,27 @@ pub fn podmenu_jpg_wybor_top<'a>(
     dane: &DaneDoBathKonwersjaZdjec,
     jezyk: &WybórJęzyka,
 ) -> Column<'a, Message> {
+    let opcje_sampling = Vec::from([
+        JpgSamplingFac::R444,
+        JpgSamplingFac::R440,
+        JpgSamplingFac::R441,
+        JpgSamplingFac::R422,
+        JpgSamplingFac::R420,
+        JpgSamplingFac::R421,
+        JpgSamplingFac::R411,
+        JpgSamplingFac::R410,
+    ]);
+    let opcje_qua = Vec::from([
+        JpgQuant::Default,
+        JpgQuant::Flat,
+        JpgQuant::CustomMsSsim,
+        JpgQuant::CustomPsnrHvs,
+        JpgQuant::ImageMagick,
+        JpgQuant::KleinSilversteinCarney,
+        JpgQuant::DentalXRays,
+        JpgQuant::VisualDetectionModel,
+        JpgQuant::ImprovedDetectionModel,
+    ]);
      Column::new()
         .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg, dane, jezyk.get_font()))
 
@@ -25,6 +48,9 @@ pub fn podmenu_jpg_wybor_top<'a>(
                             jakosc,
                             progresywny,
                             bit_depth,
+                            sampling,
+                            quant,
+                            scans,
                         }) = dane.rozszerzenia_plików_zdjęciowych
                 .iter()
                 .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
@@ -96,7 +122,50 @@ pub fn podmenu_jpg_wybor_top<'a>(
                                 )
                         )
                     )
-                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+                    .push(
+                        Row::new()
+                            .push(
+                                pick_list(opcje_sampling, Some(*sampling), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgSampling(hh)))
+                                    .width(Length::FillPortion(5))
+                                    .padding(2)
+                                    .text_line_height(1.5)
+                                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .width(Length::FillPortion(4))
+                            )
+                            .push(
+                                pick_list(opcje_qua, Some(*quant), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgQua(hh)))
+                                    .width(Length::FillPortion(5))
+                                    .padding(2)
+                                    .text_line_height(1.5)
+                                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .width(Length::FillPortion(4))
+                            ).padding(15).spacing(10)
+                    )
+                    .push(
+                        Row::new()
+                            .push(
+                                slider(
+                                    2..=64,
+                                    *scans,
+                                    |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgScans(vv))
+                                )
+                                    .height(20.)
+                                    .width(Length::FillPortion(6))
+                                    .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                            )
+                            .push(
+                                text(format!(
+                                    "Sc: {}",
+                                    scans
+                                ))
+                                    .color(KOLOR_CZCIONKI_SREDNI)
+                                    .font(jezyk.get_font()).width(Length::FillPortion(4)).height(Length::Fill).center(),
+                            )
+                            .padding(15)
+                    )
+                ).height(200.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
             } else {
                     container(Row::new())
             }
@@ -113,7 +182,7 @@ pub fn podmenu_jpg_wybor_top<'a>(
 
 pub fn podmenu_jpg_misc<'a>(
     dane: &DaneDoBathKonwersjaZdjec,
-) -> Row<'a, Message> {
+) -> Column<'a, Message> {
     let jpg_data = dane.rozszerzenia_plików_zdjęciowych.iter().find(|f| {
         matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. })
     });
@@ -140,21 +209,30 @@ pub fn podmenu_jpg_misc<'a>(
 
     let jest_aktywny_jpg = dane.tag.contains(&OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg);
 
-
-    Row::new()
+    Column::new()
         .push(info_male("Jpg".to_string(),jest_aktywny_jpg))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("|".to_string(),false))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("C".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("BW".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L8)))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("|".to_string(),false))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male(jakosc_str,jest_aktywny_jpg))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("|".to_string(),false))
-        .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
-        .push(info_male("Progresywny".to_string(),prog_bool()))
+        .push(
+        Row::new()
+            .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+            .push(info_male("|".to_string(),false))
+            .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+
+            .push(info_male("C".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::B8)))
+
+            .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+
+            .push(info_male("BW".to_string(),ma_kolor(OptFormatyKoloruObrazOgólny::L8)))
+
+            .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+            .push(info_male("|".to_string(),false))
+            .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+
+            .push(info_male(jakosc_str,jest_aktywny_jpg))
+
+            .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+            .push(info_male("|".to_string(),false))
+            .push(space().width(Length::Fixed(PRZERWAWYBRANYCHROZSZERZEN)))
+
+            .push(info_male("Progresywny".to_string(),prog_bool()))
+        )
 }

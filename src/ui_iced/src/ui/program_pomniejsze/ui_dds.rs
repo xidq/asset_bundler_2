@@ -1,4 +1,4 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_COTTON_CANDY, KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_TŁA, WYSOKOSC_CZCIONEK_PRZYCISKI};
+use crate::ui::program_pomniejsze::kolory::{ KOLOR_COTTON_CANDY, KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_TŁA, WYSOKOSC_CZCIONEK_PRZYCISKI};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 // use enumy::inne_ui::WybraneOknoEdycjiZdjęć::OptRozszerzeniaPlikówZdjęciowych;
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
@@ -12,13 +12,14 @@ use enumy::dane_do_przetwarzania::{DaneDoPakowaniaDds, DaneDoRozpakowaniaDds};
 use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds};
 use enumy::ikony::folder_icon;
 pub(crate) use enumy::inne_ui::StronyDds;
-use enumy::inne_ui::{CheckActiveProcess, StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
-use enumy::opcje::{OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptKompresjaDds, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych};
+use enumy::inne_ui::{CheckActiveProcess, RodzajeContainer, StanKlikaczyDoLaczeniaZdjec, WybranyFormatZdjecia};
+use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatDds, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptKompresjaDds, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, container, pick_list, row, slider, space, text, text_input, Column, Row};
+use iced::widget::{button, container, pick_list, progress_bar, row, slider, space, text, text_input, Column, Row};
 use iced::Element;
 use iced_core::{Color, Length};
 use strum::IntoEnumIterator;
+use crate::ui::program_pomniejsze::style_fn::progress_bar::styl_progress_bar;
 
 pub fn view_dds<'a>(
     dane_pakowanie: &DaneDoPakowaniaDds,
@@ -30,6 +31,7 @@ pub fn view_dds<'a>(
     main_process_check: &CheckActiveProcess,
 ) -> Element<'a, Message> {
     let valid =  *main_process_check == CheckActiveProcess::ProcessŻodyn;
+    let tematyczny_kolor = KOLOR_COTTON_CANDY;
 
     let czy_sie_nada_na_wyslanie_pakowanie=dane_pakowanie.ścieżka_wejściowa.exists() && dane_pakowanie.ścieżka_wyjściowa.exists() && !dane_pakowanie.nazwa.is_empty();
     let lewa = Column::new()
@@ -47,7 +49,7 @@ pub fn view_dds<'a>(
             .style(styl_przycisków(
                 *main_process_check == CheckActiveProcess::ProcessDdsPakowanie,
                 matches!(wybrane_okno, StronyDds::ZplikuDoDds),
-                KOLOR_COTTON_CANDY,
+                tematyczny_kolor,
             )),
         )
         .push(
@@ -63,7 +65,7 @@ pub fn view_dds<'a>(
             .style(styl_przycisków(
                 *main_process_check == CheckActiveProcess::ProcessDdsRozpakowanie,
                 matches!(wybrane_okno, StronyDds::ZddsDoPliku),
-                KOLOR_COTTON_CANDY,
+                tematyczny_kolor,
             )),
         )
         // .push(space().height(Length::FillPortion(10)))
@@ -82,7 +84,7 @@ pub fn view_dds<'a>(
                     button(text("📄").width(Length::Fill).center())
                         .padding(10)
                         .on_press(Message::Dds(DdsMessage::DDS_Pakowanie_ZmianaŚcieżkiWejściowejWybór))
-                        .style(styl_przycisków(false, false, KOLOR_COTTON_CANDY))
+                        .style(styl_przycisków(false, false, tematyczny_kolor))
                         .width(Length::Fixed(40.))
                         .height(Length::Fixed(40.)),
                 )
@@ -93,7 +95,7 @@ pub fn view_dds<'a>(
                             &dane_pakowanie.ścieżka_wejściowa.to_string_lossy()
                         ).font(jezyk.get_font())
                             .padding(10)
-                            .on_input(|xxx|Message::Dds(DdsMessage::DDS_Pakowanie_ZmianaŚcieżkiWejściowej(xxx))).style(styl_text_input(dane_pakowanie.ścieżka_wejściowa.exists(),  KOLOR_COTTON_CANDY,KOLOR_TŁA))
+                            .on_input(|xxx|Message::Dds(DdsMessage::DDS_Pakowanie_ZmianaŚcieżkiWejściowej(xxx))).style(styl_text_input(dane_pakowanie.ścieżka_wejściowa.exists(),  tematyczny_kolor,KOLOR_TŁA))
                             .width(Length::Fill)
                     ).height(Length::Fixed(40.))
                         .width(Length::FillPortion(10))
@@ -110,7 +112,7 @@ pub fn view_dds<'a>(
                     button(text("📄").width(Length::Fill).center())
                         .padding(10)
                         .on_press(Message::Dds(DdsMessage::DDS_Pakowanie_ZmianaŚcieżkiWyjściowejWybór))
-                        .style(styl_przycisków(false, false, KOLOR_COTTON_CANDY))
+                        .style(styl_przycisków(false, false, tematyczny_kolor))
                         .width(Length::Fixed(40.))
                         .height(Length::Fixed(40.)),
                 )
@@ -121,7 +123,7 @@ pub fn view_dds<'a>(
                             &dane_pakowanie.ścieżka_wyjściowa.to_string_lossy()
                         ).font(jezyk.get_font())
                             .padding(10)
-                            .on_input(|xx|Message::Dds(DdsMessage::DDS_Pakowanie_ZmianaŚcieżkiWyjściowej(xx))).style(styl_text_input(dane_pakowanie.ścieżka_wyjściowa.exists(),  KOLOR_COTTON_CANDY,KOLOR_TŁA))
+                            .on_input(|xx|Message::Dds(DdsMessage::DDS_Pakowanie_ZmianaŚcieżkiWyjściowej(xx))).style(styl_text_input(dane_pakowanie.ścieżka_wyjściowa.exists(),  tematyczny_kolor,KOLOR_TŁA))
                             .width(Length::Fill)
                     ).height(Length::Fixed(40.))
                         .width(Length::FillPortion(10))
@@ -139,8 +141,8 @@ pub fn view_dds<'a>(
                             &dane_pakowanie.nazwa
                         ).font(jezyk.get_font())
                             .padding(10)
-                            .style(styl_text_input(!dane_pakowanie.nazwa.is_empty(),KOLOR_COTTON_CANDY, KOLOR_TŁA))
-                            .on_input(|xx|Message::Dds(DdsMessage::DdsPakowanieZmianaNazwy(xx))).style(styl_text_input(dane_pakowanie.ścieżka_wyjściowa.exists(),  KOLOR_COTTON_CANDY,KOLOR_TŁA))
+                            .style(styl_text_input(!dane_pakowanie.nazwa.is_empty(),tematyczny_kolor, KOLOR_TŁA))
+                            .on_input(|xx|Message::Dds(DdsMessage::DdsPakowanieZmianaNazwy(xx))).style(styl_text_input(dane_pakowanie.ścieżka_wyjściowa.exists(),  tematyczny_kolor,KOLOR_TŁA))
                             .width(Length::Fill)
                     ).height(Length::Fixed(40.))
                         .width(Length::FillPortion(7))
@@ -160,8 +162,8 @@ pub fn view_dds<'a>(
             )
                 .text_line_height(2.)
                 .width(Length::Fill)
-                .style(styl_pick_list(KOLOR_COTTON_CANDY, KOLOR_TŁA))
-                .menu_style(styl_menu_pick(KOLOR_COTTON_CANDY, KOLOR_TŁA)),
+                .style(styl_pick_list(tematyczny_kolor, KOLOR_TŁA))
+                .menu_style(styl_menu_pick(tematyczny_kolor, KOLOR_TŁA)),
         )
         .push(ui_standard_oddzielacz())
         .push(
@@ -175,8 +177,8 @@ pub fn view_dds<'a>(
             )
                 .text_line_height(2.)
                 .width(Length::Fill)
-                .style(styl_pick_list(KOLOR_COTTON_CANDY, KOLOR_TŁA))
-                .menu_style(styl_menu_pick(KOLOR_COTTON_CANDY, KOLOR_TŁA)),
+                .style(styl_pick_list(tematyczny_kolor, KOLOR_TŁA))
+                .menu_style(styl_menu_pick(tematyczny_kolor, KOLOR_TŁA)),
         )
         .push(ui_standard_oddzielacz())
         .push(
@@ -191,7 +193,7 @@ pub fn view_dds<'a>(
                     .on_press(Message::Dds(DdsMessage::DdsPakowanieWysylanieDanych))
                     .height(Length::Fixed(40.))
                     .width(Length::Fill)
-                    .style(styl_przycisków(false, false, KOLOR_COTTON_CANDY))
+                    .style(styl_przycisków(false, false, tematyczny_kolor))
             } else {
                 button(
                     text(if *main_process_check == CheckActiveProcess::ProcessDdsPakowanie {
@@ -211,9 +213,34 @@ pub fn view_dds<'a>(
                     .style(styl_przycisków(
                         false,
                         *main_process_check == CheckActiveProcess::ProcessDdsPakowanie,
-                        KOLOR_COTTON_CANDY,
+                        tematyczny_kolor,
                     ))
             },
+        )
+        // .push(space().height(Length::Fixed(15.)))
+        .push(
+            Row::new()
+                .push(text(format!("Postęp procesu:  {}",log_pakowanie.w_trakcie)).font(jezyk.get_font()).width(Length::FillPortion(1)).center())
+                .push(
+                    progress_bar(0.0..=100., log_pakowanie.w_trakcie as f32)
+                        .girth(18.)
+                        .style(styl_progress_bar(tematyczny_kolor, KOLOR_TŁA)).length(Length::FillPortion(1))
+                )
+        ).padding(15)
+
+        .push(
+            text(
+                if log_pakowanie.koniec.len() >0{
+                    log_pakowanie.koniec.to_string()
+                }else{"".to_string()}
+            ).font(jezyk.get_font()).color(KOLOR_CZCIONKI_SREDNI)
+        )
+        .push(
+            text(
+                if log_pakowanie.err.len() >0{
+                    log_pakowanie.err.to_string()
+                }else{"".to_string()}
+            ).font(jezyk.get_font()).color(Color::from_rgba(1., 0.5, 0.5, 0.7))
         )
 
 
@@ -229,10 +256,10 @@ pub fn view_dds<'a>(
         .push(
             Row::new()
                 .push(
-                    button(folder_icon(true, if dane_rozpakowanie.ścieżka_wejściowa.exists() { 2 } else { 0 }, KOLOR_COTTON_CANDY))
+                    button(folder_icon(true, if dane_rozpakowanie.ścieżka_wejściowa.exists() { 2 } else { 0 }, tematyczny_kolor))
                         .padding(10)
                         .on_press(Message::Dds(DdsMessage::DdsrozpakowanieZmianaŚcieżkiWejściowejWybór))
-                        .style(styl_przycisków(false, false, KOLOR_COTTON_CANDY))
+                        .style(styl_przycisków(false, false, tematyczny_kolor))
                         .width(Length::Fixed(40.))
                         .height(Length::Fixed(40.)),
                 )
@@ -243,7 +270,7 @@ pub fn view_dds<'a>(
                             &dane_rozpakowanie.ścieżka_wejściowa.to_string_lossy()
                         ).font(jezyk.get_font())
                             .padding(10)
-                            .on_input(|xxx|Message::Dds(DdsMessage::DdsrozpakowanieZmianaŚcieżkiWejściowej(xxx))).style(styl_text_input(dane_pakowanie.ścieżka_wejściowa.exists(),  KOLOR_COTTON_CANDY,KOLOR_TŁA))
+                            .on_input(|xxx|Message::Dds(DdsMessage::DdsrozpakowanieZmianaŚcieżkiWejściowej(xxx))).style(styl_text_input(dane_pakowanie.ścieżka_wejściowa.exists(),  tematyczny_kolor,KOLOR_TŁA))
                             .width(Length::Fill)
                     ).height(Length::Fixed(40.))
                         .width(Length::FillPortion(10))
@@ -257,10 +284,10 @@ pub fn view_dds<'a>(
         .push(
             Row::new()
                 .push(
-                    button(folder_icon(true, if dane_rozpakowanie.ścieżka_wyjściowa.exists() { 1 } else { 0 }, KOLOR_COTTON_CANDY))
+                    button(folder_icon(true, if dane_rozpakowanie.ścieżka_wyjściowa.exists() { 1 } else { 0 }, tematyczny_kolor))
                         .padding(10)
                         .on_press(Message::Dds(DdsMessage::DdsRozpakowanieZmianaŚcieżkiWyjściowejWybór))
-                        .style(styl_przycisków(false, false, KOLOR_COTTON_CANDY))
+                        .style(styl_przycisków(false, false, tematyczny_kolor))
                         .width(Length::Fixed(40.))
                         .height(Length::Fixed(40.)),
                 )
@@ -271,7 +298,7 @@ pub fn view_dds<'a>(
                             &dane_rozpakowanie.ścieżka_wyjściowa.to_string_lossy()
                         ).font(jezyk.get_font())
                             .padding(10)
-                            .on_input(|xxx|Message::Dds(DdsMessage::DdsRozpakowanieZmianaŚcieżkiWyjściowej(xxx))).style(styl_text_input(dane_pakowanie.ścieżka_wejściowa.exists(), KOLOR_COTTON_CANDY, KOLOR_TŁA))
+                            .on_input(|xxx|Message::Dds(DdsMessage::DdsRozpakowanieZmianaŚcieżkiWyjściowej(xxx))).style(styl_text_input(dane_pakowanie.ścieżka_wejściowa.exists(), tematyczny_kolor, KOLOR_TŁA))
                             .width(Length::Fill)
                     ).height(Length::Fixed(40.))
                         .width(Length::FillPortion(10))
@@ -289,8 +316,8 @@ pub fn view_dds<'a>(
                             &dane_rozpakowanie.nazwa
                         ).font(jezyk.get_font())
                             .padding(10)
-                            .style(styl_text_input(!dane_rozpakowanie.nazwa.is_empty(),KOLOR_COTTON_CANDY, KOLOR_TŁA))
-                            .on_input(|xx|Message::Dds(DdsMessage::DdsPakowanieZmianaNazwy(xx))).style(styl_text_input(!dane_pakowanie.nazwa.is_empty(),  KOLOR_COTTON_CANDY,KOLOR_TŁA))
+                            .style(styl_text_input(!dane_rozpakowanie.nazwa.is_empty(),tematyczny_kolor, KOLOR_TŁA))
+                            .on_input(|xx|Message::Dds(DdsMessage::DdsPakowanieZmianaNazwy(xx))).style(styl_text_input(!dane_pakowanie.nazwa.is_empty(),  tematyczny_kolor,KOLOR_TŁA))
                             .width(Length::Fill)
                     ).height(Length::Fixed(40.))
                         .width(Length::FillPortion(7))
@@ -309,6 +336,9 @@ pub fn view_dds<'a>(
                             jakosc: 90,
                             progresywny: false,
                             bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
+                            sampling: JpgSamplingFac::R420,
+                            quant: JpgQuant::Default,
+                            scans: 4,
                         },
                         &dane_rozpakowanie.rozszerzenie,
                         jezyk.get_font())
@@ -356,7 +386,7 @@ pub fn view_dds<'a>(
                 
                 .push(
                     match dane_rozpakowanie.rozszerzenie.clone()  {
-                        OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, } => {
+                        OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans, } => {
                             let bdepth = bit_depth.clone();
                             container(
                                 Column::new()
@@ -375,7 +405,10 @@ pub fn view_dds<'a>(
                                                                 OptRozszerzeniaPlikówZdjęciowych::Jpg {
                                                                     jakosc: nowa_jakosc,
                                                                     progresywny,
-                                                                    bit_depth: bit_depth.clone()
+                                                                    bit_depth: bit_depth.clone(),
+                                                                    sampling,
+                                                                    quant,
+                                                                    scans,
                                                                 }
                                                             ))
                                                         }
@@ -404,7 +437,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::B8),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -413,7 +446,10 @@ pub fn view_dds<'a>(
                                                                 OptRozszerzeniaPlikówZdjęciowych::Jpg{
                                                                     jakosc, progresywny, bit_depth: Vec::from(
                                                                         [OptFormatyKoloruObrazOgólny::B8]
-                                                                    )
+                                                                    ),
+                                                                    sampling,
+                                                                    quant,
+                                                                    scans,
                                                                 }
                                                             )
                                                         )
@@ -432,7 +468,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::L8),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -441,7 +477,11 @@ pub fn view_dds<'a>(
                                                                 OptRozszerzeniaPlikówZdjęciowych::Jpg{
                                                                     jakosc, progresywny, bit_depth: Vec::from(
                                                                         [OptFormatyKoloruObrazOgólny::L8]
-                                                                    )
+                                                                    ),
+
+                                                                    sampling,
+                                                                    quant,
+                                                                    scans,
                                                                 }
                                                             )
                                                         )
@@ -450,7 +490,7 @@ pub fn view_dds<'a>(
                                             )
                                     )
                                     .push(space().height(Length::Fixed(50.)))
-                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,tematyczny_kolor,RodzajeContainer::Oba))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Png{ kompresja, bit_depth } => {
                             let bdepth = bit_depth.clone();
@@ -499,7 +539,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::L8),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -527,7 +567,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::B8),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -555,7 +595,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::L16),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -583,7 +623,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::B16),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -614,7 +654,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::L8a),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -642,7 +682,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::B8a),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -670,7 +710,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::L16a),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -698,7 +738,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::B16a),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -715,7 +755,7 @@ pub fn view_dds<'a>(
                                                     .height(Length::FillPortion(1))
                                             )
                                     )
-                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,tematyczny_kolor, RodzajeContainer::Góra))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Webp{ jakosc, lossless, bit_depth } => {
 
@@ -766,7 +806,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::B8),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -794,7 +834,7 @@ pub fn view_dds<'a>(
                                                         styl_przycisków(
                                                             false,
                                                             bdepth.contains(&OptFormatyKoloruObrazOgólny::B8a),
-                                                            KOLOR_COTTON_CANDY
+                                                            tematyczny_kolor
                                                         )
                                                     )
                                                     .on_press(
@@ -812,7 +852,7 @@ pub fn view_dds<'a>(
                                             )
                                     )
                                     .push(space().height(Length::Fixed(50.)))
-                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,tematyczny_kolor,RodzajeContainer::Góra))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Tga{ bit_depth } => {
                             let bdepth = bit_depth.clone();
@@ -848,7 +888,7 @@ pub fn view_dds<'a>(
 
                                     )
                                     .push(space().height(Length::Fixed(50.)))
-                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,tematyczny_kolor,RodzajeContainer::Góra))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Ff{ metoda_kompresji } => {
                             // let bdepth = bit_depth.clone();
@@ -959,7 +999,7 @@ pub fn view_dds<'a>(
 
                                     )
                                     .push(space().height(Length::Fixed(50.)))
-                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,tematyczny_kolor,RodzajeContainer::Góra))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Qoi{ bit_depth } => {
                             let bdepth = bit_depth.clone();
@@ -984,7 +1024,7 @@ pub fn view_dds<'a>(
 
                                     )
                                     .push(space().height(Length::Fixed(50.)))
-                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,KOLOR_COTTON_CANDY))
+                            ).width(Length::Fill).height(150.).style(styl_kontenera(true,tematyczny_kolor,RodzajeContainer::Góra))
                         }
                         OptRozszerzeniaPlikówZdjęciowych::Avif { .. } => {container(Column::new())}
                     }

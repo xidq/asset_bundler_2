@@ -22,3 +22,4 @@ xz2 = { workspace = true }
 libheif-rs = { workspace = true }
 iced = { workspace = true }
 encodery = { path = "../encodery" }
+jpeg-encoder = { workspace = true }

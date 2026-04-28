@@ -1,6 +1,5 @@
 use crate::ui::program::{LogPrzetwarzanieFot, WybórJęzyka};
-use crate::ui::program_pomniejsze::kolory::KOLOR_CZCIONKI_SREDNI;
-pub(crate) use crate::ui::program_pomniejsze::kolory::{KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
+use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::ui_podmenu_ff::{
     podmenu_ff_misc, podmenu_ff_wybor,
 };
@@ -24,15 +23,13 @@ use crate::ui::program_pomniejsze::ui_standard::oddzielacz::ui_standard_oddziela
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
 use enumy::ikony::folder_icon;
 use enumy::opcje::{FolderCzyPlik, OptInterpolacja, OptRozdzielczościObrazów};
-use iced::widget::{
-    button, checkbox, container, pick_list, progress_bar, scrollable, slider, space, text, text_input,
-    Column, Grid, Row,
-};
+use iced::widget::{button, checkbox, container, pick_list, progress_bar, scrollable, slider, space, text, text_input, tooltip, Column, Grid, Row};
 use iced::{Border, Color, Element, Length};
 use enumy::inne_ui::{CheckActiveProcess, CheckerDoZbiorowePrzetwarzanieZdjęć};
 pub(crate) use enumy::inne_ui::WybraneOknoEdycjiZdjęć;
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::btn_rozdzielczosci;
-use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::ui_podmenu_avif::podmenu_avif_wybor;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::ui_podmenu_avif::{podmenu_avif_misc, podmenu_avif_wybor};
+use crate::ui::program_pomniejsze::style_fn::scroll::styl_scrollable;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
@@ -48,7 +45,56 @@ pub fn view_foto_change<'a>(
     czy_wyjscie_te_same: bool,
     log: LogPrzetwarzanieFot,
     main_process_check: &CheckActiveProcess,
+    halp:&bool,
 ) -> Element<'a, Message> {
+    let tematyczny_kolor = KOLOR_SPANISH_ORANGE;
+    //elementy ui
+    let btn_load_file: Element<_> = button(
+        if !dane.ścieżka_wejściowa.is_file() { "📄" } else { "🖼️" })
+        .padding(10)
+        .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzPlikInFotoEdycjaPakowanie))
+        .style(styl_przycisków(
+            false,
+            dane.ścieżka_wejściowa.is_file(),
+            tematyczny_kolor,
+        )).into();
+    let btn_load_file_content: Element<_> = if *halp {
+        tooltip(
+            btn_load_file,
+            container(jezyk.t("help_import_file")).padding(10).style(container::rounded_box),
+            tooltip::Position::Bottom
+        ).into()
+    } else {btn_load_file};
+
+    let btn_load_folder: Element<_> = button(
+        folder_icon(
+            true,
+            match (!dane.ścieżka_wejściowa.to_string_lossy().is_empty(),dane.ścieżka_wejściowa.is_file()){
+                (false, false) => {2},
+                (false,true) => {1},
+                _ => {0}
+            },
+            tematyczny_kolor,
+        ))
+        .padding(10)
+        .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderInFotoEdycjaPakowanie))
+        .style(styl_przycisków(
+            false,
+            dane.ścieżka_wejściowa.is_dir(),
+            tematyczny_kolor,
+        )).into();
+    let btn_load_folder_content: Element<_> = if *halp {
+        tooltip(
+            btn_load_folder,
+            container(jezyk.t("help_import_folder")).padding(10).style(container::rounded_box),
+            tooltip::Position::Bottom
+        ).into()
+    } else {btn_load_folder};
+
+
+
+
+
     let czy_sie_nada_na_wyslanie =
         *main_process_check == CheckActiveProcess::ProcessŻodyn &&
             (dane.ścieżka_wejściowa.is_dir() || dane.ścieżka_wejściowa.is_file()) &&
@@ -65,38 +111,9 @@ pub fn view_foto_change<'a>(
         Column::new()
         .push(
             Row::new()
-                .push(
-                    button(
-                        if !dane.ścieżka_wejściowa.is_file() { "📄" } else { "🖼️" })
-                        .padding(10)
-                        .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzPlikInFotoEdycjaPakowanie))
-                        .style(styl_przycisków(
-                            false,
-                            dane.ścieżka_wejściowa.is_file(),
-                            KOLOR_SPANISH_ORANGE,
-                        ))
-
-                )
+                .push(btn_load_file_content)
                 .push(space().width(Length::Fixed(15.)))
-                .push(
-                    button(
-                        folder_icon(
-                        true,
-                        match (!dane.ścieżka_wejściowa.to_string_lossy().is_empty(),dane.ścieżka_wejściowa.is_file()){
-                            (false, false) => {2},
-                            (false,true) => {1},
-                            _ => {0}
-                        },
-                        KOLOR_SPANISH_ORANGE,
-                    ))
-                    .padding(10)
-                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderInFotoEdycjaPakowanie))
-                    .style(styl_przycisków(
-                        false,
-                        dane.ścieżka_wejściowa.is_dir(),
-                        KOLOR_SPANISH_ORANGE,
-                    )),
-                ),
+                .push(btn_load_folder_content),
         )
         .push(
             Row::new()
@@ -108,7 +125,7 @@ pub fn view_foto_change<'a>(
                 .padding(10)
                 .font(jezyk.get_font())
                 .on_input(|xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderInPathChanged(xx)))
-                .style(styl_text_input(dane.ścieżka_wejściowa.exists(),KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
+                .style(styl_text_input(dane.ścieżka_wejściowa.exists(),tematyczny_kolor, KOLOR_TŁA)),
             ),
         )
         .push(
@@ -120,13 +137,13 @@ pub fn view_foto_change<'a>(
             )
             .padding(10)
             .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ResetujStanWejsciowychSciezekEdycjaFoto))
-            .style(styl_przycisków(false, true, KOLOR_SPANISH_ORANGE)),
+            .style(styl_przycisków(false, true, tematyczny_kolor)),
         )
         .push(
             checkbox(czy_wyjscie_te_same)
                 .label("Ścieżka wejściowa będzie wyjściową")
                 .on_toggle(|xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderOutPathTenSam(xx)))
-                .style(styl_checkbox(KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
+                .style(styl_checkbox(tematyczny_kolor, KOLOR_TŁA)),
         )
         .push(
             Row::new()
@@ -138,13 +155,13 @@ pub fn view_foto_change<'a>(
                         } else {
                             2
                         },
-                        KOLOR_SPANISH_ORANGE,
+                        tematyczny_kolor,
                     ))
                     .padding(10)
                     .style(styl_przycisków(
                         false,
                         false,
-                        KOLOR_SPANISH_ORANGE,
+                        tematyczny_kolor,
                     )),
                     false => button(folder_icon(
                         true,
@@ -153,14 +170,14 @@ pub fn view_foto_change<'a>(
                         } else {
                             2
                         },
-                        KOLOR_SPANISH_ORANGE,
+                        tematyczny_kolor,
                     ))
                     .padding(10)
                     .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderOutFotoEdycjaPakowanie))
                     .style(styl_przycisków(
                         false,
                         czy_wyjscie_te_same,
-                        KOLOR_SPANISH_ORANGE,
+                        tematyczny_kolor,
                     )),
                 })
                 .push(match czy_wyjscie_te_same {
@@ -170,7 +187,7 @@ pub fn view_foto_change<'a>(
                     )
                     .padding(10)
                     .font(jezyk.get_font())
-                    .style(styl_text_input(dane.ścieżka_wyjściowa.exists(),KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
+                    .style(styl_text_input(dane.ścieżka_wyjściowa.exists(),tematyczny_kolor, KOLOR_TŁA)),
                     false => text_input(
                         jezyk.t("output_folder"),
                         &dane.ścieżka_wyjściowa.to_string_lossy(),
@@ -178,7 +195,7 @@ pub fn view_foto_change<'a>(
                     .padding(10)
                     .font(jezyk.get_font())
                     .on_input(|xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderOutPathChanged(xx)))
-                    .style(styl_text_input(dane.ścieżka_wyjściowa.exists(),KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
+                    .style(styl_text_input(dane.ścieżka_wyjściowa.exists(),tematyczny_kolor, KOLOR_TŁA)),
                 }),
         )
         .spacing(15)
@@ -402,7 +419,7 @@ pub fn view_foto_change<'a>(
                 .spacing(15) //oesu ale to długie... a tyle krwi napsuło...
                 .padding(15)
                 .width(Length::FillPortion(2)),
-        ))
+        ).style(styl_scrollable(tematyczny_kolor)))
         .spacing(15) //tu sie kończy kolumna.....................................................
         .padding(15)
         .width(Length::FillPortion(2));
@@ -452,8 +469,8 @@ pub fn view_foto_change<'a>(
             )
             .width(Length::Fill)
             .padding(10)
-            .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
-            .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
+            .style(styl_pick_list(tematyczny_kolor, KOLOR_TŁA))
+            .menu_style(styl_menu_pick(tematyczny_kolor, KOLOR_TŁA)),
         )
         .push(text(match dane.noising {
             Some(x) => format!("{} {}%", jezyk.t("foto_edit_noising"), x),
@@ -469,7 +486,7 @@ pub fn view_foto_change<'a>(
                 dane.noising.unwrap_or(0),
                 Message::ZdjeciaEdycjaZmianaZaszumiania,
             )
-            .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+            .style(styl_sliderów(tematyczny_kolor)),
         )
         .spacing(15)
         .padding(15)
@@ -480,6 +497,7 @@ pub fn view_foto_change<'a>(
         .push(podmenu_lewe_wybor(wybrane_okno, &jezyk))
         .push(space().height(Length::Fixed(50.)))
         .push(podmenu_jpg_misc(&dane))
+        .push(podmenu_avif_misc(&dane))
         .push(podmenu_png_misc(&dane))
         .push(podmenu_webp_misc(&dane))
         .push(podmenu_tga_misc( &dane))
@@ -499,7 +517,7 @@ pub fn view_foto_change<'a>(
                 .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WysylkaDanychDoObrobkiZdjec))
                 .height(Length::Fixed(40.))
                 .width(Length::Fill)
-                .style(styl_przycisków(false, *main_process_check == CheckActiveProcess::ProcessŻodyn, KOLOR_SPANISH_ORANGE))
+                .style(styl_przycisków(false, *main_process_check == CheckActiveProcess::ProcessŻodyn, tematyczny_kolor))
             } else {
                 button(
                     text(if *main_process_check == CheckActiveProcess::ProcessKonwersjaZdjęć {
@@ -519,7 +537,7 @@ pub fn view_foto_change<'a>(
                 .style(styl_przycisków(
                     *main_process_check == CheckActiveProcess::ProcessKonwersjaZdjęć,
                     false,
-                    KOLOR_SPANISH_ORANGE,
+                    tematyczny_kolor,
                 ))
             },
         )
@@ -531,7 +549,7 @@ pub fn view_foto_change<'a>(
                 .push(
                     progress_bar(0.0..=100., log.plik_procent as f32)
                         .girth(18.)
-                        .style(styl_progress_bar(KOLOR_SPANISH_ORANGE, KOLOR_TŁA)),
+                        .style(styl_progress_bar(tematyczny_kolor, KOLOR_TŁA)),
                 )
         } else {
             Row::new()

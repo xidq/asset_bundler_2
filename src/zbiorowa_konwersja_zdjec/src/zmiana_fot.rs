@@ -19,6 +19,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
+use encodery::halper::merge_sciezki;
 use encodery::wczytaj_foto::wczytaj_zdjęcie;
 use crate::edycja_avif::edycja_avif;
 use crate::pomocnicze::sprawdz_czy_wsio_ok;
@@ -149,17 +150,16 @@ pub async fn ogarnianie_foto(
                         let tx_zadanie = tx_dla_rayona.clone();
 
                         match &r {
-                            OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth } => {
+                            OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans, } => {
+                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                                let zbiór_danych = (jakosc,progresywny,bit_depth,sampling,quant,scans);
                                 edycja_jpg(
                                     bufor.clone(),
                                     &wsio_dane.opcje_rozdzielczości,
-                                    &wsio_dane.ścieżka_wyjściowa,
-                                    &p.2, //ścieżka dopełniająca
+                                    &sciezka,
                                     &wsio_dane.inter,
                                     &nazwa,
-                                    jakosc,
-                                    progresywny,
-                                    bit_depth,
+                                    zbiór_danych,
                                     &wsio_dane.alfa_rgb,
                                     wsio_dane.noising,
                                     metryka_operacji,

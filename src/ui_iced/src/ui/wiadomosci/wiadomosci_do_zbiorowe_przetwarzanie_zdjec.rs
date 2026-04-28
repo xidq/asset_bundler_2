@@ -3,7 +3,7 @@ use futures::channel::mpsc;
 use iced::Task;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::CheckActiveProcess;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, FolderCzyPlik, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, FolderCzyPlik, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
 use crate::ui::program::Program;
@@ -121,6 +121,40 @@ impl Program {
                     *progresywny = !*progresywny;
                 }
 
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgSampling(xx) => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg {sampling, .. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut()
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                {
+                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
+                    *sampling = xx;
+                }
+
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgQua(xx) => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { quant, .. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut()
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                {
+                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
+                    *quant = xx;
+                }
+
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgScans(skany) => {
+                if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { scans, .. }) = self
+                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    .rozszerzenia_plików_zdjęciowych
+                    .iter_mut() // Tworzymy mutowalny iterator
+                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                {
+                    *scans = skany; // Jeśli znaleziono, aktualizujemy wartość
+                }
             }
             ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjiPng(var) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Png { kompresja, .. }) = self
@@ -387,8 +421,11 @@ impl Program {
                         OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg => (OptRozszerzeniaPlikówZdjęciowych::Jpg {
                             jakosc: 90,
                             progresywny: false,
-                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8])
-                        },  OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg),
+                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
+                            sampling: JpgSamplingFac::R420,
+                            quant: JpgQuant::Default,
+                            scans: 4,
+                        }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg),
                         OptRozszerzeniaPlikówZdjęciowychZnacznik::Png => (OptRozszerzeniaPlikówZdjęciowych::Png {
                             kompresja: 3,
                             bit_depth: vec![OptFormatyKoloruObrazOgólny::B8],

@@ -1,4 +1,4 @@
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 
 #[derive(Debug,Clone)]
@@ -6,6 +6,9 @@ pub enum ZbiorowePrzetwarzanieZdjęćMessage{
     ZdjecieEdycjaZmianaWybraneToggleRozszerzenie(OptRozszerzeniaPlikówZdjęciowychZnacznik),
     ZdjeciaEdycjaZmianaJakosciJpg(u8),
     ZdjeciaEdycjaZmianaProgresJpg,
+    ZdjeciaEdycjaZmianaJpgSampling(JpgSamplingFac),
+    ZdjeciaEdycjaZmianaJpgQua(JpgQuant),
+    ZdjeciaEdycjaZmianaJpgScans(u8),
     ZdjeciaEdycjaZmianaKompresjiPng(u8),
     ZdjeciaEdycjaZmianaKolorAlpha(u8, u16),
     DopasujRozdzielczosci(OptRozdzielczościObrazów),

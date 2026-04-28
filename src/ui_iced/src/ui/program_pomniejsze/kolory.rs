@@ -15,3 +15,6 @@ pub const KOLOR_CZCIONKI_JASNY: Color = Color::from_rgba(1., 1., 1., 0.8);
 pub const KOLOR_OBRAMOWANIA_NIE_AKTYWNY: Color = Color::from_rgba(1., 1., 1., 0.2);
 
 pub const WYSOKOSC_CZCIONEK_PRZYCISKI: f32 = 40.;
+
+// pub const OBRAZEK: &[u8] = include_bytes!("../../../../Data/sad.png");
+

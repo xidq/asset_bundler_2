@@ -1,4 +1,4 @@
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoŁączeniaZdjęć;
 
 #[derive(Debug, Clone)]
@@ -20,6 +20,9 @@ pub enum ŁączenieZdjęćMessage {
     ZdjeciaLaczenieZmianaWybranyPng,
     ZdjeciaLaczenieZmianaWybraneRozszerzenie(OptRozszerzeniaPlikówZdjęciowychZnacznik),
     ZdjeciaLaczenieZmianaJakosciJpg(u8),
+    ZdjeciaEdycjaZmianaJpgSampling(JpgSamplingFac),
+    ZdjeciaEdycjaZmianaJpgQua(JpgQuant),
+    ZdjeciaEdycjaZmianaJpgScans(u8),
     ZdjeciaLaczenieZmianaRozszerzeniePng(OptFormatyKoloruObrazOgólny),
     ZdjeciaLaczenieZmianaKompresjiPng(u8),
     ZdjeciaLaczenieZmianaRozszerzenieWebp(OptFormatyKoloruObrazOgólny),

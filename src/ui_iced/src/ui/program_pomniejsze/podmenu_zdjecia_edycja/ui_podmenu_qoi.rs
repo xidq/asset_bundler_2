@@ -8,7 +8,7 @@ use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{button, container, space, text, Column, Row};
 use iced_core::{Color, Length};
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
+use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_kolor_qoi, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::wiadomosci::message_ui::Message;
@@ -39,7 +39,7 @@ pub fn podmenu_qoi_wybor<'a>(
                             .push(btn_zbiorowe_kolor_qoi(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi,OptFormatyKoloruObrazuQoi::ColorA32,dane,jezyk.get_font()))
                         )
                     
-                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE))
+                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
             }else{container(Column::new())}
         ).padding(15).width(Length::FillPortion(2))
     

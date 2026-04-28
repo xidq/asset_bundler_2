@@ -5,6 +5,8 @@ use enumy::statusy::LogTxDoPakowanieDds;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
+use enumy::enums_structs_io::LogPakowaniaDds;
+use enumy::inne_ui::CheckActiveProcess;
 use enumy::opcje::OptRozszerzeniaPlikówZdjęciowych;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
 
@@ -14,7 +16,7 @@ impl Program {
             DdsMessage::DDS_Pakowanie_ZmianaŚcieżkiWejściowejWybór => {
 
                 if let Some(path) = rfd::FileDialog::new()
-                    .pick_folder()
+                    .pick_file()
                 {
                     self.dane_temp_do_pakowania_dds.ścieżka_wejściowa = path;
                 }
@@ -47,7 +49,7 @@ impl Program {
 
             DdsMessage::DdsPakowanieWysylanieDanych => {
                 let dane_do_pakowania_dds = self.dane_temp_do_pakowania_dds.clone();
-                self.checker_bool_status_dds = (true,false);
+                self.checker_bool_status_procesow = CheckActiveProcess::ProcessDdsPakowanie;
                 dbg!(&dane_do_pakowania_dds);
                 // self.status_zmiany_fot_log = Default::default();
                 // println!(
@@ -83,21 +85,21 @@ impl Program {
                         // self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
                     }
                     LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(procent) => {
-                        // println!("Update dostał procent: {}", procent); // <-- DEBUG
-                        // self.status_zmiany_fot_log.plik_procent = procent;
-                        // self.status_zmiany_fot_log.msg_proces = format!("{}", procent);
+                        self.status_dds_pakowanie.w_trakcie = procent;
                     }
 
 
                     LogTxDoPakowanieDds::StatusPakowanieDdsKoniec(czas) => {
                         // self.status_zmiany_fot_log.msg_end =
                         //     format!("Zakończono w czasie: {}", czas);
-                        self.checker_bool_status_dds = (false,false);
+                        self.status_dds_pakowanie.koniec = czas;
+                        self.checker_bool_status_procesow = CheckActiveProcess::ProcessŻodyn;
                     }
                     LogTxDoPakowanieDds::StatusPakowanieDdsBłąd(err) => {
+                        self.status_dds_pakowanie.err = err;
                         // self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
                         // self.checker_bool_status_zbiorowe_przetwarzanie_zdjęć = false;
-                        self.checker_bool_status_dds = (false,false);
+                        self.checker_bool_status_procesow = CheckActiveProcess::ProcessŻodyn;
                     }
                 }
             }
@@ -129,12 +131,15 @@ impl Program {
             },
             DdsMessage::DdsRozpakowaniZemianaRozszerzeniaDane(huehue) => {
                 let _ = match huehue{
-                    OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth } => {
+                    OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans } => {
                         self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
                             OptRozszerzeniaPlikówZdjęciowych::Jpg{
                                 jakosc,
                                 progresywny,
                                 bit_depth,
+                                sampling,
+                                quant,
+                                scans,
                             }
 
                     }

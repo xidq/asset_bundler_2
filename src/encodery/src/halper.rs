@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Luma, LumaA, Rgb, Rgba};
 use rand::RngExt;
 
@@ -383,4 +384,10 @@ pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> Dynam
         obraz_koncowy
     };
     usuniete_alpha
+}
+
+pub fn merge_sciezki<'a>(ścieżka_wyjściowa:&PathBuf, ścieżka_dopełniająca: &String) -> PathBuf {
+    let mut huehuehue = ścieżka_wyjściowa.clone();
+    huehuehue.push(ścieżka_dopełniająca);
+    huehuehue
 }
