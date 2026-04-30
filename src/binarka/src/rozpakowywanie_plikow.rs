@@ -1,24 +1,22 @@
-use iced::futures::SinkExt;
 use iced::futures::channel::mpsc;
+use iced::futures::SinkExt;
 use std::path::PathBuf;
 use std::time::Instant;
 
 use enumy::dane_do_przetwarzania::DaneDoDekompresjaPlików;
+use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
 use enumy::statusy::LogTxDoDekompresjiPliku;
-use tokio::io::AsyncReadExt;
-use tokio::*;
 // pub(crate) use crate::io::import_for_compression::{KolejnośćDziałań, Progress};
 use kompresja::dekompresjazstd::dekompresujsuj;
 use szyfrowanie::xor_de::deszyfruj_xor;
+use tokio::io::AsyncReadExt;
 
 async fn sprawdzanie_istnienia_pliku(
     ścieżka_pliku: PathBuf,
     ścieżka_docelowa: PathBuf,
     mut tx: mpsc::Sender<LogTxDoDekompresjiPliku>,
 ) -> Result<(), tokio::io::Error> {
-    let _ = tx
-        .send(LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDeszyfracja { procent: None })
-        .await;
+
 
     // 1. Walidacja wejścia
     if !ścieżka_pliku.exists() || !ścieżka_pliku.is_file() {
@@ -53,7 +51,7 @@ async fn sprawdzanie_istnienia_pliku(
     let total_size = plik_in.metadata().await?.len();
     let mut skopiowano = 0u64;
     let mut bufor = vec![0; 64 * 1024]; // Bufor 64KB
-    let mut ostatni_procent = 0u8;
+    let mut ostatni_stan = Instant::now();
 
     println!("Rozpoczęto kopiowanie do: {:?}", docelowy_plik_temp);
 
@@ -64,15 +62,14 @@ async fn sprawdzanie_istnienia_pliku(
         tokio::io::AsyncWriteExt::write_all(&mut plik_out, &bufor[..n]).await?;
 
         skopiowano += n as u64;
-        let procent = ((skopiowano as f64 / total_size as f64) * 100.0) as u8;
 
-        // Wysyłaj postęp tylko gdy procent się zmieni (żeby nie zapchać kanału)
-        if procent > ostatni_procent {
-            ostatni_procent = procent;
+        if ostatni_stan.elapsed().as_millis() >= 250  {
+            ostatni_stan = Instant::now();
             let _ = tx
                 .send(
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDeszyfracja {
-                        procent: Some(procent),
+                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZbieraniePlików {
+                        current: skopiowano as u32,
+                        max: Some(total_size as u32 + 1),
                     },
                 )
                 .await;
@@ -80,12 +77,12 @@ async fn sprawdzanie_istnienia_pliku(
     }
 
     let _ = tx
-        .send(LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDeszyfracja { procent: None })
+        .send(LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZbieraniePlików { current: skopiowano as u32 + 1, max: Some(total_size as u32  + 1) })
         .await;
 
-    println!("Kopiowanie zakończone sukcesem.");
 
-    // Zwracamy ścieżkę do nowego pliku, żeby kolejna funkcja wiedziała co deszyfrować
+
+
     Ok(())
 }
 
@@ -97,8 +94,8 @@ pub async fn wypakuj_pliki(
     let _ = tx
         .send(
             LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
-                aktualny: None,
-                suma: None,
+                current: 0,
+                max: None,
             },
         )
         .await;
@@ -116,6 +113,8 @@ pub async fn wypakuj_pliki(
     // Bufory pomocnicze na liczby
     let mut buf_u32 = [0u8; 4];
     let mut buf_u64 = [0u8; 8];
+    let mut ostatni_stan = Instant::now();
+    let mut liczydło = 0;
 
     // 3. Czytamy całkowitą ilość plików zapisaną na samym początku (u32)
     plik.read_exact(&mut buf_u32).await?;
@@ -151,42 +150,40 @@ pub async fn wypakuj_pliki(
         {
             tokio::fs::create_dir_all(parent).await?;
         }
-
+        liczydło = i+1;
         // Zapisujemy plik wynikowy
         tokio::fs::write(&pełna_ścieżka_wyjściowa, dane_pliku).await?;
 
-        // 5. Powiadomienie UI - używamy nowego formatu StatusDekompresjaPlikówRozpakowywanie
-        let _ = tx
-            .send(
-                LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
-                    aktualny: Some((i + 1) as i32),
-                    suma: Some(suma_plikow as i32),
-                },
-            )
-            .await;
+        if ostatni_stan.elapsed().as_millis() >= 250 {
+            ostatni_stan = Instant::now();
+            let _ = tx
+                .send(
+                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
+                        current: liczydło ,
+                        max: Some(suma_plikow   + 2 ),
+                    },
+                )
+                .await;
+        }
     }
     let _ = tx
         .send(
             LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
-                aktualny: None,
-                suma: None,
+                current: liczydło +1,
+                max: Some(suma_plikow  + 2),
             },
         )
         .await;
 
-    // 6. Czyszczenie - zamykamy i usuwamy plik tymczasowy .jrz_temp_clean
     drop(plik);
     tokio::fs::remove_file(sciezka_binarki).await?;
 
-    println!(
-        "Wszystkie pliki zostały poprawnie wypakowane do {:?}",
-        ścieżka
-    );
+
     let _ = tx
         .send(
             LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
-                aktualny: None,
-                suma: None,
+                current: liczydło +2 ,
+                max: Some(suma_plikow + 2),
             },
         )
         .await;
@@ -204,9 +201,7 @@ pub async fn ogarnianie_dekompresji(
         .unwrap()
         .to_string_lossy()
         .into_owned();
-    // let ścieżka_kastrat = dane.ścieżka_docelowa
-    println!("ścieżka docelowa: \n {:?}", &dane.ścieżka_docelowa);
-    println!("nazwa pliku: {}", nazwa_pliku);
+
     let wynik = async {
         sprawdzanie_istnienia_pliku(
             dane.ścieżka_pliku,
@@ -232,15 +227,11 @@ pub async fn ogarnianie_dekompresji(
     .await;
     match wynik {
         Ok(_) => {
-            let trwanie = start_czas.elapsed(); // Zwraca strukturę Duration
 
-            // Formatujemy czas na ładny napis, np. "1.23s" lub "45ms"
-            // Możesz użyć prostego formatowania:
-            let czas_napis = format!("{:.2?}", trwanie);
             let _ = tx
                 .send(
                     LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZakończenie {
-                        czas: czas_napis,
+                        czas: przelicz_czas(start_czas),
                     },
                 )
                 .await;

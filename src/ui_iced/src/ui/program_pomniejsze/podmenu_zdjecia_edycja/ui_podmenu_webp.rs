@@ -1,32 +1,32 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE};
+use crate::ui::program_pomniejsze::kolory::KOLOR_CZCIONKI_SREDNI;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
+use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
-use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
-    PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
-};
+use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
+use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::inne_ui::{RodzajeContainer, UstawieniaThemeWsio};
 use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{button, container, slider, space, text, tooltip, Column, Row};
-use iced_core::{Color, Length};
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
-use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
-use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
+use iced_core::Length;
 
-pub fn podmenu_webp_wybor(
-    dane: &DaneDoBathKonwersjaZdjec,
-    jezyk: &WybórJęzyka,
-) -> Column<'static, Message> {
+pub fn podmenu_webp_wybor<'a>(
+    dane: &'a DaneDoBathKonwersjaZdjec,
+    jezyk: &'a WybórJęzyka,
+    kolor: &'a iced::Color,
+    temat: &'a UstawieniaThemeWsio,
+) -> Column<'a, Message> {
     Column::new()
-        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp, dane, jezyk.get_font()))
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp, dane, jezyk.get_font(),kolor,temat))
 
         .push(
             if let Some(OptRozszerzeniaPlikówZdjęciowych::Webp {
                             jakosc,
                             lossless,
-                            bit_depth,
+                            bit_depth: _,
                         }) = dane.rozszerzenia_plików_zdjęciowych
                 .iter()
                 .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Webp { .. }))
@@ -39,11 +39,11 @@ pub fn podmenu_webp_wybor(
                                     slider(
                                         0..=100,
                                         *jakosc,
-                                        |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJakosciWebp(vv))
+                                        |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WebpJakość(vv))
                                     )
                                         .height(20.)
                                         .width(Length::FillPortion(6))
-                                        .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                        .style(styl_sliderów(kolor,temat)),
                                 )
                                 .push(
                                     text(format!(
@@ -60,14 +60,14 @@ pub fn podmenu_webp_wybor(
 
                                 .push(
                                     tooltip(
-                                        btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp,OptFormatyKoloruObrazOgólny::B8,dane,jezyk.get_font()),
+                                        btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp,OptFormatyKoloruObrazOgólny::B8,dane,jezyk.get_font(),kolor,temat),
                                         text("rgb".to_string()),
                                         tooltip::Position::Top,
                                     )
                                 )
                                 .push(
                                     tooltip(
-                                        btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp,OptFormatyKoloruObrazOgólny::B8a,dane,jezyk.get_font()),
+                                        btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp,OptFormatyKoloruObrazOgólny::B8a,dane,jezyk.get_font(),kolor,temat),
                                         text("rgba".to_string()),
                                         tooltip::Position::Top,
                                     )
@@ -84,11 +84,11 @@ pub fn podmenu_webp_wybor(
                                                         .center(),
                                                 )
                                                     .padding(10)
-                                                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaLosslessWebp))
+                                                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::WebpLossless))
                                                     .style(styl_przycisków(
                                                         false,
                                                         *lossless,
-                                                        KOLOR_SPANISH_ORANGE,
+                                                        kolor,temat,
                                                     ))
                                                     .width(Length::FillPortion(1)),
 
@@ -98,7 +98,7 @@ pub fn podmenu_webp_wybor(
                                         )
                                 )
                         )
-                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
+                ).height(100.).style(styl_kontenera(true,RodzajeContainer::Góra, kolor,temat))
             } else {
                 container(Row::new())
             }

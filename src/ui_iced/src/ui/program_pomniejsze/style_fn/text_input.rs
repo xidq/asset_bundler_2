@@ -1,18 +1,20 @@
-use iced::widget::text_input;
 use crate::ui::program_pomniejsze::kolory::KOLOR_ERROR;
+use enumy::inne_ui::UstawieniaThemeWsio;
+use iced::widget::text_input;
+use iced_core::Color;
 
 pub fn styl_text_input<'a>(
     checker:bool,
-    kolor_akcentu: (f32, f32, f32),
-    kolor_tla: (f32, f32, f32),
+    kolor_akcentu: &'a Color,
+    temat: &'a UstawieniaThemeWsio,
 ) -> impl Fn(&iced::Theme, text_input::Status) -> text_input::Style + 'a {
     move |_theme: &iced::Theme, _status: iced::widget::text_input::Status| {
         use iced::widget::text_input;
         use iced::{Border, Color};
 
-        let kolor_error = Color::from_rgba(KOLOR_ERROR.0, KOLOR_ERROR.1, KOLOR_ERROR.2, 0.2);
-        let tlo_bazowe = Color::from_rgb(kolor_tla.0, kolor_tla.1, kolor_tla.2);
-        let kolor_akcentu = Color::from_rgb(kolor_akcentu.0, kolor_akcentu.1, kolor_akcentu.2);
+        let kolor_error = Color{a: 0.2, ..KOLOR_ERROR};
+        let tlo_bazowe = temat.obecny_theme.bground;
+        // let kolor_akcentu = Color::from_rgb(kolor_akcentu.0, kolor_akcentu.1, kolor_akcentu.2);
 
         // Sprawdzamy stany z uwzględnieniem struktury wariantu Focused
         let (czy_hover, czy_focused, czy_disabled) = match _status {
@@ -26,7 +28,7 @@ pub fn styl_text_input<'a>(
             // Jeśli wyłączony, lekko przyciemniamy tło
             background: if czy_disabled {
                 Color {
-                    a: 0.5,
+                    a: temat.obecny_theme.mid,
                     ..tlo_bazowe
                 }
                 .into()
@@ -36,19 +38,19 @@ pub fn styl_text_input<'a>(
 
             value: if czy_disabled {
                 Color {
-                    a: 0.3,
-                    ..Color::WHITE
+                    a: temat.obecny_theme.low,
+                    ..temat.obecny_theme.kolor
                 }
             } else {
                 Color {
-                    a: 0.7,
-                    ..Color::WHITE
+                    a: temat.obecny_theme.hi,
+                    ..temat.obecny_theme.kolor
                 }
             },
 
             placeholder: Color {
-                a: 0.3,
-                ..Color::WHITE
+                a: temat.obecny_theme.low,
+                ..temat.obecny_theme.kolor
             },
 
             border: Border {
@@ -62,19 +64,19 @@ pub fn styl_text_input<'a>(
                 color: if !checker{
                     kolor_error
                 }else if (czy_hover || czy_focused) && !czy_disabled {
-                    kolor_akcentu
+                    *kolor_akcentu
                 } else {
                     Color {
-                        a: 0.1,
-                        ..Color::WHITE
+                        a: temat.obecny_theme.low,
+                        ..temat.obecny_theme.kolor
                     }
                 },
             },
 
-            icon: Color::WHITE,
+            icon: Color{a:temat.tekst.hi,..temat.tekst.kolor},
             selection: Color {
-                a: 0.3,
-                ..kolor_akcentu
+                a: temat.obecny_theme.low,
+                ..*kolor_akcentu
             },
         }
     }

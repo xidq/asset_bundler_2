@@ -90,7 +90,7 @@ pub async fn dds_ex_ff(
 
             bombozooo
                 .write_with_encoder(encoder)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?
+                .map_err(|e| std::io::Error::other(e))?
         }
     }
 

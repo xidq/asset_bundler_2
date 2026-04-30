@@ -1,18 +1,18 @@
-use std::path::PathBuf;
-use futures::channel::mpsc;
-use iced::Task;
-use enumy::enums_structs_io::FILTERFOTO;
-use enumy::inne_ui::CheckActiveProcess;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, FolderCzyPlik, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
-use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
 use crate::ui::program::Program;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
+use enumy::enums_structs_io::FILTERFOTO;
+use enumy::inne_ui::ActProces;
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use futures::channel::mpsc;
+use iced::Task;
+use std::path::PathBuf;
+use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
 
 impl Program {
     pub fn update_message_zbiorowe_przetwarzanie_zdjec(&mut self, msg: ZbiorowePrzetwarzanieZdjęćMessage) -> Task<ZbiorowePrzetwarzanieZdjęćMessage> {
         match msg {
-            ZbiorowePrzetwarzanieZdjęćMessage::WybierzPlikInFotoEdycjaPakowanie => {
+            ZbiorowePrzetwarzanieZdjęćMessage::PathInFile => {
                 if let Some(path) = rfd::FileDialog::new()
                     .add_filter("Obrazy", &FILTERFOTO)
                     .pick_file()
@@ -37,7 +37,7 @@ impl Program {
                     }
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderInFotoEdycjaPakowanie => {
+            ZbiorowePrzetwarzanieZdjęćMessage::PathInFolder => {
                 if let Some(path) = rfd::FileDialog::new()
                     .pick_folder()
                 {
@@ -62,13 +62,13 @@ impl Program {
                 }
                 }
 
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderInPathChanged(s) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::PathInText(s) => {
                 self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa = PathBuf::from(s);
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ResetujStanWejsciowychSciezekEdycjaFoto => {
+            ZbiorowePrzetwarzanieZdjęćMessage::PathsReset => {
                 self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa = PathBuf::new();
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderOutPathTenSam(zdjecia_edycja_co_jest_na_out) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::PathOutPathInBool(zdjecia_edycja_co_jest_na_out) => {
                 self.zdjecia_edycja_co_jest_na_out = zdjecia_edycja_co_jest_na_out;
                 let xoxo = if self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa.is_file() {
                     self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
@@ -81,16 +81,16 @@ impl Program {
                 };
                 self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = xoxo
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::WybierzFolderOutFotoEdycjaPakowanie => {
+            ZbiorowePrzetwarzanieZdjęćMessage::PathOutFolder => {
                 if let Some(path) = rfd::FileDialog::new().pick_folder() {
                     self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = path;
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaZmienFolderOutPathChanged(s) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::PathOutText(s) => {
                 self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = PathBuf::from(s)
             }
 
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKolorAlpha(indeks, wartosc) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::WypełnienieAlpha(indeks, wartosc) => {
                 match indeks {
                     0 => self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.alfa_rgb.0 = wartosc, // Zmieniamy R
                     1 => self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.alfa_rgb.1 = wartosc, // Zmieniamy G
@@ -100,7 +100,7 @@ impl Program {
 
             }
 
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJakosciJpg(procent) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::JpgJakość(procent) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -110,7 +110,7 @@ impl Program {
                     *jakosc = procent; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaProgresJpg => {
+            ZbiorowePrzetwarzanieZdjęćMessage::JpgProg => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { progresywny, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -122,7 +122,7 @@ impl Program {
                 }
 
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgSampling(xx) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::JpgSampling(xx) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg {sampling, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -134,7 +134,7 @@ impl Program {
                 }
 
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgQua(xx) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::JpgQua(xx) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { quant, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -146,7 +146,7 @@ impl Program {
                 }
 
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgScans(skany) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::JpgScan(skany) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { scans, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -156,7 +156,7 @@ impl Program {
                     *scans = skany; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjiPng(var) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::PngKompresja(var) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Png { kompresja, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -166,7 +166,19 @@ impl Program {
                     *kompresja = var; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJakosciWebp(procent) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::Interpolacja(xx) => {
+                
+                let yy = match xx.as_str() {
+                    "OptInterpolacja_nearest" => OptInterpolacja::Nearest,
+                    "OptInterpolacja_triangle" => OptInterpolacja::Triangle,
+                    "OptInterpolacja_catmull" => OptInterpolacja::CatmullRom,
+                    "OptInterpolacja_gaussian" => OptInterpolacja::Gaussian,
+                    "OptInterpolacja_lanczos" => OptInterpolacja::Lanczos3,
+                    _ => {OptInterpolacja::Lanczos3}
+                };
+                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.inter = yy;
+            }
+            ZbiorowePrzetwarzanieZdjęćMessage::WebpJakość(procent) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -176,7 +188,7 @@ impl Program {
                     *jakosc = procent; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaLosslessWebp => {
+            ZbiorowePrzetwarzanieZdjęćMessage::WebpLossless => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Webp { lossless, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -188,7 +200,7 @@ impl Program {
                 }
 
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaBitDepthTga(fdvcx) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::TgaBdepth(fdvcx) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -210,7 +222,7 @@ impl Program {
                     }
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaFF(metoda) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::FfKompresja(metoda) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -220,7 +232,7 @@ impl Program {
                     *metoda_kompresji = metoda;
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaWartoscFF(var) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::FfKompresjaVal(var) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -236,7 +248,7 @@ impl Program {
                     }
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaBitDepthQoi(bdepth) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::QoiBdepth(bdepth) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -257,7 +269,7 @@ impl Program {
                     }
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaBitDepthAvif(fdvcx) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::AvifBdepth(fdvcx) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { bit_depth, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -279,7 +291,7 @@ impl Program {
                     }
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifSpeed(das) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::AvifSpeed(das) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { speed, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -289,7 +301,7 @@ impl Program {
                     *speed = das; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifToggleLossy => {
+            ZbiorowePrzetwarzanieZdjęćMessage::AvifLossyToggle => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -306,7 +318,7 @@ impl Program {
                 }
 
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifLossy(das) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::AvifLossy(das) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -316,7 +328,7 @@ impl Program {
                     *lossy = Some(das); // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifKompresja(metoda) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::AvifKompresja(metoda) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { metoda_kompresji,.. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -326,7 +338,7 @@ impl Program {
                     *metoda_kompresji = metoda;
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifChroma(chromchrom) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::AvifChroma(chromchrom) => {
                 if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { chroma,.. }) = self
                     .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
@@ -336,11 +348,11 @@ impl Program {
                     *chroma = chromchrom;
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaZaszumiania(procent) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::Noising(procent) => {
                 self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.noising =
                     if procent == 0u8 { None } else { Some(procent) };
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::DopasujRozdzielczosci(khekhe) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::Rozdzielczość(khekhe) => {
                 // 1. Szukamy pozycji konkretnej rozdzielczości w wektorze
                 let pozycja = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .opcje_rozdzielczości
@@ -359,7 +371,7 @@ impl Program {
                 }
             }
 
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjecieEdycjaZmianaWybraneToggleKolor(rozs, kolor) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::Bdepth(rozs, kolor) => {
                 // 1. Szukamy pozycji rozszerzenia w wektorze tagów
                 if let Some(index) = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .tag
@@ -392,7 +404,7 @@ impl Program {
             }
 
 
-            ZbiorowePrzetwarzanieZdjęćMessage::ZdjecieEdycjaZmianaWybraneToggleRozszerzenie(gwiazdek) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::Rozszerzenia(gwiazdek) => {
                 let pozycja_tag = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .tag
                     .iter()
@@ -400,16 +412,15 @@ impl Program {
                 let pozycja = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
                     .rozszerzenia_plików_zdjęciowych
                     .iter()
-                    .position(|f| match (f, &gwiazdek) {
-                        (OptRozszerzeniaPlikówZdjęciowych::Jpg {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg) => true,
-                        (OptRozszerzeniaPlikówZdjęciowych::Png {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Png) => true,
-                        (OptRozszerzeniaPlikówZdjęciowych::Webp {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp) => true,
-                        (OptRozszerzeniaPlikówZdjęciowych::Tga { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga) => true,
-                        (OptRozszerzeniaPlikówZdjęciowych::Ff { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff) => true,
-                        (OptRozszerzeniaPlikówZdjęciowych::Qoi { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi) => true,
-                        (OptRozszerzeniaPlikówZdjęciowych::Avif { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif) => true,
-                        _ => false
-                    });
+                    .position(|f| matches! ((f, &gwiazdek),
+                        (OptRozszerzeniaPlikówZdjęciowych::Jpg {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg) |
+                        (OptRozszerzeniaPlikówZdjęciowych::Png {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Png) |
+                        (OptRozszerzeniaPlikówZdjęciowych::Webp {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp) |
+                        (OptRozszerzeniaPlikówZdjęciowych::Tga { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga) |
+                        (OptRozszerzeniaPlikówZdjęciowych::Ff { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff) |
+                        (OptRozszerzeniaPlikówZdjęciowych::Qoi { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi) |
+                        (OptRozszerzeniaPlikówZdjęciowych::Avif { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif)
+                    ));
                 if let Some(idx) = pozycja_tag {
                     self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.tag.remove(idx);
                 }
@@ -457,9 +468,9 @@ impl Program {
                     self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.tag.push(nowy_tag);
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::WysylkaDanychDoObrobkiZdjec => {
+            ZbiorowePrzetwarzanieZdjęćMessage::Uruchom => {
                 let dane_do_obrobki = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.clone();
-                self.checker_bool_status_procesow = CheckActiveProcess::ProcessKonwersjaZdjęć;
+                self.temat.temp.aktywny_proces = ActProces::KonwersjaZdjęć;
                 self.status_zmiany_fot_log = Default::default();
                 dbg!(
                     "ścieżka przekazywana to: {:?}",
@@ -486,11 +497,11 @@ impl Program {
                     |_| ZbiorowePrzetwarzanieZdjęćMessage::Nic,
                 );
 
-                let nasluchiwanie = Task::run(rx, ZbiorowePrzetwarzanieZdjęćMessage::PostepEdycjaFot);
+                let nasluchiwanie = Task::run(rx, ZbiorowePrzetwarzanieZdjęćMessage::Log);
 
                 return Task::batch(Vec::from([operacja, nasluchiwanie]));
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::PostepEdycjaFot(progress) => {
+            ZbiorowePrzetwarzanieZdjęćMessage::Log(progress) => {
                 match progress {
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćStart => {
                         self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
@@ -526,11 +537,11 @@ impl Program {
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćKoniec(czas) => {
                         self.status_zmiany_fot_log.msg_end =
                             format!("Zakończono w czasie: {}", czas);
-                        self.checker_bool_status_procesow = CheckActiveProcess::ProcessŻodyn;
+                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
                     }
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(err) => {
                         self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
-                        self.checker_bool_status_procesow = CheckActiveProcess::ProcessŻodyn;
+                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
                     }
                 }
             }

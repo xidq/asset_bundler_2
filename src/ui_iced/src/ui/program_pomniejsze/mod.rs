@@ -4,7 +4,6 @@ mod podmenu_zdjecia_edycja;
 pub(crate) mod style_fn;
 pub(crate) mod ui_dds;
 pub(crate) mod ui_laczenie_zdjec;
-pub(crate) mod ui_pakowanie;
-pub(crate) mod ui_rozpakowanie;
+pub(crate) mod ui_binarka;
 pub mod ui_standard;
 pub(crate) mod ui_zdjecia_edycja;

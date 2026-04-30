@@ -1,30 +1,27 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_SPANISH_ORANGE};
-use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
-use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
-    PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
-};
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuTga, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, container, slider, space, text, tooltip, Column, Row};
-use iced_core::{Color, Length};
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
-use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_kolor_tga, btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::kolory::KOLOR_CZCIONKI_SREDNI;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_tga, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
-use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
+use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
 use crate::ui::wiadomosci::message_ui::Message;
-use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::inne_ui::{RodzajeContainer, UstawieniaThemeWsio};
+use enumy::opcje::{OptFormatyKoloruObrazuTga, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, space, text, tooltip, Column, Row};
+use iced_core::Length;
 
-pub fn podmenu_tga_wybor(
-    dane: &DaneDoBathKonwersjaZdjec,
-    jezyk: &WybórJęzyka,
-) -> Column<'static, Message> {
+pub fn podmenu_tga_wybor<'a>(
+    dane: &'a DaneDoBathKonwersjaZdjec,
+    jezyk: &'a WybórJęzyka,
+    kolor: &'a iced::Color,
+    temat: &'a UstawieniaThemeWsio,
+) -> Column<'a, Message> {
     Column::new()
-        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga, dane, jezyk.get_font()))
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga, dane, jezyk.get_font(),kolor,temat))
 
         .push(
             if let Some(OptRozszerzeniaPlikówZdjęciowych::Tga {
-                            bit_depth,
+                            bit_depth: _,
                         }) = dane.rozszerzenia_plików_zdjęciowych
                 .iter()
                 .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Tga { .. }))
@@ -44,35 +41,35 @@ pub fn podmenu_tga_wybor(
                             Row::new()
                                 .push(
                                     tooltip(
-                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::Szary8,dane,jezyk.get_font()),
+                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::Szary8,dane,jezyk.get_font(),kolor,temat),
                                         text(jezyk.t("foto_edit_tooltip_jpg_color").to_string()),
                                         tooltip::Position::Top,
                                     )
                                 )
                                 .push(
                                     tooltip(
-                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::HighColor16,dane,jezyk.get_font()),
+                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::HighColor16,dane,jezyk.get_font(),kolor,temat),
                                         text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
                                         tooltip::Position::Top,
                                     )
                                 )
                                 .push(
                                     tooltip(
-                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::TrueColor24,dane,jezyk.get_font()),
+                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::TrueColor24,dane,jezyk.get_font(),kolor,temat),
                                         text(jezyk.t("foto_edit_tooltip_jpg_color").to_string()),
                                         tooltip::Position::Top,
                                     )
                                 )
                                 .push(
                                     tooltip(
-                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::TrueColorA32,dane,jezyk.get_font()),
+                                        btn_zbiorowe_kolor_tga(OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga,OptFormatyKoloruObrazuTga::TrueColorA32,dane,jezyk.get_font(),kolor,temat),
                                         text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
                                         tooltip::Position::Top,
                                     )
                                 )
                                 .height(Length::FillPortion(1))
                         )
-                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
+                ).height(100.).style(styl_kontenera(true,RodzajeContainer::Góra,kolor,temat))
             } else {
                 container(Row::new())
             }

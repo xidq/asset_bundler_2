@@ -1,8 +1,3 @@
-use crate::wybranie_jezykowe;
-use iced::widget::combo_box;
-use std::fmt;
-use std::path::PathBuf;
-
 pub const FILTERFOTO: [&str; 16] = [
     "jpg", "jpeg", "webp", "png", "tga", "bmp", "ff", "exr", "ico", "hdr", "pnm", "qoi", "tiff",
     "ff.zst", "ff.bz2", "ff.xz",
@@ -24,28 +19,20 @@ pub const FILTERFOTO: [&str; 16] = [
 #[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct LogPakowanie {
-    pub zbieranie_plików: String,
-    pub zbieranie_plików_licznik: u8,
-    pub pakowanie: String,
-    pub pakowanie_licznik: u8,
-    pub kompresja: String,
-    pub kompresja_licznik: u8,
-    pub szyfrowanie: String,
-    pub szyfrowanie_licznik: u8,
-    pub czas: String,
+    pub zbieranie_plików: u32,
+    pub pakowanie:(u32,Option<u32>),
+    pub kompresja: Option<u8>,
+    pub szyfrowanie: Option<u8>,
+    pub koniec: String,
     pub błąd: String,
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct LogRozpakowywanie {
-    pub kontrola_pliku: String,
-    pub kontrola_pliku_licznik: u8,
-    pub rozpakowanie: String,
-    pub rozpakowanie_licznik: u8,
-    pub StatusDekompresjaPlikówDekompresja: String,
-    pub StatusDekompresjaPlikówDekompresja_licznik: u8,
-    pub deszyfrowanie: String,
-    pub deszyfrowanie_licznik: u8,
+    pub kontrola_pliku: (u32,Option<u32>),
+    pub rozpakowanie: (u32,Option<u32>),
+    pub dekompresja: u64,
+    pub deszyfrowanie: (u32,Option<u32>),
     pub czas: String,
     pub błąd: String,
 }

@@ -1,4 +1,4 @@
-use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoŁączeniaZdjęć;
 
 #[derive(Debug, Clone)]

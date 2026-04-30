@@ -8,22 +8,21 @@ use futures::channel::mpsc::Sender;
 use image::{DynamicImage, ImageFormat};
 use std::fs::File;
 use std::path::PathBuf;
+use enumy::dane_do_przetwarzania::DaneDoRozpakowaniaDds;
 // Zakładam, że używasz crate 'dds' lub podobnego
 
 pub async fn export_dds_array_to_jpg(
-    dds_path: PathBuf,
-    output_folder: PathBuf,
-    OptRozszerzeniaPlikówZdjęciowych: OptRozszerzeniaPlikówZdjęciowych,
+    dane: DaneDoRozpakowaniaDds,
     mut tx: Sender<LogTxDoRozpakowanieDds>,
 ) -> Result<(), std::io::Error> {
-    dbg!(dds_path.display());
-    dbg!(output_folder.display());
-    dbg!(dds_path.extension());
+    dbg!(dane.ścieżka_wejściowa.display());
+    dbg!(dane.ścieżka_wyjściowa.display());
+    dbg!(dane.ścieżka_wejściowa.extension());
 
     let mut obecna_operacja = 0;
     let mut procent_progress = 0;
 
-    let file = File::open(&dds_path)?;
+    let file = File::open(&dane.ścieżka_wejściowa)?;
     let mut decoder =
         Decoder::new(file).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
 
@@ -72,14 +71,14 @@ pub async fn export_dds_array_to_jpg(
             // Czytamy główną powierzchnię (level 0)
             decoder
                 .read_surface(view)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("{:?}", e)))?;
+                .map_err(|e| std::io::Error::other( format!("{:?}", e)))?;
         }
 
         // Jeśli są mipmapy, musimy je pominąć, aby kursor przeszedł do następnej tekstury w tablicy
         if mip_count > 1 {
             decoder
                 .skip_mipmaps()
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("{:?}", e)))?;
+                .map_err(|e| std::io::Error::other( format!("{:?}", e)))?;
         }
 
         // Zapisujemy do JPG
@@ -88,7 +87,7 @@ pub async fn export_dds_array_to_jpg(
             size.height,
             buffer,
         ) {
-            let file_stem = dds_path
+            let file_stem = dane.ścieżka_wejściowa
                 .file_stem()
                 .and_then(|s| s.to_str())
                 .unwrap_or("export");
@@ -98,12 +97,12 @@ pub async fn export_dds_array_to_jpg(
 
             let op_ref = &mut obecna_operacja;
             let pr_ref = &mut procent_progress;
-            match OptRozszerzeniaPlikówZdjęciowych {
+            match dane.rozszerzenie {
                 OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, .. } => {
                     dds_ex_jpg(
                         dynamic_img,
-                        &output_folder,
-                        &*nazawawawa,
+                        &dane.ścieżka_wyjściowa,
+                        &nazawawawa,
                         &jakosc,
                         &(0_u16, 0_u16, 0_u16),
                         metryka_operacji as u32,
@@ -116,8 +115,8 @@ pub async fn export_dds_array_to_jpg(
                 OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } => {
                     dds_ex_ff(
                         dynamic_img,
-                        &output_folder,
-                        &*nazawawawa,
+                        &dane.ścieżka_wyjściowa,
+                        &nazawawawa,
                         metryka_operacji as u32,
                         op_ref,
                         pr_ref,
@@ -128,8 +127,8 @@ pub async fn export_dds_array_to_jpg(
                 }
                 _ => {}
             }
-            // let file_stem = dds_path.file_stem().and_then(|s| s.to_str()).unwrap_or("export");
-            // let out_path = output_folder.join(format!("{}_{}.jpg", file_stem, i));
+            // let file_stem = dane.ścieżka_wejściowa.file_stem().and_then(|s| s.to_str()).unwrap_or("export");
+            // let out_path = dane.ścieżka_wyjściowa.join(format!("{}_{}.jpg", file_stem, i));
 
             // dynamic_img.save_with_format(out_path, ImageFormat::Jpeg).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
         }

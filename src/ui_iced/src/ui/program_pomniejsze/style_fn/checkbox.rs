@@ -1,19 +1,21 @@
 use crate::ui::program_pomniejsze::kolory::{
     KOLOR_CZCIONKI_SREDNI, KOLOR_OBRAMOWANIA_NIE_AKTYWNY,
 };
+use enumy::inne_ui::UstawieniaThemeWsio;
 use iced::widget::checkbox;
+use iced_core::Color;
 
 pub fn styl_checkbox<'a>(
-    kolor_akcentu: (f32, f32, f32),
-    kolor_tla: (f32, f32, f32),
+    kolor_akcentu: &'a Color,
+    temat: &'a UstawieniaThemeWsio,
 ) -> impl Fn(&iced::Theme, checkbox::Status) -> checkbox::Style + 'a {
     move |_theme: &iced::Theme, _status: iced::widget::checkbox::Status| {
         use iced::widget::checkbox;
         use iced::{Border, Color};
 
-        let tlo_bazowe = Color::from_rgb(kolor_tla.0, kolor_tla.1, kolor_tla.2);
+
         let kolor_akcentuu =
-            Color::from_rgba(kolor_akcentu.0, kolor_akcentu.1, kolor_akcentu.2, 0.5);
+            Color{ a:temat.obecny_theme.mid, ..*kolor_akcentu };
 
         // Sprawdzamy stan Hover
         let czy_hover = matches!(_status, checkbox::Status::Hovered { .. });
@@ -29,7 +31,7 @@ pub fn styl_checkbox<'a>(
             background: if czy_zaznaczony {
                 kolor_akcentuu.into()
             } else {
-                tlo_bazowe.into()
+                temat.obecny_theme.bground.into()
             },
 
             // Kolor "ptaszka" (widoczny tylko gdy zaznaczony)

@@ -1,102 +1,123 @@
-use crate::ui::program_pomniejsze::kolory::KOLOR_SPANISH_ORANGE;
-use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
-use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
-    PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN, WybraneOknoEdycjiZdjęć,
-};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{Column, Row, button, space, text};
-use iced_core::{Color, Length};
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::inne_ui::CheckerDoZbiorowePrzetwarzanieZdjęć;
-use enumy::opcje::OptRozdzielczościObrazów;
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::info_male;
+use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
+use crate::ui::program_pomniejsze::style_fn::hint_master::hint_btn;
+use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
+    PRZERWAWYBRANYCHROZSZERZEN,
+};
 use crate::ui::wiadomosci::message_ui::Message;
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::inne_ui::{UiPodstrony, UstawieniaThemeWsio};
+use enumy::opcje::OptRozdzielczościObrazów;
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{button, space, text, Column, Row};
+use iced_core::Length;
 
-pub fn podmenu_lewe_wybor(
-    wybrane_okno: &WybraneOknoEdycjiZdjęć,
-    jezyk: &WybórJęzyka,
-) -> Column<'static, Message> {
+pub fn podmenu_lewe_wybor<'a>(
+    jezyk: &'a WybórJęzyka,
+    kolor: &'a iced::Color,
+    temat: &'a UstawieniaThemeWsio,
+) -> Column<'a, Message> {
     Column::new()
         .push(
-            button(
-                text(jezyk.t("foto_edit_menu_paths"))
-                    .font(jezyk.get_font())
-                    .center(),
+            hint_btn(
+                button(
+                    text(jezyk.t("ui_conversion_paths"))
+                        .font(jezyk.get_font())
+                        .center(),
+                )
+                .on_press(Message::ZmienWariant(
+                    UiPodstrony::KonwersjaFotoŚcieżki,
+                ))
+                .padding(12)
+                .height(Length::Fixed(40.))
+                .width(Length::Fill)
+                .style(styl_przycisków(
+                    false,
+                    matches!(temat.temp.aktywne_okno, UiPodstrony::KonwersjaFotoŚcieżki),
+                    kolor,temat,
+                )),
+                jezyk.t("hint_ui_conversion_paths"),
+                
+                temat
             )
-            .on_press(Message::ZmienMenuEdycjiNaSciezki(
-                WybraneOknoEdycjiZdjęć::Ścieżki,
-            ))
-            .padding(12)
-            .height(Length::Fixed(40.))
-            .width(Length::Fill)
-            .style(styl_przycisków(
-                false,
-                matches!(wybrane_okno, WybraneOknoEdycjiZdjęć::Ścieżki),
-                KOLOR_SPANISH_ORANGE,
-            )),
         )
         // Przycisk rozszerzenia_plików_zdjęciowych
         .push(
-            button(
-                text(jezyk.t("foto_edit_menu_extensions"))
-                    .font(jezyk.get_font())
-                    .center(),
+            hint_btn(
+                button(
+                    text(jezyk.t("ui_conversion_extensions"))
+                        .font(jezyk.get_font())
+                        .center(),
+                )
+                .on_press(Message::ZmienWariant(
+                    UiPodstrony::KonwersjaFotoRozszerzenia,
+                ))
+                .padding(12)
+                .height(Length::Fixed(40.))
+                .width(Length::Fill)
+                .style(styl_przycisków(
+                    false,
+                    matches!(
+                        temat.temp.aktywne_okno,
+                        UiPodstrony::KonwersjaFotoRozszerzenia
+                    ),
+                    kolor,temat,
+                )),
+                jezyk.t("hint_ui_conversion_extensions"),
+                
+                temat
             )
-            .on_press(Message::ZmienMenuEdycjiNaSciezki(
-                WybraneOknoEdycjiZdjęć::OptRozszerzeniaPlikówZdjęciowych,
-            ))
-            .padding(12)
-            .height(Length::Fixed(40.))
-            .width(Length::Fill)
-            .style(styl_przycisków(
-                false,
-                matches!(
-                    wybrane_okno,
-                    WybraneOknoEdycjiZdjęć::OptRozszerzeniaPlikówZdjęciowych
-                ),
-                KOLOR_SPANISH_ORANGE,
-            )),
         )
         // Przycisk OptRozdzielczościObrazów
         .push(
-            button(
-                text(jezyk.t("foto_edit_menu_resolution"))
-                    .font(jezyk.get_font())
-                    .center(),
+            hint_btn(
+                button(
+                    text(jezyk.t("ui_conversion_resolutions"))
+                        .font(jezyk.get_font())
+                        .center(),
+                )
+                .on_press(Message::ZmienWariant(
+                    UiPodstrony::KonwersjaFotoRozdzielczości,
+                ))
+                .padding(12)
+                .height(Length::Fixed(40.))
+                .width(Length::Fill)
+                .style(styl_przycisków(
+                    false,
+                    matches!(
+                        temat.temp.aktywne_okno,
+                        UiPodstrony::KonwersjaFotoRozdzielczości
+                    ),
+                    kolor,temat,
+                )),
+                jezyk.t("hint_ui_conversion_resolutions"),
+                
+                temat
             )
-            .on_press(Message::ZmienMenuEdycjiNaSciezki(
-                WybraneOknoEdycjiZdjęć::MenuOptRozdzielczościObrazów,
-            ))
-            .padding(12)
-            .height(Length::Fixed(40.))
-            .width(Length::Fill)
-            .style(styl_przycisków(
-                false,
-                matches!(
-                    wybrane_okno,
-                    WybraneOknoEdycjiZdjęć::MenuOptRozdzielczościObrazów
-                ),
-                KOLOR_SPANISH_ORANGE,
-            )),
         )
         // Przycisk inne
         .push(
-            button(
-                text(jezyk.t("foto_edit_menu_rest"))
-                    .font(jezyk.get_font())
-                    .center(),
+            hint_btn(
+                button(
+                    text(jezyk.t("ui_conversion_rest"))
+                        .font(jezyk.get_font())
+                        .center(),
+                )
+                .on_press(Message::ZmienWariant(
+                    UiPodstrony::KonwersjaFotoMenuReszta,
+                ))
+                .padding(12)
+                .height(Length::Fixed(40.))
+                .width(Length::Fill)
+                .style(styl_przycisków(
+                    false,
+                    matches!(temat.temp.aktywne_okno, UiPodstrony::KonwersjaFotoMenuReszta),
+                    kolor,temat,
+                )),
+                jezyk.t("hint_ui_conversion_rest"),
+                
+                temat
             )
-            .on_press(Message::ZmienMenuEdycjiNaSciezki(
-                WybraneOknoEdycjiZdjęć::MenuReszta,
-            ))
-            .padding(12)
-            .height(Length::Fixed(40.))
-            .width(Length::Fill)
-            .style(styl_przycisków(
-                false,
-                matches!(wybrane_okno, WybraneOknoEdycjiZdjęć::MenuReszta),
-                KOLOR_SPANISH_ORANGE,
-            )),
         )
         .spacing(15)
         .width(Length::FillPortion(1))

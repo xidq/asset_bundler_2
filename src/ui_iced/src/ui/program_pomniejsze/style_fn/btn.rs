@@ -1,6 +1,7 @@
 use crate::ui::program_pomniejsze::kolory::{
-    KOLOR_CZCIONKI_JASNY, KOLOR_CZCIONKI_SREDNI, KOLOR_OBRAMOWANIA_NIE_AKTYWNY,
+    KOLOR_CZCIONKI_JASNY, KOLOR_OBRAMOWANIA_NIE_AKTYWNY,
 };
+use enumy::inne_ui::UstawieniaThemeWsio;
 use iced::widget::button;
 use iced::{Border, Color};
 use iced_core::gradient::{ColorStop, Linear};
@@ -9,17 +10,15 @@ use iced_core::{Background, Radians};
 pub fn styl_przycisków<'a>(
     warunek: bool,
     warunek2: bool,
-    kolor: (f32, f32, f32),
+    kolor: &'a Color,
+    temat: &'a UstawieniaThemeWsio,
 ) -> impl Fn(&iced::Theme, button::Status) -> button::Style + 'a {
     move |_theme, _status| {
         if let button::Status::Hovered = _status {
             return button::Style {
                 background: Some(
                     Color {
-                        r: kolor.0,
-                        g: kolor.1,
-                        b: kolor.2,
-                        a: 0.2, // Twoja przezroczystość dla hover
+                        a: temat.obecny_theme.low, ..*kolor // Twoja przezroczystość dla hover
                     }
                     .into(),
                 ),
@@ -38,14 +37,14 @@ pub fn styl_przycisków<'a>(
                 offset: 0.5, // Koniec koloru w połowie wysokości
                 color: Color {
                     a: 0.0,
-                    ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                    ..*kolor
                 },
             });
             stopsy[1] = Some(ColorStop {
                 offset: 1.0, // Start na górze
                 color: Color {
-                    a: 0.5,
-                    ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                    a: temat.obecny_theme.mid,
+                    ..*kolor
                 },
             });
 
@@ -69,15 +68,15 @@ pub fn styl_przycisków<'a>(
             stopsy[0] = Some(ColorStop {
                 offset: 0.0, // Start na dole
                 color: Color {
-                    a: 0.5,
-                    ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                    a: temat.obecny_theme.mid,
+                    ..*kolor
                 },
             });
             stopsy[1] = Some(ColorStop {
                 offset: 0.5, // Koniec koloru w połowie wysokości
                 color: Color {
                     a: 0.0,
-                    ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                    ..*kolor
                 },
             });
             button::Style {
@@ -87,7 +86,7 @@ pub fn styl_przycisków<'a>(
                         stops: stopsy,
                     }),
                 )),
-                text_color: KOLOR_CZCIONKI_JASNY,
+                text_color: Color { a:temat.tekst.hi, ..temat.tekst.kolor },
                 border: Border {
                     color: Color::TRANSPARENT,
                     width: 0.0,
@@ -100,14 +99,12 @@ pub fn styl_przycisków<'a>(
             button::Style {
                 background: Some(
                     Color {
-                        r: 1.0,
-                        g: 1.0,
-                        b: 1.0,
-                        a: 0.0, // Twoje 0.2 alpha
+                        a: temat.obecny_theme.min, 
+                        ..temat.obecny_theme.kolor
                     }
                     .into(),
                 ),
-                text_color: KOLOR_CZCIONKI_SREDNI, // Lekko przygaszony tekst
+                text_color: Color { a:temat.tekst.mid, ..temat.tekst.kolor }, // Lekko przygaszony tekst
                 border: Border {
                     radius: 5.0.into(),
                     width: 1.0,

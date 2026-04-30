@@ -1,9 +1,68 @@
+use iced::Color;
+
 #[derive(Clone, Debug)]
 pub enum WybraneOknoEdycjiZdjęć {
     Ścieżki,
     OptRozszerzeniaPlikówZdjęciowych,
     MenuOptRozdzielczościObrazów,
     MenuReszta,
+}
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum UiPodstrony {
+    BinPakowanie,
+    BinRozpakowanie,
+    KonwersjaFoto,
+    KonwersjaFotoŚcieżki,
+    KonwersjaFotoRozszerzenia,
+    KonwersjaFotoRozdzielczości,
+    KonwersjaFotoMenuReszta,
+    DaneDoŁączeniaZdjęćo,
+    ObslugaDds,
+    // Ustawienia,
+    // Logi,
+    Dev,
+}
+pub struct UstawieniaThemeWsio{
+    pub kolory:ObecnyColorTheme,
+    pub obecny_theme:ObecnyColorThemePrzezroczystosci,
+    pub tekst:ObecnyColorCzcionkiPrzezroczystosci,
+    pub ustawienia: Ustawienia,
+    pub temp: Temp,
+}
+pub struct Temp{
+    pub aktywny_proces: ActProces,
+    pub aktywne_okno: UiPodstrony,
+}
+pub struct Ustawienia{
+    pub halp_menu:bool,
+
+    
+}
+pub struct  ObecnyColorTheme{
+    pub binarka: Color,
+    pub konwersja:Color,
+    pub laczenie:Color,
+    pub dds:Color,
+    pub ustawienia:Color,
+    pub hint:Color,
+}
+pub struct ObecnyColorThemePrzezroczystosci{
+    pub max:f32,
+    pub hi:f32,
+    pub mid:f32,
+    pub low:f32,
+    pub min:f32,
+    pub kolor:Color,
+    pub bground: Color,
+    pub bground_lewy: Color,
+}
+pub struct ObecnyColorCzcionkiPrzezroczystosci{
+    pub max:f32,
+    pub hi:f32,
+    pub mid:f32,
+    pub low:f32,
+    pub min:f32,
+    pub kolor:Color,
 }
 #[derive(Clone, Debug)]
 pub enum StronyDds {
@@ -31,100 +90,12 @@ pub enum RodzajeContainer{
 
 #[allow(dead_code)]
 #[derive(Debug, Clone,PartialEq)]
-pub enum CheckActiveProcess{
-    ProcessPakowaniePliku,
-    ProcessRozpakowaniePliku,
-    ProcessDdsPakowanie,
-    ProcessDdsRozpakowanie,
-    ProcessŁączenieZdjęć,
-    ProcessKonwersjaZdjęć,
-    ProcessŻodyn,
-}
-
-
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
-pub struct StanKlikaczyDoLaczeniaZdjec {
-    pub obraz_r_wybrany: bool,
-    pub obraz_g_wybrany: bool,
-    pub obraz_b_wybrany: bool,
-    pub obraz_a_wybrany: bool,
-    pub sciezka_out_wybrana: bool,
-    pub jpg_wybrany: bool,
-    pub jpg_jakosc: u8,
-    pub png_wybrany: bool,
-    pub png_wybrane_8bit: bool,
-    pub png_wybrane_16bit: bool,
-    pub png_wybrane_8bita: bool,
-    pub png_wybrane_16bita: bool,
-    pub png_kompresja: u8,
-    pub tga_wybrany: bool,
-    pub tga_wybrany_32b: bool,
-    pub tga_wybrany_24b: bool,
-    pub tga_wybrany_16b: bool,
-    pub webp_wybrany: bool,
-    pub webp_lossless: bool,
-    pub webp_wybrany_rgb: bool,
-    pub webp_wybrany_alpha: bool,
-    pub webp_jakosc: u8,
-    pub ff_wybrany: bool,
-    pub ff_kompresja_brak: bool,
-    pub ff_kompresja_zstd: bool,
-    pub ff_kompresja_bzip2: bool,
-    pub ff_kompresja_xz: bool,
-    pub qoi_wybrany: bool,
-    pub qoi_wybrany_32b: bool,
-    pub qoi_wybrany_24b: bool,
-}
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
-pub struct CheckerDoZbiorowePrzetwarzanieZdjęć {
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_progres: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_kolor: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_wybrany: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrany: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_alpha: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_alpha_kolor_16b: (u16, u16, u16),
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany_rgb: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_jpg_wybrany_bw: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_kompresja: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_8bit: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_16bit: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_8bita: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_16bita: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_l8bit: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_l16bit: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_l8bita: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_png_wybrane_l16bita: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_zakladka_menu_wybrana: (bool, bool, bool, bool, bool, bool),
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_16: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_32: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_64: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_128: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_256: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_512: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_1k: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_2k: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_4k: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_6k: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_8k: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_16k: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_rozdzielczości_wybrane_org: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_32b: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_24b: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_16b: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_tga_wybrany_szary: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_lossless: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany_rgb: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_webp_wybrany_alpha: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_kompresja_brak: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_kompresja_zstd: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_kompresja_bzip2: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_ff_kompresja_xz: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany_32b: bool,
-    pub zbiorowe_przetwarzanie_zdjec_rozszerzenie_qoi_wybrany_24b: bool,
+pub enum ActProces {
+    PakowaniePliku,
+    RozpakowaniePliku,
+    DdsPakowanie,
+    DdsRozpakowanie,
+    ŁączenieZdjęć,
+    KonwersjaZdjęć,
+    Żodyn,
 }

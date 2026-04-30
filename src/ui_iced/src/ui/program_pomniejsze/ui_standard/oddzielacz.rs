@@ -2,7 +2,7 @@ use iced::widget::{Container, container};
 use iced_core::{Color, Length};
 use crate::ui::wiadomosci::message_ui::Message;
 
-pub fn ui_standard_oddzielacz() -> Container<'static, Message> {
+pub fn ui_standard_oddzielacz<'a>() -> Container<'a, Message> {
     container("")
         .width(Length::Fill)
         .height(Length::Fixed(2.))

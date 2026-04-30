@@ -1,14 +1,14 @@
-
+use enumy::inne_ui::{RodzajeContainer, UstawieniaThemeWsio};
 use iced::widget::container;
-use iced::{Color, Background, Border};
-use iced_core::gradient::{Linear, ColorStop};
 use iced::Radians;
-use enumy::inne_ui::RodzajeContainer;
+use iced::{Background, Border, Color};
+use iced_core::gradient::{ColorStop, Linear};
 
 pub fn styl_kontenera<'a>(
     warunek: bool,
-    kolor: (f32, f32, f32),
     rodzaj:RodzajeContainer,
+    kolor: &'a Color,
+    temat: &'a UstawieniaThemeWsio,
 ) -> impl Fn(&iced::Theme) -> container::Style + 'a {
     move |_theme| {
 
@@ -155,14 +155,14 @@ pub fn styl_kontenera<'a>(
                         offset: 0.5,
                         color: Color {
                             a: 0.0,
-                            ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                            ..*kolor
                         },
                     });
                     stopsy[1] = Some(ColorStop {
                         offset: 1.0,
                         color: Color {
-                            a: 0.5,
-                            ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                            a: temat.obecny_theme.mid,
+                            ..*kolor
                         },
                     });
 
@@ -172,14 +172,14 @@ pub fn styl_kontenera<'a>(
                         offset: 0.5,
                         color: Color {
                             a: 0.0,
-                            ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                            ..*kolor
                         },
                     });
                     stopsy[1] = Some(ColorStop {
                         offset: 0.0,
                         color: Color {
-                            a: 0.5,
-                            ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                            a: temat.obecny_theme.mid,
+                            ..*kolor
                         },
                     });
                 }
@@ -187,29 +187,29 @@ pub fn styl_kontenera<'a>(
                     stopsy[0] = Some(ColorStop {
                         offset: 0.0,
                         color: Color {
-                            a: 0.5,
-                            ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                            a: temat.obecny_theme.mid,
+                            ..*kolor
                         },
                     });
                     stopsy[1] = Some(ColorStop {
                         offset: 0.4,
                         color: Color {
                             a: 0.0,
-                            ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                            ..*kolor
                         },
                     });
                     stopsy[2] = Some(ColorStop {
                         offset: 0.6,
                         color: Color {
                             a: 0.0,
-                            ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                            ..*kolor
                         },
                     });
                     stopsy[3] = Some(ColorStop {
                         offset: 1.0,
                         color: Color {
-                            a: 0.5,
-                            ..Color::from_rgb(kolor.0, kolor.1, kolor.2)
+                            a: temat.obecny_theme.mid,
+                            ..*kolor
                         },
                     });
 
@@ -239,7 +239,7 @@ pub fn styl_kontenera<'a>(
                 border: Border {
                     radius: 5.0.into(),
                     width: 1.0,
-                    color: Color { a: 0.1, ..Color::WHITE },
+                    color: Color { a: temat.obecny_theme.low, ..temat.obecny_theme.kolor },
                 },
                 ..container::Style::default()
             }

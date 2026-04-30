@@ -1,26 +1,23 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
-use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::program_pomniejsze::style_fn::pick_lista::{styl_menu_pick, styl_pick_list};
 use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
-use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
-    PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
-};
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, container, pick_list, slider, space, text, Column, Row};
-use iced::{Color, Length};
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
-use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
-use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
+use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
 use crate::ui::wiadomosci::message_ui::Message;
-use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::inne_ui::{RodzajeContainer, UstawieniaThemeWsio};
+use enumy::opcje::{OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, pick_list, slider, space, text, Column, Row};
+use iced::{Color, Length};
 
-pub fn podmenu_ff_wybor(
-    dane: &DaneDoBathKonwersjaZdjec,
-    jezyk: &WybórJęzyka,
-) -> Column<'static, Message> {
+pub fn podmenu_ff_wybor<'a>(
+    dane: &'a DaneDoBathKonwersjaZdjec,
+    jezyk: &'a WybórJęzyka,
+    kolor: &'a iced::Color,
+    temat: &'a UstawieniaThemeWsio,
+) -> Column<'a, Message> {
 
 
     let opcje = vec![
@@ -29,10 +26,10 @@ pub fn podmenu_ff_wybor(
         OptMetodaKompresjiZdjecia::Bzip2(6),
         OptMetodaKompresjiZdjecia::Xz(6),
     ];
-    let wybrana= Some(OptMetodaKompresjiZdjecia::Brak);
+    // let wybrana= Some(OptMetodaKompresjiZdjecia::Brak);
 
     Column::new()
-        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff, dane, jezyk.get_font()))
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff, dane, jezyk.get_font(),kolor,temat))
         .push(
             if let Some(OptRozszerzeniaPlikówZdjęciowych::Ff {
                             metoda_kompresji
@@ -45,12 +42,12 @@ pub fn podmenu_ff_wybor(
                     .push(
                         Row::new()
                             .push(
-                                pick_list(opcje, Some(*metoda_kompresji), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaFF(hh)))
+                                pick_list(opcje, Some(*metoda_kompresji), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::FfKompresja(hh)))
                                     .width(Length::FillPortion(5))
                                     .padding(2)
                                     .text_line_height(1.5)
-                                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
-                                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .style(styl_pick_list(kolor,temat))
+                                    .menu_style(styl_menu_pick(kolor,temat))
                                     .width(Length::FillPortion(4))
                             )
                             .push(space().width(Length::Fixed(15.)))
@@ -62,9 +59,9 @@ pub fn podmenu_ff_wybor(
                                             slider(
                                                 1..=22,
                                                 *bb,
-                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaWartoscFF(xx)),
+                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::FfKompresjaVal(xx)),
                                             )
-                                                .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                                .style(styl_sliderów(kolor,temat)).height(20.).width(Length::FillPortion(6)),
                                         )
                                         .push(
                                             text(format!(
@@ -81,9 +78,9 @@ pub fn podmenu_ff_wybor(
                                             slider(
                                                 1..=9,
                                                 *bb,
-                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaWartoscFF(xx)),
+                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::FfKompresjaVal(xx)),
                                             )
-                                                .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                                .style(styl_sliderów(kolor,temat)).height(20.).width(Length::FillPortion(6)),
                                         )
                                         .push(
                                             text(format!(
@@ -100,8 +97,8 @@ pub fn podmenu_ff_wybor(
                                             slider(
                                                 1..=9,
                                                 *bb,
-                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjaWartoscFF(xx)),                                            )
-                                                .style(styl_sliderów(KOLOR_PEACH_PUFF)).height(20.).width(Length::FillPortion(6)),
+                                                |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::FfKompresjaVal(xx)),                                            )
+                                                .style(styl_sliderów(kolor,temat)).height(20.).width(Length::FillPortion(6)),
                                         )
                                         .push(
                                             text(format!(
@@ -122,7 +119,7 @@ pub fn podmenu_ff_wybor(
                     .push(
                         Row::new().height(Length::Fixed(50.))
                     )
-            ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
+            ).height(100.).style(styl_kontenera(true, RodzajeContainer::Góra,kolor,temat))
 
         }else {container(Column::new())}).padding(15).width(Length::FillPortion(2))
 

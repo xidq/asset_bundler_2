@@ -1,9 +1,8 @@
-// use laczenie_plikow::laczenie_fot_struct_enums::fn_do_laczenia_fot;
 use crate::ui::program::Program;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
 use enumy::enums_structs_io::FILTERFOTO;
-use enumy::inne_ui::CheckActiveProcess;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::inne_ui::ActProces;
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
 use enumy::statusy::LogTxDoŁączeniaZdjęć;
 use futures::channel::mpsc;
 use iced::Task;
@@ -256,40 +255,33 @@ impl Program {
 
             ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfZstd(procent) => {
                 // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
-                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_temp_do_łączenia_zdjęć.out_format {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff {
+                    metoda_kompresji:OptMetodaKompresjiZdjecia::Zstd(ref mut aktualny_procent), .. } = self.dane_temp_do_łączenia_zdjęć.out_format {
 
-                    // 2. Dobieramy się mutowalnie do wartości wewnątrz enuma OptMetodaKompresjiZdjecia
-                    if let OptMetodaKompresjiZdjecia::Zstd(aktualny_procent) = metoda_kompresji {
-
-                        // 3. Podmieniamy wartość przez dereferencję
                         *aktualny_procent = procent;
-                    }
+
                 }
 
             }
             ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfBzip2(procent) => {
                 // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
-                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_temp_do_łączenia_zdjęć.out_format {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff {
+                    metoda_kompresji: OptMetodaKompresjiZdjecia::Bzip2(ref mut aktualny_procent), ..
+                } = self.dane_temp_do_łączenia_zdjęć.out_format {
 
-                    // 2. Dobieramy się mutowalnie do wartości wewnątrz enuma OptMetodaKompresjiZdjecia
-                    if let OptMetodaKompresjiZdjecia::Bzip2(aktualny_procent) = metoda_kompresji {
-
-                        // 3. Podmieniamy wartość przez dereferencję
                         *aktualny_procent = procent;
-                    }
+
                 }
 
             }
             ŁączenieZdjęćMessage::ZdjeciaLaczenieZmianaKompresjiFfXz(procent) => {
-                // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
-                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_temp_do_łączenia_zdjęć.out_format {
 
-                    // 2. Dobieramy się mutowalnie do wartości wewnątrz enuma OptMetodaKompresjiZdjecia
-                    if let OptMetodaKompresjiZdjecia::Xz(aktualny_procent) = metoda_kompresji {
+                if let OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff {
+                    metoda_kompresji: OptMetodaKompresjiZdjecia::Xz(ref mut aktualny_procent), ..
+                } = self.dane_temp_do_łączenia_zdjęć.out_format {
 
-                        // 3. Podmieniamy wartość przez dereferencję
                         *aktualny_procent = procent;
-                    }
+
                 }
 
             }
@@ -297,7 +289,7 @@ impl Program {
             ŁączenieZdjęćMessage::WysylkaDanychDoLaczeniaZdjec => {
 
                 let dane_do_obrobki = self.dane_temp_do_łączenia_zdjęć.clone();
-                self.checker_bool_status_procesow = CheckActiveProcess::ProcessŁączenieZdjęć;
+                self.temat.temp.aktywny_proces = ActProces::ŁączenieZdjęć;
                 // self.status_zmiany_fot_log = Default::default();
                 // println!("ścieżka przekazywana to: {:?}", self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa);
 
@@ -353,10 +345,10 @@ impl Program {
             ŁączenieZdjęćMessage::PostepLaczeniaFot(progress) => match progress {
                 LogTxDoŁączeniaZdjęć::Start => {}
                 LogTxDoŁączeniaZdjęć::Koniec => {
-                    self.checker_bool_status_procesow = CheckActiveProcess::ProcessŻodyn;
+                    self.temat.temp.aktywny_proces = ActProces::Żodyn;
                 }
                 LogTxDoŁączeniaZdjęć::Błąd(_) => {
-                    self.checker_bool_status_procesow = CheckActiveProcess::ProcessŻodyn;
+                    self.temat.temp.aktywny_proces = ActProces::Żodyn;
                 }
             },
             _ => {}

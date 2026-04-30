@@ -1,23 +1,24 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
-use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
-use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{Column, Row, button, container, slider, space, text, tooltip, pick_list};
-use iced::{Color, Length};
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
-use enumy::opcje::JpgSamplingFac::R444;
+use crate::ui::program_pomniejsze::kolory::KOLOR_CZCIONKI_SREDNI;
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::program_pomniejsze::style_fn::pick_lista::{styl_menu_pick, styl_pick_list};
+use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
 use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::inne_ui::{RodzajeContainer, UstawieniaThemeWsio};
+use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{button, container, pick_list, slider, space, text, tooltip, Column, Row};
+use iced::Length;
 
 pub fn podmenu_jpg_wybor_top<'a>(
-    dane: &DaneDoBathKonwersjaZdjec,
-    jezyk: &WybórJęzyka,
+    dane: &'a DaneDoBathKonwersjaZdjec,
+    jezyk: &'a WybórJęzyka,
+    kolor: &'a iced::Color,
+    temat: &'a UstawieniaThemeWsio,
 ) -> Column<'a, Message> {
     let opcje_sampling = Vec::from([
         JpgSamplingFac::R444,
@@ -41,13 +42,13 @@ pub fn podmenu_jpg_wybor_top<'a>(
         JpgQuant::ImprovedDetectionModel,
     ]);
      Column::new()
-        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg, dane, jezyk.get_font()))
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg, dane, jezyk.get_font(), kolor, temat))
 
         .push(
             if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg {
                             jakosc,
                             progresywny,
-                            bit_depth,
+                            bit_depth:_,
                             sampling,
                             quant,
                             scans,
@@ -63,11 +64,11 @@ pub fn podmenu_jpg_wybor_top<'a>(
                                 slider(
                                     0..=100,
                                     *jakosc,
-                                    |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJakosciJpg(vv))
+                                    |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::JpgJakość(vv))
                                 )
                                     .height(20.)
                                     .width(Length::FillPortion(6))
-                                .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                .style(styl_sliderów(kolor,temat)),
                             )
                             .push(
                                 text(format!(
@@ -84,14 +85,14 @@ pub fn podmenu_jpg_wybor_top<'a>(
 
                         .push(
                             tooltip(
-                                btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,OptFormatyKoloruObrazOgólny::B8,dane,jezyk.get_font()),
+                                btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,OptFormatyKoloruObrazOgólny::B8,dane,jezyk.get_font(),kolor,temat),
                                 text(jezyk.t("foto_edit_tooltip_jpg_color").to_string()),
                                 tooltip::Position::Top,
                             )
                         )
                         .push(
                             tooltip(
-                                btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,OptFormatyKoloruObrazOgólny::L8,dane,jezyk.get_font()),
+                                btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,OptFormatyKoloruObrazOgólny::L8,dane,jezyk.get_font(),kolor,temat),
                                 text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
                                 tooltip::Position::Top,
                             )
@@ -108,11 +109,11 @@ pub fn podmenu_jpg_wybor_top<'a>(
                                                 .center(),
                                         )
                                             .padding(10)
-                                            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaProgresJpg))
+                                            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::JpgProg))
                                             .style(styl_przycisków(
                                                 false,
                                                 *progresywny,
-                                                KOLOR_SPANISH_ORANGE,
+                                                kolor,temat,
                                             ))
                                             .width(Length::FillPortion(1)),
 
@@ -125,21 +126,21 @@ pub fn podmenu_jpg_wybor_top<'a>(
                     .push(
                         Row::new()
                             .push(
-                                pick_list(opcje_sampling, Some(*sampling), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgSampling(hh)))
+                                pick_list(opcje_sampling, Some(*sampling), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::JpgSampling(hh)))
                                     .width(Length::FillPortion(5))
                                     .padding(2)
                                     .text_line_height(1.5)
-                                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
-                                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .style(styl_pick_list(kolor,temat))
+                                    .menu_style(styl_menu_pick(kolor,temat))
                                     .width(Length::FillPortion(4))
                             )
                             .push(
-                                pick_list(opcje_qua, Some(*quant), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgQua(hh)))
+                                pick_list(opcje_qua, Some(*quant), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::JpgQua(hh)))
                                     .width(Length::FillPortion(5))
                                     .padding(2)
                                     .text_line_height(1.5)
-                                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
-                                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .style(styl_pick_list(kolor,temat))
+                                    .menu_style(styl_menu_pick(kolor,temat))
                                     .width(Length::FillPortion(4))
                             ).padding(15).spacing(10)
                     )
@@ -149,11 +150,11 @@ pub fn podmenu_jpg_wybor_top<'a>(
                                 slider(
                                     2..=64,
                                     *scans,
-                                    |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaJpgScans(vv))
+                                    |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::JpgScan(vv))
                                 )
                                     .height(20.)
                                     .width(Length::FillPortion(6))
-                                    .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                    .style(styl_sliderów(kolor,temat)),
                             )
                             .push(
                                 text(format!(
@@ -165,7 +166,7 @@ pub fn podmenu_jpg_wybor_top<'a>(
                             )
                             .padding(15)
                     )
-                ).height(200.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
+                ).height(200.).style(styl_kontenera(true, RodzajeContainer::Góra,kolor,temat))
             } else {
                     container(Row::new())
             }

@@ -44,7 +44,7 @@ pub struct DaneDoŁączeniaZdjęć {
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub struct DaneDoPakowaniaDds {
-    pub ścieżka_wejściowa: PathBuf,
+    pub ścieżka_wejściowa:  Option<Vec<PathBuf>>,
     pub ścieżka_wyjściowa: PathBuf,
     pub nazwa: String,
     pub format: OptFormatDds,
@@ -57,4 +57,5 @@ pub struct DaneDoRozpakowaniaDds {
     pub ścieżka_wyjściowa: PathBuf,
     pub nazwa: String,
     pub rozszerzenie: OptRozszerzeniaPlikówZdjęciowych,
+    pub tag:OptRozszerzeniaPlikówZdjęciowychZnacznik,
 }

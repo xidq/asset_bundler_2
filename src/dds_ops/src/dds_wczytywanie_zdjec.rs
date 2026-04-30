@@ -8,6 +8,7 @@ use image::GenericImageView;
 use std::fs;
 use std::fs::create_dir_all;
 use std::io::Read;
+use std::path::PathBuf;
 use std::time::Instant;
 use walkdir::WalkDir;
 
@@ -25,16 +26,7 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
     };
     let mut przerób: f32 = 0.;
 
-    let max_plikow =
-        if dane.ścieżka_wejściowa.is_file(){
-            13 as usize
-        } else {
-            WalkDir::new(&dane.ścieżka_wejściowa)
-                .into_iter()
-                .filter_map(|e| e.ok())
-                .filter(|e| e.file_type().is_file())
-                .count() * 13// Zwraca usize
-        };
+
     let mut percent: u8 = 0;
 
     let wynik: Result<(), std::io::Error> = async {
@@ -42,69 +34,142 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
         let mut width = 0;
         let mut height = 0;
         let mut first_image = true;
+        let max_plikow = images_data.len() + 3;
+        let lololo = match dane.ścieżka_wejściowa{
+            None => {Vec::from([PathBuf::from("")])}
+            Some(xxx) => {xxx}
+        };
+        
+
+        dbg!(&max_plikow);
+
+            lololo.iter().try_for_each(|e| -> Result<(), std::io::Error > {
+                match e.is_file() {
+                    true => {
+                        // LOGIKA DLA POJEDYNCZEGO PLIKU
+                        let path = e;
+                        let rozszerzenie = path
+                            .extension()
+                            .and_then(|s| s.to_str())
+                            .unwrap_or("")
+                            .to_lowercase();
+
+                        let bajty = std::fs::read(path)?;
+
+                        let dane_obrazu = match rozszerzenie.as_str() {
+                            "zst" => {
+                                let mut decoder = zstd::stream::read::Decoder::new(&bajty[..])?;
+                                let mut rozpakowane = Vec::new();
+                                std::io::Read::read_to_end(&mut decoder, &mut rozpakowane)?;
+                                rozpakowane
+                            }
+                            "bz2" => {
+                                let mut decoder = bzip2::read::BzDecoder::new(&bajty[..]);
+                                let mut rozpakowane = Vec::new();
+                                std::io::Read::read_to_end(&mut decoder, &mut rozpakowane)?;
+                                rozpakowane
+                            }
+                            "xz" => {
+                                let mut decoder = xz2::read::XzDecoder::new(&bajty[..]);
+                                let mut rozpakowane = Vec::new();
+                                std::io::Read::read_to_end(&mut decoder, &mut rozpakowane)?;
+                                rozpakowane
+                            }
+                            _ => bajty,
+                        };
+
+                        let cursor = std::io::Cursor::new(&dane_obrazu);
+                        let reader = image::ImageReader::new(cursor).with_guessed_format()?;
+                        let decoder = reader.into_decoder().map_err(std::io::Error::other)?;
+                        let img = image::DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
+
+                        if first_image {
+                            (width, height) = img.dimensions();
+                            first_image = false;
+                        } else {
+                            if img.width() != width || img.height() != height {
+                                Err(std::io::Error::other(
+                                    "Image dimensions do not match",
+                                ))?
+                            }
+                        }
+                        images_data.push(img.to_rgba8().into_raw());
+
+                        Ok(())
+                    }
 
 
-        for entry in WalkDir::new(dane.ścieżka_wejściowa)
-            .into_iter()
-            .filter_map(|e| e.ok())
-            .filter(|e| e.file_type().is_file())
-        {
-            dbg!("pętla w dds_wczytywanie_zdjec");
-            let rozszerzenie = entry
-                .path()
-                .extension()
-                .and_then(|s| s.to_str())
-                .unwrap_or("")
-                .to_lowercase();
-            let path = entry.path();
-            let bajty = std::fs::read(&path)?;
+                    false => {
+                        for entry in WalkDir::new(e)
+                            .into_iter()
+                            .filter_map(|e| e.ok())
+                            .filter(|e| e.file_type().is_file())
+                        {
+                            dbg!("pętla w dds_wczytywanie_zdjec");
+                            let rozszerzenie = entry
+                                .path()
+                                .extension()
+                                .and_then(|s| s.to_str())
+                                .unwrap_or("")
+                                .to_lowercase();
+                            let path = entry.path();
+                            let bajty = std::fs::read(path)?;
 
-            let dane_obrazu = match rozszerzenie.as_str() {
-                "zst" => {
-                    dbg!("dekompresowanie zstd");
-                    let mut decoder = zstd::stream::read::Decoder::new(&bajty[..])?;
-                    let mut rozpakowane = Vec::new();
-                    decoder.read_to_end(&mut rozpakowane)?;
-                    rozpakowane
-                }
-                "bz2" => {
-                    dbg!("dekompresowanie bz2");
-                    let mut decoder = bzip2::read::BzDecoder::new(&bajty[..]);
-                    let mut rozpakowane = Vec::new();
-                    decoder.read_to_end(&mut rozpakowane)?;
-                    rozpakowane
-                }
-                "xz" => {
-                    dbg!("dekompresowanie xz");
-                    let mut decoder = xz2::read::XzDecoder::new(&bajty[..]);
-                    let mut rozpakowane = Vec::new();
-                    decoder.read_to_end(&mut rozpakowane)?;
-                    rozpakowane
-                }
-                _ => {
-                    dbg!("nie trzeba dekompresować");
-                    bajty 
-                },
-            };
+                            let dane_obrazu = match rozszerzenie.as_str() {
+                                "zst" => {
+                                    dbg!("dekompresowanie zstd");
+                                    let mut decoder = zstd::stream::read::Decoder::new(&bajty[..])?;
+                                    let mut rozpakowane = Vec::new();
+                                    decoder.read_to_end(&mut rozpakowane)?;
+                                    rozpakowane
+                                }
+                                "bz2" => {
+                                    dbg!("dekompresowanie bz2");
+                                    let mut decoder = bzip2::read::BzDecoder::new(&bajty[..]);
+                                    let mut rozpakowane = Vec::new();
+                                    decoder.read_to_end(&mut rozpakowane)?;
+                                    rozpakowane
+                                }
+                                "xz" => {
+                                    dbg!("dekompresowanie xz");
+                                    let mut decoder = xz2::read::XzDecoder::new(&bajty[..]);
+                                    let mut rozpakowane = Vec::new();
+                                    decoder.read_to_end(&mut rozpakowane)?;
+                                    rozpakowane
+                                }
+                                _ => {
+                                    dbg!("nie trzeba dekompresować");
+                                    bajty
+                                },
+                            };
 
-            let cursor = std::io::Cursor::new(&dane_obrazu);
-            let reader = image::ImageReader::new(cursor).with_guessed_format()?;
-            let decoder = reader.into_decoder().map_err(std::io::Error::other)?;
-            let img = image::DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
+                            let cursor = std::io::Cursor::new(&dane_obrazu);
+                            let reader = image::ImageReader::new(cursor).with_guessed_format()?;
+                            let decoder = reader.into_decoder().map_err(std::io::Error::other)?;
+                            let img = image::DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
 
-            if first_image {
-                (width, height) = img.dimensions();
-                first_image = false;
-            } else {
-                if img.width() != width || img.height() != height {
-                    Err(std::io::Error::new(
-                        std::io::ErrorKind::Other,
-                        "Image dimensions do not match",
-                    ))?
+                            if first_image {
+                                (width, height) = img.dimensions();
+                                first_image = false;
+                            } else {
+                                if img.width() != width || img.height() != height {
+                                    Err(std::io::Error::other(
+                                        "Image dimensions do not match",
+                                    ))?
+                                }
+                            }
+                            images_data.push(img.to_rgba8().into_raw());
+
+                        } Ok(())
+                    }
                 }
             }
-            images_data.push(img.to_rgba8().into_raw());
-        }
+        )?;
+
+
+
+
+
         let refs_to_data: Vec<&[u8]> = images_data.iter().map(|v| v.as_slice()).collect();
 
         let finalna_nazwa = format!("{}.dds", dane.nazwa);

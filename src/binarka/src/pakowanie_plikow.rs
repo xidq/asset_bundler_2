@@ -1,8 +1,9 @@
 use enumy::dane_do_przetwarzania::DaneDoKompresjaPlików;
+use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
 use enumy::opcje::OptKompresjaPlikówFiltracjaPlików;
 use enumy::statusy::LogTxDoKompresjiPliku;
-use iced::futures::SinkExt;
 use iced::futures::channel::mpsc;
+use iced::futures::SinkExt;
 use kompresja::zetestede::kompresujsuj;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
@@ -12,13 +13,13 @@ async fn zgarnij_pliki(
     ścieżka: PathBuf,
     opcja: &bool,
     filter: OptKompresjaPlikówFiltracjaPlików,
-    mut tx: mpsc::Sender<LogTxDoKompresjiPliku>, // Dodajemy kanał do raportowania "na bieżąco"
-) -> Result<(Vec<(String, Vec<u8>)>, i32), tokio::io::Error> {
+    mut tx: mpsc::Sender<LogTxDoKompresjiPliku>,
+) -> Result<Vec<(String, Vec<u8>)>, tokio::io::Error> {
     let mut lista_plików = Vec::new();
-    let mut licznik = 0;
+    let mut licznik:u32 = 0;
     let mut foldery_do_przejrzenia = vec![ścieżka.clone()];
     let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówZnalezionePliki { pliki: None })
+        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówZnalezionePliki { pliki: 0 })
         .await;
 
     while let Some(aktualny_folder) = foldery_do_przejrzenia.pop() {
@@ -30,9 +31,8 @@ async fn zgarnij_pliki(
             if path.is_dir() {
                 foldery_do_przejrzenia.push(path);
             } else if path.is_file() {
-                // --- LOGIKA FILTROWANIA ---
                 if !czy_plik_pasuje(&path, &filter) {
-                    continue; // Pomijamy plik, jeśli nie pasuje do filtra
+                    continue;
                 }
 
                 let nazwa = match opcja {
@@ -51,44 +51,37 @@ async fn zgarnij_pliki(
                 let _ = tx
                     .send(
                         LogTxDoKompresjiPliku::StatusKompresjaPlikówZnalezionePliki {
-                            pliki: Some(licznik),
+                            pliki: licznik,
                         },
                     )
                     .await;
             }
         }
     }
-    let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówZnalezionePliki { pliki: None })
-        .await;
-    Ok((lista_plików, licznik))
-}
-fn czy_plik_pasuje(path: &Path, filtr: &OptKompresjaPlikówFiltracjaPlików) -> bool {
-    match filtr {
-        OptKompresjaPlikówFiltracjaPlików::Wszystkie => true,
-        _ => {
-            // Pobieramy rozszerzenie i zamieniamy na małe litery (żeby .JPG i .jpg działały tak samo)
-            let ext = path
-                .extension()
-                .and_then(|s| s.to_str())
-                .unwrap_or("")
-                .to_lowercase();
 
-            match filtr {
-                OptKompresjaPlikówFiltracjaPlików::Graficzne => matches!(
-                    ext.as_str(),
-                    "jpg" | "jpeg" | "png" | "gif" | "bmp" | "webp" | "svg"
-                ),
-                OptKompresjaPlikówFiltracjaPlików::Audio => {
-                    matches!(ext.as_str(), "mp3" | "wav" | "ogg" | "flac" | "m4a")
-                }
-                OptKompresjaPlikówFiltracjaPlików::Tekstowe => {
-                    matches!(ext.as_str(), "txt" | "md" | "json" | "cfg" | "ini" | "log")
-                }
-                OptKompresjaPlikówFiltracjaPlików::Pdf => ext == "pdf",
-                OptKompresjaPlikówFiltracjaPlików::Wszystkie => true, // Obsłużone wyżej, ale kompilator wymaga kompletu
-            }
+    Ok(lista_plików)
+}
+fn czy_plik_pasuje(plik: &Path, filtr: &OptKompresjaPlikówFiltracjaPlików) -> bool {
+
+    let ext = plik
+        .extension()
+        .and_then(|s| s.to_str())
+        .unwrap_or("")
+        .to_lowercase();
+
+    match filtr {
+        OptKompresjaPlikówFiltracjaPlików::Graficzne => matches!(
+            ext.as_str(),
+            "jpg" | "jpeg" | "png" | "gif" | "bmp" | "webp" | "svg"
+        ),
+        OptKompresjaPlikówFiltracjaPlików::Audio => {
+            matches!(ext.as_str(), "mp3" | "wav" | "ogg" | "flac" | "m4a")
         }
+        OptKompresjaPlikówFiltracjaPlików::Tekstowe => {
+            matches!(ext.as_str(), "txt" | "md" | "json" | "cfg" | "ini" | "log")
+        }
+        OptKompresjaPlikówFiltracjaPlików::Pdf => ext == "pdf",
+        _ => true,
     }
 }
 
@@ -98,19 +91,21 @@ async fn tworzenie_binarki(
     nazwa_pliku: String,
     mut tx: mpsc::Sender<LogTxDoKompresjiPliku>, // Dodajemy kanał tutaj
 ) -> Result<(), tokio::io::Error> {
-    let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówPakowanie {
-            aktualny: None,
-            suma: None,
-        })
-        .await;
-    println!("Rozpoczęcie fn 2");
+    let mut akt_stat = async |aktualny:u32,suma:Option<u32>|{
+        if let Err(e) = tx.send(LogTxDoKompresjiPliku::StatusKompresjaPlikówPakowanie {
+            aktualny,
+            suma,
+        }).await {
+            dbg!("Błąd wysyłania statusu do kanału: ", e);
+        }
+        };
+
+
     let mut blobloblob = Vec::new();
-    let suma = pliki.len() as i32;
-    // 1. Ilość plików na start
+    let suma = pliki.len() as u32;
     blobloblob.extend_from_slice(&(pliki.len() as u32).to_le_bytes());
 
-    let mut licznik = 0;
+
     #[allow(clippy::explicit_counter_loop)]
     for (i, (nazwa, dane)) in pliki.into_iter().enumerate() {
         let n_bytes = nazwa.as_bytes();
@@ -121,64 +116,28 @@ async fn tworzenie_binarki(
         blobloblob.extend_from_slice(&(dane.len() as u64).to_le_bytes());
         blobloblob.extend_from_slice(&dane);
 
-        // --- TUTAJ LICZENIE I WYSYŁKA ---
-        licznik += 1;
-        tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
-        // Wysyłamy aktualny numer pliku do Iced
-        let _ = tx
-            .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówPakowanie {
-                aktualny: Some((i + 1) as i32),
-                suma: Some(suma),
-            })
-            .await;
-    }
 
-    let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówPakowanie {
-            aktualny: None,
-            suma: None,
-        })
-        .await;
+        tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
+
+        akt_stat((i + 1) as u32, Some(suma)).await;
+
+    }
 
     let ścieżka_temp = ścieżka_wyjściowa.join(format!("{}.jrz_tmp", nazwa_pliku));
-    // tokio::fs::create_dir_all(&ścieżka_wyjściowa).await?;
-    // println!("fn2 wyjściowa ścieżka pliku to: \n {:?}", ścieżka_temp);
-    // tokio::fs::write(ścieżka_temp, blobloblob).await?;
 
-    // DEBUG: Sprawdźmy czy folder nadrzędny istnieje
-    if let Some(parent) = ścieżka_temp.parent() {
-        println!(
-            "DEBUG: Czy folder nadrzędny {:?} istnieje? {}",
-            parent,
-            parent.exists()
-        );
-        if !parent.exists() {
-            println!("DEBUG: Próbuję stworzyć folder: {:?}", parent);
+    if let Some(parent) = ścieżka_temp.parent() && !parent.exists() {
             tokio::fs::create_dir_all(parent).await?;
-            println!("DEBUG: Po stworzeniu, czy istnieje? {}", parent.exists());
-        }
     }
 
-    println!(
-        "DEBUG: Próba zapisu {} bajtów do {:?}",
-        blobloblob.len(),
-        ścieżka_temp
-    );
 
-    // ZAPIS
-    match tokio::fs::write(&ścieżka_temp, blobloblob).await {
-        Ok(_) => println!("DEBUG: Zapis zakończony sukcesem!"),
-        Err(e) => {
-            println!("DEBUG: KATASTROFA przy zapisie: {}", e);
-            return Err(e);
-        }
+    if let Err(e) = tokio::fs::write(&ścieżka_temp, blobloblob).await {
+            let _ = tx
+                .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówBłąd(
+                    e.to_string(),
+                ))
+                .await;
     }
-    let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówPakowanie {
-            aktualny: None,
-            suma: None,
-        })
-        .await;
+
     Ok(())
 }
 
@@ -197,7 +156,7 @@ pub async fn ogarnianie_eksportu(
             zestaw_danych.nazwa,
         );
 
-        let (wsio_dane, ilość_plików) =
+        let wsio_dane =
             zgarnij_pliki(in_path, &strukturalnie, zestaw_danych.filtracja, tx.clone()).await?;
         // let _ = tx.send(ilość_plików).await;
         tworzenie_binarki(wsio_dane, out_path.clone(), nazwa_pliku.clone(), tx.clone()).await?;
@@ -217,19 +176,12 @@ pub async fn ogarnianie_eksportu(
 
     match wynik {
         Ok(_) => {
-            let trwanie = start_czas.elapsed(); // Zwraca strukturę Duration
-
-            // Formatujemy czas na ładny napis, np. "1.23s" lub "45ms"
-            // Możesz użyć prostego formatowania:
-            let czas_napis = format!("{:.2?}", trwanie);
             let _ = tx
-                .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówZakonczono { czas: czas_napis })
+                .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówZakonczono { czas: przelicz_czas(start_czas) })
                 .await;
             Ok(())
         }
         Err(e) => {
-            // Jeśli cokolwiek powyżej sypnie błędem (przez znak zapytania),
-            // wysyłamy opis błędu do UI zamiast po prostu "padać".
             let _ = tx
                 .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówBłąd(
                     e.to_string(),

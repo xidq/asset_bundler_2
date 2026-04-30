@@ -2,11 +2,11 @@
 #[derive(Debug, Clone)]
 pub enum LogTxDoKompresjiPliku {
     StatusKompresjaPlikówZnalezionePliki {
-        pliki: Option<i32>,
+        pliki: u32
     },
     StatusKompresjaPlikówPakowanie {
-        aktualny: Option<i32>,
-        suma: Option<i32>,
+        aktualny: u32,
+        suma: Option<u32>,
     },
     StatusKompresjaPlikówProcesKompresji {
         procent: Option<u8>,
@@ -23,17 +23,19 @@ pub enum LogTxDoKompresjiPliku {
 #[derive(Debug, Clone)]
 pub enum LogTxDoDekompresjiPliku {
     StatusDekompresjaPlikówZbieraniePlików {
-        procent: Option<u8>,
+        current: u32,
+        max: Option<u32>,
     },
     StatusDekompresjaPlikówDeszyfracja {
-        procent: Option<u8>,
+        current: u32,
+        max: Option<u32>,
     },
     StatusDekompresjaPlikówDekompresja {
-        pamięć: Option<u64>,
+        pamięć: u64,
     },
     StatusDekompresjaPlikówRozpakowywanie {
-        aktualny: Option<i32>,
-        suma: Option<i32>,
+        current: u32,
+        max: Option<u32>,
     },
     StatusDekompresjaPlikówBłąd(String),
     StatusDekompresjaPlikówZakończenie {

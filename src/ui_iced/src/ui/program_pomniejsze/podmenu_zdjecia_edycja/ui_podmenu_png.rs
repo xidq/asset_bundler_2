@@ -1,31 +1,29 @@
-use dds::Dithering::Color;
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE};
-use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
-use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
-use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
-    PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
-};
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, container, slider, space, text, Column, Row};
-use iced_core::{Length};
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
+use crate::ui::program_pomniejsze::kolory::KOLOR_CZCIONKI_SREDNI;
 use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
+use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
+use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::inne_ui::{RodzajeContainer, UstawieniaThemeWsio};
+use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, slider, space, text, Column, Row};
+use iced_core::Length;
 
 pub fn podmenu_png_wybor<'a>(
-    dane: &DaneDoBathKonwersjaZdjec,
-    jezyk: &WybórJęzyka,
+    dane: &'a DaneDoBathKonwersjaZdjec,
+    jezyk: &'a WybórJęzyka,
+    kolor: &'a iced::Color,
+    temat: &'a UstawieniaThemeWsio,
 ) -> Column<'a, Message> {
     Column::new()
-        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png, dane, jezyk.get_font()))
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png, dane, jezyk.get_font(),kolor,temat,))
         .push(
             if let Some(OptRozszerzeniaPlikówZdjęciowych::Png {
                             kompresja,
-                            bit_depth,
+                            bit_depth:_,
                         }) = dane.rozszerzenia_plików_zdjęciowych
                 .iter()
                 .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Png { .. }))
@@ -38,10 +36,10 @@ pub fn podmenu_png_wybor<'a>(
                                     slider(
                                         0..=9,
                                         *kompresja,
-                                        |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaKompresjiPng(xx)),
+                                        |xx|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::PngKompresja(xx)),
                                     ).height(20.)
                                         .width(Length::FillPortion(6))
-                                        .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                        .style(styl_sliderów(kolor,temat)),
                                 )
                                 .push(
                                     text(format!(
@@ -57,16 +55,16 @@ pub fn podmenu_png_wybor<'a>(
                         )
                         .push(
                             Row::new()
-                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::B8,dane,jezyk.get_font()))
-                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::B8a,dane,jezyk.get_font()))
-                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L8,dane,jezyk.get_font()))
-                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L8a,dane,jezyk.get_font()))
-                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::B16,dane,jezyk.get_font()))
-                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::B16a,dane,jezyk.get_font()))
-                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L16,dane,jezyk.get_font()))
-                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L16a,dane,jezyk.get_font()))
+                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::B8,dane,jezyk.get_font(), kolor,temat,))
+                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::B8a,dane,jezyk.get_font(), kolor,temat,))
+                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L8,dane,jezyk.get_font(), kolor,temat,))
+                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L8a,dane,jezyk.get_font(), kolor,temat,))
+                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::B16,dane,jezyk.get_font(), kolor,temat,))
+                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::B16a,dane,jezyk.get_font(), kolor,temat,))
+                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L16,dane,jezyk.get_font(), kolor,temat,))
+                                .push(btn_zbiorowe_kolor_ogolny(OptRozszerzeniaPlikówZdjęciowychZnacznik::Png,OptFormatyKoloruObrazOgólny::L16a,dane,jezyk.get_font(), kolor,temat,))
                         )
-                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
+                ).height(100.).style(styl_kontenera(true,RodzajeContainer::Góra,kolor,temat,))
             } else {
                 container(Column::new())
             }

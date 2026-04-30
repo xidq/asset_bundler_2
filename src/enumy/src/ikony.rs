@@ -1,4 +1,4 @@
-use iced::Element;
+use iced::{Color, Element};
 use iced::advanced::svg;
 
 pub const FOLDER_PELNY_ZAMKNIETY: &str =
@@ -10,8 +10,9 @@ pub const FOLDER_PUSTY_OTWARTY: &str = include_str!("../../Data/icons/folder_pus
 pub fn folder_icon<'a, T>(
     is_active: bool,
     rodzaj: u8,
-    kolor: (f32, f32, f32),
-) -> Element<'static, T> {
+    akolor: &Color,
+) -> Element<'a, T> {
+    let kolor = (akolor.r,akolor.g,akolor.b);
     // 2. Definiujemy kolory (np. żółty gdy aktywny, szary gdy nie)
     fn f32_to_hex(r: f32, g: f32, b: f32, a: f32) -> String {
         // 1. Skalowanie i rzutowanie na u8
@@ -42,14 +43,14 @@ pub fn folder_icon<'a, T>(
     // 3. Podmieniamy tagi na kolory HEX
     let processed = match rodzaj {
         1 => FOLDER_PUSTY_ZAMKNIETY
-            .replace("MAIN_COLOR", &*main)
-            .replace("BACK_COLOR", &*back),
+            .replace("MAIN_COLOR", &main)
+            .replace("BACK_COLOR", &back),
         2 => FOLDER_PELNY_ZAMKNIETY
-            .replace("MAIN_COLOR", &*main)
-            .replace("BACK_COLOR", &*back),
+            .replace("MAIN_COLOR", &main)
+            .replace("BACK_COLOR", &back),
         _ => FOLDER_PUSTY_OTWARTY
-            .replace("MAIN_COLOR", &*main)
-            .replace("BACK_COLOR", &*back),
+            .replace("MAIN_COLOR", &main)
+            .replace("BACK_COLOR", &back),
     };
 
     // 4. Konwersja: String -> Handle

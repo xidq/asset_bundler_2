@@ -1,22 +1,24 @@
-use crate::ui::program_pomniejsze::kolory::{KOLOR_CZCIONKI_SREDNI, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
+use crate::ui::program_pomniejsze::kolory::KOLOR_CZCIONKI_SREDNI;
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_avif, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
-use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{Column, Row, button, container, slider, space, text, tooltip, pick_list};
-use iced::{Color, Length};
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
-use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_avif, btn_zbiorowe_kolor_ogolny, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
 use crate::ui::program_pomniejsze::style_fn::pick_lista::{styl_menu_pick, styl_pick_list};
+use crate::ui::program_pomniejsze::style_fn::slider::styl_sliderów;
 use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::inne_ui::{RodzajeContainer, UstawieniaThemeWsio};
+use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazuAvif, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{button, container, pick_list, slider, space, text, tooltip, Column, Row};
+use iced::Length;
 
 pub fn podmenu_avif_wybor<'a>(
-    dane: &DaneDoBathKonwersjaZdjec,
-    jezyk: &WybórJęzyka,
+    dane: &'a DaneDoBathKonwersjaZdjec,
+    jezyk: &'a WybórJęzyka,
+    kolor: &'a iced::Color,
+    temat: &'a UstawieniaThemeWsio,
 ) -> Column<'a, Message> {
     let opcje:Vec<AvifMetodaKompresji> = vec![
         AvifMetodaKompresji::Av1,
@@ -38,7 +40,7 @@ pub fn podmenu_avif_wybor<'a>(
         AvifChroma::C444,
     ];
      Column::new()
-        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif, dane, jezyk.get_font()))
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif, dane, jezyk.get_font(),kolor,temat))
 
         .push(
             if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif {
@@ -46,7 +48,7 @@ pub fn podmenu_avif_wybor<'a>(
                             speed,
                             metoda_kompresji, 
                             lossy,
-                            bit_depth,
+                            bit_depth: _,
                         }) = dane.rozszerzenia_plików_zdjęciowych
                 .iter()
                 .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
@@ -59,11 +61,11 @@ pub fn podmenu_avif_wybor<'a>(
                                 slider(
                                     0..=10,
                                     *speed,
-                                    |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifSpeed(vv))
+                                    |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::AvifSpeed(vv))
                                 )
                                     .height(20.)
                                     .width(Length::FillPortion(6))
-                                .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                .style(styl_sliderów(kolor,temat)),
                             )
                             .push(
                                 text(format!(
@@ -82,11 +84,11 @@ pub fn podmenu_avif_wybor<'a>(
                                     slider(
                                         0..=100,
                                         lossy.unwrap_or(90),
-                                        |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifLossy(vv))
+                                        |vv|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::AvifLossy(vv))
                                     )
                                         .height(20.)
                                         .width(Length::FillPortion(6))
-                                        .style(styl_sliderów(KOLOR_SPANISH_ORANGE)),
+                                        .style(styl_sliderów(kolor,temat)),
                                 )
                                 .push(
                                     text(format!(
@@ -108,28 +110,28 @@ pub fn podmenu_avif_wybor<'a>(
 
                         .push(
                             tooltip(
-                                btn_zbiorowe_kolor_avif(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif,OptFormatyKoloruObrazuAvif::B8,dane,jezyk.get_font()),
+                                btn_zbiorowe_kolor_avif(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif,OptFormatyKoloruObrazuAvif::B8,dane,jezyk.get_font(),kolor,temat),
                                 text(jezyk.t("foto_edit_tooltip_jpg_color").to_string()),
                                 tooltip::Position::Top,
                             )
                         )
                         .push(
                             tooltip(
-                                btn_zbiorowe_kolor_avif(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif,OptFormatyKoloruObrazuAvif::B8a,dane,jezyk.get_font()),
+                                btn_zbiorowe_kolor_avif(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif,OptFormatyKoloruObrazuAvif::B8a,dane,jezyk.get_font(),kolor,temat),
                                 text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
                                 tooltip::Position::Top,
                             )
                         )
                         .push(
                             tooltip(
-                                btn_zbiorowe_kolor_avif(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif,OptFormatyKoloruObrazuAvif::B10,dane,jezyk.get_font()),
+                                btn_zbiorowe_kolor_avif(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif,OptFormatyKoloruObrazuAvif::B10,dane,jezyk.get_font(),kolor,temat),
                                 text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
                                 tooltip::Position::Top,
                             )
                         )
                         .push(
                             tooltip(
-                                btn_zbiorowe_kolor_avif(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif,OptFormatyKoloruObrazuAvif::B10a,dane,jezyk.get_font()),
+                                btn_zbiorowe_kolor_avif(OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif,OptFormatyKoloruObrazuAvif::B10a,dane,jezyk.get_font(),kolor,temat),
                                 text(jezyk.t("foto_edit_tooltip_jpg_bw").to_string()),
                                 tooltip::Position::Top,
                             )
@@ -145,11 +147,10 @@ pub fn podmenu_avif_wybor<'a>(
                                         .center(),
                                 )
                                     .padding(10)
-                                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifToggleLossy))
+                                    .on_press(Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::AvifLossyToggle))
                                     .style(styl_przycisków(
                                         false,
-                                        lossy.is_none(),
-                                        KOLOR_SPANISH_ORANGE,
+                                        lossy.is_none(),kolor,temat
                                     ))
                                     .width(Length::FillPortion(1)),
 
@@ -162,25 +163,25 @@ pub fn podmenu_avif_wybor<'a>(
                     .push(
                         Row::new()
                             .push(
-                                pick_list(opcje, Some(metoda_kompresji.clone()), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifKompresja(hh)))
+                                pick_list(opcje, Some(metoda_kompresji.clone()), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::AvifKompresja(hh)))
                                     .width(Length::FillPortion(5))
                                     .padding(2)
                                     .text_line_height(1.5)
-                                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
-                                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .style(styl_pick_list(kolor,temat))
+                                    .menu_style(styl_menu_pick(kolor,temat))
                                     .width(Length::FillPortion(4))
                             )
                             .push(
-                                pick_list(opcje2, Some(chroma.clone()), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::ZdjeciaEdycjaZmianaAvifChroma(hh)))
+                                pick_list(opcje2, Some(chroma.clone()), |hh|Message::ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage::AvifChroma(hh)))
                                     .width(Length::FillPortion(5))
                                     .padding(2)
                                     .text_line_height(1.5)
-                                    .style(styl_pick_list(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
-                                    .menu_style(styl_menu_pick(KOLOR_SPANISH_ORANGE, KOLOR_TŁA))
+                                    .style(styl_pick_list(kolor,temat))
+                                    .menu_style(styl_menu_pick(kolor,temat))
                                     .width(Length::FillPortion(4))
                             ).padding(15)
                     )
-                ).height(200.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
+                ).height(200.).style(styl_kontenera(true,RodzajeContainer::Góra,kolor,temat))
             } else {
                     container(Row::new())
             }

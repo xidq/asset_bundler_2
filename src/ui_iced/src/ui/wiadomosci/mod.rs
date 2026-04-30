@@ -1,7 +1,11 @@
-pub mod message_ui;
+pub(crate) mod message_ui;
 pub(crate) mod wiadomosci_do_dds;
-pub mod wiadomosci_do_laczenia_zdjec;
-pub mod wiadomosci_do_laczenia_zdjec_enum;
-pub mod wiadomosci_do_dds_enum;
-pub mod wiadomosci_do_zbiorowe_przetwarzanie_zdjec;
-pub mod wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum;
+pub(crate) mod wiadomosci_do_laczenia_zdjec;
+pub(crate) mod wiadomosci_do_laczenia_zdjec_enum;
+pub(crate) mod wiadomosci_do_dds_enum;
+pub(crate) mod wiadomosci_do_zbiorowe_przetwarzanie_zdjec;
+pub(crate) mod wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum;
+pub(crate) mod wiadomosci_pakowanie_bin;
+pub(crate) mod wiadomosci_pakowanie_bin_enum;
+pub(crate) mod wiadomosci_rozpakowanie_binarki;
+pub(crate) mod wiadomosci_rozpakowanie_binarki_enum;

@@ -79,7 +79,7 @@ impl fmt::Display for WybórJęzyka {
 // Używamy składni strukturalnej wewnątrz Enuma
 #[allow(dead_code)]
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub enum DevToolsMenu {
+pub enum UstawieniaMenu {
     // Wariant z polem 'jezyk'
     UstawieniaJęzyka { jezyk: WybórJęzyka },
     // Tutaj możesz dodawać kolejne warianty w ten sam sposób:

@@ -1,28 +1,26 @@
-use crate::ui::program_pomniejsze::kolory::KOLOR_SPANISH_ORANGE;
-use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
-use crate::ui::program_pomniejsze::ui_zdjecia_edycja::{
-    PRZERWAWYBRANYCHROZSZERZEN, ROZMIARWYBRANYCHROZSZERZEN,
-};
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{button, container, space, text, Column, Row};
-use iced_core::{Color, Length};
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::inne_ui::{CheckerDoZbiorowePrzetwarzanieZdjęć, RodzajeContainer};
-use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_ogolny, btn_zbiorowe_kolor_qoi, btn_zbiorowe_rozszerzenia, info_male};
+use crate::ui::program_pomniejsze::podmenu_zdjecia_edycja::inne::{btn_zbiorowe_kolor_qoi, btn_zbiorowe_rozszerzenia, info_male};
 use crate::ui::program_pomniejsze::style_fn::kontener::styl_kontenera;
+use crate::ui::program_pomniejsze::ui_zdjecia_edycja::PRZERWAWYBRANYCHROZSZERZEN;
 use crate::ui::wiadomosci::message_ui::Message;
+use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::inne_ui::{RodzajeContainer, UstawieniaThemeWsio};
+use enumy::opcje::{OptFormatyKoloruObrazuQoi, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, space, Column, Row};
+use iced_core::Length;
 
 pub fn podmenu_qoi_wybor<'a>(
-    dane: &DaneDoBathKonwersjaZdjec,
-    jezyk: &WybórJęzyka,
+    dane: &'a DaneDoBathKonwersjaZdjec,
+    jezyk: &'a WybórJęzyka,
+    kolor: &'a iced::Color,
+    temat: &'a UstawieniaThemeWsio,
 ) -> Column<'a, Message> {
     Column::new()
-        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi, dane, jezyk.get_font()))
+        .push(btn_zbiorowe_rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi, dane, jezyk.get_font(),kolor,temat))
 
         .push(
             if let Some(OptRozszerzeniaPlikówZdjęciowych::Qoi {
-                            bit_depth,
+                            bit_depth:_,
                         }) = dane.rozszerzenia_plików_zdjęciowych
                 .iter()
                 .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Qoi { .. }))
@@ -35,11 +33,11 @@ pub fn podmenu_qoi_wybor<'a>(
                         )
                         .push(
                         Row::new()
-                            .push(btn_zbiorowe_kolor_qoi(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi,OptFormatyKoloruObrazuQoi::Color24,dane,jezyk.get_font()))
-                            .push(btn_zbiorowe_kolor_qoi(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi,OptFormatyKoloruObrazuQoi::ColorA32,dane,jezyk.get_font()))
+                            .push(btn_zbiorowe_kolor_qoi(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi,OptFormatyKoloruObrazuQoi::Color24,dane,jezyk.get_font(),kolor,temat))
+                            .push(btn_zbiorowe_kolor_qoi(OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi,OptFormatyKoloruObrazuQoi::ColorA32,dane,jezyk.get_font(),kolor,temat))
                         )
                     
-                ).height(100.).style(styl_kontenera(true, KOLOR_SPANISH_ORANGE,RodzajeContainer::Góra))
+                ).height(100.).style(styl_kontenera(true,RodzajeContainer::Góra, kolor,temat))
             }else{container(Column::new())}
         ).padding(15).width(Length::FillPortion(2))
     
