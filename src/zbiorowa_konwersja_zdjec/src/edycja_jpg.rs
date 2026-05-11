@@ -11,7 +11,7 @@ use encodery::jpg::{jpg_match, jpg_zapis};
 use enumy::rozszerzenia::bdepth::BdepthJpg;
 use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-
+#[allow(clippy::too_many_arguments)]
 pub async fn edycja_jpg(
     bufor: DynamicImage,
     rozdzielczości: &Vec<Rozdzielczości>,

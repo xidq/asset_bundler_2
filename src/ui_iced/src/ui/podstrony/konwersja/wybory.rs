@@ -1,14 +1,13 @@
-use iced::Element;
-use iced::widget::{Column, Row};
-use strum::{EnumMessage, IntoEnumIterator};
+use crate::ui::wiadomosci::message_ui::Message;
+use crate::widget::text::info_male;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::UstawieniaThemeWsio;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
-use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::widget::text::info_male;
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use iced::widget::{Column, Row};
+use iced::Element;
+use strum::{EnumMessage, IntoEnumIterator};
 
 pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
 
@@ -233,23 +232,23 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
     let ff_bool = dane.tag.contains(&ImgExtTag::Ff);
 
-    let (ff_kompresja,ff_kompresja_wartosc) =
+    let (ff_kompresja, /* ff_kompresja_wartosc */) =
         if let Some(ImgExt::Ff {
                         metoda_kompresji
                     }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Ff { .. })) {
 
             (
                 metoda_kompresji.to_string(),
-                match metoda_kompresji {
-                    ForFfKompresja::Zstd(v) | ForFfKompresja::Bzip2(v) | ForFfKompresja::Xz(v) => v.to_string(),
-                    ForFfKompresja::Brak => "".to_string(),
-                }
+                // match metoda_kompresji {
+                //     ForFfKompresja::Zstd(v) | ForFfKompresja::Bzip2(v) | ForFfKompresja::Xz(v) => v.to_string(),
+                //     ForFfKompresja::Brak => "".to_string(),
+                // }
             )
 
         } else {
             (
                 "-".to_string(),
-                "-".to_string()
+                // "-".to_string()
             )
         };
 

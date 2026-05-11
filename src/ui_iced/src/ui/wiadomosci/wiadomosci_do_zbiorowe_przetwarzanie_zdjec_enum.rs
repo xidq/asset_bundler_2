@@ -3,7 +3,7 @@ use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
 use enumy::rozszerzenia::bdepth_impl::BitDepth;
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::rozszerzenia::ImgExtTag;
+use enumy::rozszerzenia::ext::ImgExtTag;
 use enumy::statusy::LogTxKonw;
 
 #[derive(Debug,Clone)]

@@ -1,24 +1,17 @@
-use std::fs::{create_dir_all, File};
-use std::path::{Path, PathBuf};
-use std::sync::{Arc};
-use futures::channel::mpsc;
-use futures::channel::mpsc::Sender;
-use futures::SinkExt;
-use image::{DynamicImage, imageops::FilterType, Rgba, ImageBuffer, GenericImageView, ColorType};
-use tokio::sync::Mutex;
+use crate::dds_halper::{usun_kanal_alpha, zaszumianie};
 use enumy::opcje::OptInterpolacja;
 use enumy::rozszerzenia::bdepth::BdepthPng;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::statusy::LogTxKonw;
-use crate::dds_halper::{usun_kanal_alpha, zaszumianie};
-use crate::zapisy::inne_dds::aktualizuj_postep_dds;
-
+use image::{imageops::FilterType, DynamicImage};
+use std::fs::{create_dir_all, File};
+use std::path::Path;
+#[allow(clippy::too_many_arguments)]
 pub async fn edycja_png(
     bufor: DynamicImage,
     rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca:&String,
-    OptInterpolacja: &OptInterpolacja,
+    opt_interpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
     // exif: &DaneExif, // PNG rzadko używa EXIF, ale zostawiamy dla spójności
     kompresja: &u8,
@@ -26,14 +19,14 @@ pub async fn edycja_png(
     alfa_rgb: &(u16, u16, u16),
     bit_depth: &Vec<BdepthPng>,
     zaszumianie_zmienna: Option<u8>,
-    metryka_operacji:u32,
-    obecna_operacja: Arc<Mutex<u32>>,
-    procent_progress: Arc<Mutex<u8>>,
-    mut tx: Sender<LogTxKonw>
+    // metryka_operacji:u32,
+    // obecna_operacja: Arc<Mutex<u32>>,
+    // procent_progress: Arc<Mutex<u8>>,
+    // mut tx: Sender<LogTxKonw>
 ) -> Result<(), tokio::io::Error> {
 
     // 1. Wybór filtra interpolacji
-    let filtr = match OptInterpolacja {
+    let filtr = match opt_interpolacja {
         OptInterpolacja::Nearest => FilterType::Nearest,
         OptInterpolacja::Triangle => FilterType::Triangle,
         OptInterpolacja::CatmullRom => FilterType::CatmullRom,

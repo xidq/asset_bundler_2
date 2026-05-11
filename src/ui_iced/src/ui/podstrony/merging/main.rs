@@ -1,20 +1,14 @@
-use std::path::PathBuf;
-use iced::Element;
-use iced::widget::{scrollable, space, Column, Row};
-use iced_core::Length;
-use enumy::dane_do_przetwarzania::{DaneKonw, DaneMerge};
-use enumy::enums_structs_io::LogPrzetwarzanieFot;
-use enumy::ikony::folder_icon;
-use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UiPods, UstawieniaThemeWsio};
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::podstrony::merging::lewy::strona_wyboru;
 use crate::ui::podstrony::merging::rozszerzenia::rozszerzenia;
 use crate::ui::podstrony::merging::sciezki::sciezki;
 use crate::ui::wiadomosci::message_ui::Message;
-use crate::widget::button::{przycisk, przycisk_startu};
 use crate::widget::oddzielacze::oddzielacz_pionowy;
-use crate::widget::styles::styl_scrollable;
-use crate::widget::text_place::tekstowe_pole_wypelniane;
+use enumy::dane_do_przetwarzania::DaneMerge;
+use enumy::inne_ui::{UiPods, UstawieniaThemeWsio};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{Column, Row};
+use iced::Element;
+use iced_core::Length;
 
 pub fn merge_view<'a>(
     dane: &'a DaneMerge,

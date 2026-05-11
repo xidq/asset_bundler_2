@@ -1,10 +1,8 @@
-use iced::Element;
 use iced::widget::{container, Container};
-use iced_core::Background::{ Gradient};
-
-use iced_core::{Background, Color, Length, Radians};
-use iced_core::gradient::{ColorStop, Linear};
+use iced::Element;
 use crate::ui::wiadomosci::message_ui::Message;
+use iced_core::gradient::{ColorStop, Linear};
+use iced_core::{Background, Color, Length, Radians};
 
 pub fn oddzielacz_pionowy<'a>() -> Element<'a, Message> {
     Container::new("")

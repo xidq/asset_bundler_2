@@ -8,9 +8,9 @@ use image::DynamicImage;
 use std::fs::{File, create_dir_all};
 use std::path::Path;
 use xz2::write::XzEncoder;
-
-pub async fn dds_ex_ff(
-    mut bufor: DynamicImage,
+#[allow(clippy::too_many_arguments)]
+ pub async fn dds_ex_ff(
+    bufor: DynamicImage,
     ścieżka_wyjściowa: &Path,
     nazwa_pliku: &str,
     metryka_operacji: u32,
@@ -19,7 +19,7 @@ pub async fn dds_ex_ff(
     wybrana_kompresja: &ForFfKompresja,
     mut tx: Sender<LogTxDdsUnpak>,
 ) -> Result<(), tokio::io::Error> {
-    let (docelowy_wymiar, nazwa_wariantu) = (0, "");
+    let  nazwa_wariantu = "";
     // *obecna_operacja +=1;
     aktualizuj_postep_dds(obecna_operacja, procent_progress, metryka_operacji, &mut tx).await;
 
@@ -90,7 +90,7 @@ pub async fn dds_ex_ff(
 
             bombozooo
                 .write_with_encoder(encoder)
-                .map_err(|e| std::io::Error::other(e))?
+                .map_err(std::io::Error::other)?
         }
     }
 

@@ -1,15 +1,12 @@
 use crate::zapisy::edycja_ff::dds_ex_ff;
 use crate::zapisy::edycja_jpg::dds_ex_jpg;
 use dds::{ColorFormat, DataLayout, Decoder, ImageViewMut};
-use enumy::rozszerzenia::rozszerzenia::ImgExt;
-use enumy::statusy::LogTxDdsUnpak;
-use futures::TryFutureExt;
-use futures::channel::mpsc::Sender;
-use image::{DynamicImage, ImageFormat};
-use std::fs::File;
-use std::path::PathBuf;
 use enumy::dane_do_przetwarzania::DaneDdsUnpak;
-// Zakładam, że używasz crate 'dds' lub podobnego
+use enumy::rozszerzenia::ext::ImgExt;
+use enumy::statusy::LogTxDdsUnpak;
+use futures::channel::mpsc::Sender;
+use image::DynamicImage;
+use std::fs::File;
 
 pub async fn export_dds_array_to_jpg(
     dane: DaneDdsUnpak,
@@ -24,7 +21,7 @@ pub async fn export_dds_array_to_jpg(
 
     let file = File::open(&dane.ścieżka_wejściowa)?;
     let mut decoder =
-        Decoder::new(file).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        Decoder::new(file).map_err(std::io::Error::other)?;
 
     let layout = decoder.layout();
     let size = layout.main_size(); // Rozmiar pojedynczej tekstury (level 0)
@@ -44,8 +41,7 @@ pub async fn export_dds_array_to_jpg(
             return Err(std::io::Error::new(
                 std::io::ErrorKind::InvalidData,
                 "Nieobsługiwany układ danych (Volume nie jest wspierany",
-            )
-            .into());
+            ));
         }
     };
     let metryka_operacji = array_len * 2; //zebrać
@@ -62,8 +58,8 @@ pub async fn export_dds_array_to_jpg(
                     size,
                     ColorFormat::RGBA_U8
                 ).ok_or_else(|| {
-                    std::io::Error::new(
-                        std::io::ErrorKind::Other,
+                    std::io::Error::other(
+
                         "Błąd ImageViewMut: Bufor ma nieprawidłowy rozmiar dla podanego formatu/wymiarów"
                     )
                 })?;

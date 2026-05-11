@@ -1,22 +1,18 @@
 use crate::ui::program::Program;
+use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::ActProces;
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use enumy::rozszerzenia::ext::{ImgExtTag, RozszerzeniaPojedyncze};
 use enumy::statusy::LogTxDoŁączeniaZdjęć;
 use futures::channel::mpsc;
 use iced::Task;
-// use laczenie_plikow::laczenie_fot_struct_enums::fn_do_laczenia_fot;
+use laczenie_plikow::laczenie_fot_struct_enums::fn_do_laczenia_fot;
 use std::mem::discriminant;
 use std::path::PathBuf;
-use std::rc::Rc;
-use std::sync::Arc;
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
-use laczenie_plikow::laczenie_fot_struct_enums::fn_do_laczenia_fot;
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 
 impl Program {
     pub fn update_message_łączenie_zdjęć(&mut self, msg: MergeMsg) -> Task<MergeMsg> {

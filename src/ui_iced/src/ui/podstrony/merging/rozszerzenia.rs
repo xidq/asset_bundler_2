@@ -1,19 +1,18 @@
-use iced::widget::{container, space, Column, Row};
-use iced_core::{Color, Length};
-use strum::IntoEnumIterator;
-use enumy::dane_do_przetwarzania::DaneMerge;
-use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use crate::ui::podstrony::merging::sciezki::sciezki;
 use crate::ui::wiadomosci::message_ui::Message;
-use crate::widget::button::{btn_bdepth_konwersja, btn_bdepth_merge, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
+use crate::widget::button::{btn_bdepth_merge, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
+use enumy::dane_do_przetwarzania::DaneMerge;
+use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use enumy::rozszerzenia::ext::{ImgExtTag, RozszerzeniaPojedyncze};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, space, Column, Row};
+use iced_core::{Color, Length};
+use strum::IntoEnumIterator;
 
 pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Column<'a, Message> {
     Column::new()
@@ -21,7 +20,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
 
         .push(
             ImgExtTag::iter()
-                .into_iter()
+                
                 .fold(
                     Row::new(), |row, wariant| {
                         row.push(
@@ -47,7 +46,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                     RozszerzeniaPojedyncze::Jpg {
                                         jakosc,
                                         progresywny,
-                                        bit_depth,
+                                        bit_depth:_,
                                         sampling: _,
                                         quant: _,
                                         scans,
@@ -62,7 +61,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         )
                                         // .push(
                                         //     BdepthJpg::iter()
-                                        //         .into_iter()
+                                        //         
                                         //         .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                         //         .fold(
                                         //             Row::new(), |row, wariant| {
@@ -123,7 +122,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         )
                                         .push(
                                             BdepthPng::iter()
-                                                .into_iter()
+                                                
                                                 .step_by(2)
                                                 .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
@@ -142,7 +141,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         )
                                         .push(
                                             BdepthPng::iter()
-                                                .into_iter()
+                                                
                                                 .skip(1)
                                                 .step_by(2)
                                                 .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
@@ -190,7 +189,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         )
                                         .push(
                                             BdepthWebp::iter()
-                                                .into_iter()
+                                                
                                                 .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {
@@ -226,7 +225,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         .push(space().height(50.))
                                         .push(
                                             BdepthTga::iter()
-                                                .into_iter()
+                                                
                                                 .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {
@@ -306,7 +305,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         .push(Row::new().height(50.))
                                         .push(
                                             BdepthQoi::iter()
-                                                .into_iter()
+                                                
                                                 .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {
@@ -345,12 +344,12 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         .push(
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("S: {}", speed), jezyk, temat))
-                                                .push(slajderr(speed as i32, (0,100), &SliderType::MergeAvifSpeed, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(speed, (0,100), &SliderType::MergeAvifSpeed, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         )
                                         .push(
                                             BdepthAvif::iter()
-                                                .into_iter()
+                                                
                                                 .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {

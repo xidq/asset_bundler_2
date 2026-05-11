@@ -1,10 +1,9 @@
-use std::rc::Rc;
-use std::sync::Arc;
-use enumy::rozszerzenia::rozszerzenia::ImgExtTag;
-use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::rozszerzenia::bdepth_impl::BitDepth;
 use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kompresje::ForFfKompresja;
+use enumy::rozszerzenia::ext::ImgExtTag;
 use enumy::statusy::LogTxDoŁączeniaZdjęć;
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
 pub enum MergeMsg {

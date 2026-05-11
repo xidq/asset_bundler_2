@@ -10,13 +10,13 @@ use tokio::sync::Mutex;
 use encodery::halper::{usun_kanal_alpha, zaszumianie};
 use enumy::rozszerzenia::bdepth::BdepthPng;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-
+#[allow(clippy::too_many_arguments)]
 pub async fn edycja_png(
     bufor: DynamicImage,
     rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca: &String,
-    OptInterpolacja: &OptInterpolacja,
+    opt_interpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
     // exif: &DaneExif, // PNG rzadko używa EXIF, ale zostawiamy dla spójności
     kompresja: &u8,
@@ -29,7 +29,7 @@ pub async fn edycja_png(
     mut tx: Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
     // 1. Wybór filtra interpolacji
-    let filtr = match OptInterpolacja {
+    let filtr = match opt_interpolacja {
         OptInterpolacja::Nearest => FilterType::Nearest,
         OptInterpolacja::Triangle => FilterType::Triangle,
         OptInterpolacja::CatmullRom => FilterType::CatmullRom,

@@ -1,10 +1,8 @@
-use iced::widget::{button, container, pick_list, slider, text_input};
-use iced::widget::button::{Catalog, Status, Style};
-use iced_core::{Background, Border, Color, Radians, Shadow, Vector};
-use iced_core::gradient::{ColorStop, Linear};
-use enumy::inne_ui::{BtnState, RodzajeContainer, UstawieniaThemeWsio};
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::widget::colors_n_stuff::{KOLOR_CZCIONKI_JASNY, KOLOR_ERROR, KOLOR_OBRAMOWANIA_NIE_AKTYWNY};
+use enumy::inne_ui::{BtnState, RodzajeContainer, UstawieniaThemeWsio};
+use iced::widget::{button, container, pick_list, slider, text_input};
+use iced_core::gradient::{ColorStop, Linear};
+use iced_core::{Background, Border, Color, Radians, Shadow, Vector};
 
 
 pub fn styl_przycisków<'a>(
@@ -15,7 +13,7 @@ pub fn styl_przycisków<'a>(
     move |_theme, _status| {
 
         if let button::Status::Hovered = _status {
-            return btn_hover(kolor, temat);
+            btn_hover(kolor, temat)
         } else {
             match stan {
                 BtnState::Processing => btn_processing(kolor, temat),
@@ -111,7 +109,7 @@ fn btn_aktywny(kolor: &Color, temat: &UstawieniaThemeWsio) -> button::Style {
         ..button::Style::default()
     }
 }
-fn btn_active(kolor: &Color, temat: &UstawieniaThemeWsio) -> button::Style {
+fn btn_active(_kolor: &Color, temat: &UstawieniaThemeWsio) -> button::Style {
     button::Style {
         background: Some(
             Color {
@@ -320,7 +318,7 @@ pub fn styl_progress_bar<'a>(
         use iced::{Border, Color};
 
         let wypelnienie = Color{ a: temat.obecny_theme.mid, ..*kolor_akcentu};
-        let kolor_border = Color{ a: temat.obecny_theme.low, ..*kolor_akcentu};;
+        let kolor_border = Color{ a: temat.obecny_theme.low, ..*kolor_akcentu};
 
         progress_bar::Style {
             // Tło całego paska (to pod spodem)

@@ -1,13 +1,12 @@
-use std::path::PathBuf;
-use iced::widget::{space, text, Column, Row};
-use iced_core::{Color, Length};
+use crate::ui::wiadomosci::message_ui::Message;
+use crate::widget::button::{pole_tekstowe_przycisku, przycisk, przycisk_startu};
+use crate::widget::text_place::tekstowe_pole_wypelniane;
 use enumy::dane_do_przetwarzania::DaneMerge;
 use enumy::ikony::folder_icon;
 use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::widget::button::{pole_tekstowe_przycisku, przycisk, przycisk_startu};
-use crate::widget::text_place::tekstowe_pole_wypelniane;
+use iced::widget::{space, text, Column, Row};
+use iced_core::{Color, Length};
 
 pub fn sciezki<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Column<'a, Message> {
     lazy_static::lazy_static! {

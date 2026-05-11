@@ -1,19 +1,18 @@
-use iced::Element;
-use iced::widget::{container, scrollable, space, Column, Row};
-use iced_core::{Color, Length};
-use strum::IntoEnumIterator;
-use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
-use enumy::opcje::OptKompresjaPlikówFiltracjaPlików;
-use enumy::rozszerzenia::bdepth::BdepthJpg;
-use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::button::{btn_bdepth_konwersja, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
+use enumy::dane_do_przetwarzania::DaneKonw;
+use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
+use enumy::rozszerzenia::bdepth::BdepthJpg;
+use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, space, Column, Row};
+use iced::Element;
+use iced_core::{Color, Length};
+use strum::IntoEnumIterator;
 
 pub fn jpg<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
@@ -43,7 +42,7 @@ pub fn jpg<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                 )
                                 .push(
                                     BdepthJpg::iter()
-                                        .into_iter()
+                                        
                                         .fold(
                                             Row::new(), |row, wariant| {
                                                 row.push(

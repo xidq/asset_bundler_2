@@ -1,22 +1,20 @@
-use std::borrow::Cow;
-use std::sync::Arc;
-use iced::Element;
-use iced::widget::{button, text, tooltip};
-use iced_core::{Color, Length};
-use strum::EnumMessage;
-use enumy::implementacje::DaneDropdown;
 use crate::ui::wiadomosci::message_ui::Message;
-use enumy::inne_ui::{ActProces, BtnState, ButtonType, PrzyciskiGlowneMenu, UiPods, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth_impl::BitDepth;
-use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::rozszerzenia::rozszerzenia::ImgExtTag;
-use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
-use crate::ui::program::Program;
 use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 use crate::widget::colors_n_stuff::WYSOKOSC_CZCIONEK_PRZYCISKI;
 use crate::widget::styles::{styl_hint, styl_przycisków};
+use enumy::inne_ui::{ActProces, BtnState, ButtonType, PrzyciskiGlowneMenu, UiPods, UstawieniaThemeWsio};
+use enumy::rozszerzenia::bdepth_impl::BitDepth;
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use enumy::rozszerzenia::ext::ImgExtTag;
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{button, text, tooltip};
+use iced::Element;
+use iced_core::{Color, Length};
+use std::borrow::Cow;
+use std::sync::Arc;
+use strum::EnumMessage;
 
 pub trait ElementarnyTekst<'a>: Into<Element<'a, Message>> {
     fn element(self, jezyk: &WybórJęzyka) -> Element<'a,Message>;
@@ -25,7 +23,7 @@ pub trait ElementarnyTekst<'a>: Into<Element<'a, Message>> {
 impl<'a> ElementarnyTekst<'a> for &'a str{
     fn element(self, jezyk: &WybórJęzyka) -> Element<'a, Message> {
         text(
-            jezyk.t(&self)
+            jezyk.t(self)
         )
             .font(jezyk.get_font())
             .height(WYSOKOSC_CZCIONEK_PRZYCISKI)
@@ -40,7 +38,7 @@ impl<'a> ElementarnyTekst<'a> for Element<'a, Message> {
         self
     }
 }
-
+#[allow(clippy::too_many_arguments)]
 pub fn przycisk<'a, T>(
     element: T,
     typ: ButtonType,
@@ -132,7 +130,7 @@ pub fn przycisk_rozszerzenia<'a>(
         }
     }
 }
-trait LabelText{
+pub(crate) trait LabelText{
     fn element(self, jezyk: &WybórJęzyka) -> Cow<'static, str>;
 }
 
@@ -183,7 +181,7 @@ pub fn przycisk_startu<'a>(
         BtnState::Disabled => {"mgt_btn_busy_processing_other"}
         BtnState::Processing => {"mgt_btn_busy_processing"}
         BtnState::LackData => {"mgt_btn_gib_data"}
-        _ => {"mgt_proces_error"}
+        // _ => {"mgt_proces_error"}
     };
     let xxx =
         button(
@@ -199,7 +197,7 @@ pub fn przycisk_startu<'a>(
         true => {
             tooltip(
                 xxx,
-                jezyk.t(&*("hint_".to_owned() + label)),
+                jezyk.t(&("hint_".to_owned() + label)),
                 tooltip::Position::Bottom
             )
                 .style(styl_hint(temat))
@@ -624,7 +622,7 @@ pub fn btn_rozdzielczosci<'a>(
 
         let xxx = button(
             text(
-                jezyk.t(&rozdzielczosc.get_message().unwrap_or("błąd danych rozdzielczosc").to_string())
+                jezyk.t(rozdzielczosc.get_message().unwrap_or("błąd danych rozdzielczosc"))
             ).font(jezyk.get_font()).width(Length::Fill).height(Length::Fill).center()
         )
             .on_press(Message::ZbiorowePrzetwarzanieZdjęć(KonwMsg::Rozdzielczość(rozdzielczosc.clone())))

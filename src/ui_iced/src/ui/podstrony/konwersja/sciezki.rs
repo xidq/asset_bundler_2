@@ -1,16 +1,14 @@
-use iced::Element;
-use iced::widget::{space, text, Column, Row};
-use iced_core::{Color, Length};
-use enumy::dane_do_przetwarzania::{DaneKonw, DaneMerge};
-use enumy::enums_structs_io::LogPrzetwarzanieFot;
-use enumy::ikony::folder_icon;
-use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
-use enumy::lang::odmiana_liczbowa;
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::button::{przycisk, przycisk_startu};
 use crate::widget::status::{status_text, status_text_bar};
 use crate::widget::text_place::tekstowe_pole_wypelniane;
+use enumy::dane_do_przetwarzania::DaneKonw;
+use enumy::enums_structs_io::LogPrzetwarzanieFot;
+use enumy::ikony::folder_icon;
+use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{space, text, Column, Row};
+use iced_core::{Color, Length};
 
 pub fn sciezki<'a>(dane: &'a DaneKonw, log: &'a LogPrzetwarzanieFot, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Column<'a, Message>{
     Column::new().padding(15).spacing(15)

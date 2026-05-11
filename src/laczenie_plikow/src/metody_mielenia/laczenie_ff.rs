@@ -1,18 +1,11 @@
-use bzip2::Compression;
 use bzip2::write::BzEncoder;
-use enumy::rozszerzenia::kompresje::ForFfKompresja;
-use futures::SinkExt;
-use futures::channel::mpsc;
-use futures::channel::mpsc::Sender;
-use image::DynamicImage;
-use image::imageops::FilterType;
-use std::error::Error;
-use std::fs::{File, create_dir, create_dir_all};
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use tokio::sync::Mutex;
-use xz2::write::XzEncoder;
+use bzip2::Compression;
 use encodery::halper::usun_kanal_alpha;
+use enumy::rozszerzenia::kompresje::ForFfKompresja;
+use image::DynamicImage;
+use std::fs::{create_dir_all, File};
+use std::path::Path;
+use xz2::write::XzEncoder;
 
 pub async fn laczenie_ff(
     mut bufor: Vec<DynamicImage>,
@@ -109,7 +102,7 @@ pub async fn laczenie_ff(
 
             nowy_bufor
                 .write_with_encoder(encoder)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?
+                .map_err(std::io::Error::other)?
         }
     }
 

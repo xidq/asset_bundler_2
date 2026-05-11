@@ -17,13 +17,12 @@ use enumy::rozszerzenia::bdepth::BdepthJpg;
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForFfKompresja};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
+use enumy::rozszerzenia::ext::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
 pub(crate) use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
 use iced::widget::{image, stack, Column, Row};
 use iced::{Border, Color, Element, Length};
 use iced_core::{Shadow, Theme, Vector};
 use std::path::PathBuf;
-use strum::IntoEnumIterator;
 
 
 #[allow(dead_code)]
@@ -319,28 +318,28 @@ impl Program {
                     }
                     TextInputType::MergPathInR => {
                         self.dane_merge.sciezka_r =
-                        if string.len() > 0 {
+                        if !string.is_empty() {
                              Some(PathBuf::from(string))
                         } else { None };
                         let _ = self.update(Message::ChckStatus);
                     }
                     TextInputType::MergPathInG => {
                         self.dane_merge.sciezka_g =
-                        if string.len() > 0 {
+                        if !string.is_empty() {
                              Some(PathBuf::from(string))
                         } else { None };
                         let _ = self.update(Message::ChckStatus);
                     }
                     TextInputType::MergPathInB => {
                         self.dane_merge.sciezka_b =
-                            if string.len() > 0 {
+                            if !string.is_empty() {
                                 Some(PathBuf::from(string))
                             } else { None };
                         let _ = self.update(Message::ChckStatus);
                     }
                     TextInputType::MergPathInA => {
                         self.dane_merge.sciezka_a =
-                        if string.len() > 0 {
+                        if !string.is_empty() {
                              Some(PathBuf::from(string))
                         } else { None };
                         let _ = self.update(Message::ChckStatus);
@@ -386,158 +385,155 @@ impl Program {
                         }
                         DropdownType::BinFilter => {
                             if let Some(v) = wybrane.downcast_ref::<OptKompresjaPlikówFiltracjaPlików>() {
-                                self.dane_bin_pak.filtracja = v.clone();
+                                self.dane_bin_pak.filtracja = *v;
                             }
                         }
                         DropdownType::BinKompresja => {
                             if let Some(v) = wybrane.downcast_ref::<OptKompresjaPlikówPoziomKompresjiZstd>() {
-                                self.dane_bin_pak.kompresja = v.clone();
+                                self.dane_bin_pak.kompresja = *v;
                             }
                         }
                         DropdownType::KonwersjaJpgQuant => {
-                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>() {
-                                if let Some(ImgExt::Jpg { quant, .. }) = self.dane_konw
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>()
+                                && let Some(ImgExt::Jpg { quant, .. }) = self.dane_konw
                                     .rozszerzenia
                                     .iter_mut()
                                     .find(|f| matches!(f, ImgExt::Jpg { .. }))
                                 {
-                                    *quant = v.clone();
+                                    *quant = *v;
                                 }
-                            }
                         }
                         DropdownType::KonwersjaJpgSample => {
-                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>() {
-                                if let Some(ImgExt::Jpg { sampling, .. }) = self.dane_konw
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>()
+                                && let Some(ImgExt::Jpg { sampling, .. }) = self.dane_konw
                                     .rozszerzenia
                                     .iter_mut()
                                     .find(|f| matches!(f, ImgExt::Jpg { .. }))
                                 {
-                                    *sampling = v.clone();
+                                    *sampling = *v;
                                 }
-                            }
                         }
                         DropdownType::KonwersjaKompresjaFf => {
-                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>() {
-                                if let Some(ImgExt::Ff { metoda_kompresji, .. }) = self.dane_konw
+                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>()
+                                && let Some(ImgExt::Ff { metoda_kompresji, .. }) = self.dane_konw
                                     .rozszerzenia
                                     .iter_mut()
                                     .find(|f| matches!(f, ImgExt::Ff { .. }))
                                 {
-                                    *metoda_kompresji = v.clone().ustaw_domyslny_poziom();
+                                    *metoda_kompresji = v.ustaw_domyslny_poziom();
                                 }
-                            }
                         }
                         DropdownType::KonwersjaAvifKompresja => {
-                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>() {
-                                if let Some(ImgExt::Avif { metoda_kompresji, .. }) = self.dane_konw
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>()
+                                && let Some(ImgExt::Avif { metoda_kompresji, .. }) = self.dane_konw
                                     .rozszerzenia
                                     .iter_mut()
                                     .find(|f| matches!(f, ImgExt::Avif { .. }))
                                 {
                                     *metoda_kompresji = v.clone();
                                 }
-                            }
+
                         }
                         DropdownType::KonwersjaAvifChroma => {
-                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>() {
-                                if let Some(ImgExt::Avif { chroma, .. }) = self.dane_konw
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>()
+                                && let Some(ImgExt::Avif { chroma, .. }) = self.dane_konw
                                     .rozszerzenia
                                     .iter_mut()
                                     .find(|f| matches!(f, ImgExt::Avif { .. }))
                                 {
                                     *chroma = v.clone();
                                 }
-                            }
+
                         }
                         DropdownType::MergeJpgSample => {
-                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>() {
-                                if let RozszerzeniaPojedyncze::Jpg { ref mut sampling, .. } = self.dane_merge.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>()
+                                && let RozszerzeniaPojedyncze::Jpg { ref mut sampling, .. } = self.dane_merge.rozszerzenie
                                 {
-                                    *sampling = v.clone();
+                                    *sampling = *v;
                                 }
-                            }
+
                         }
                         DropdownType::MergeJpgQuant => {
-                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>() {
-                                if let RozszerzeniaPojedyncze::Jpg { ref mut quant, .. } = self.dane_merge.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>()
+                                && let RozszerzeniaPojedyncze::Jpg { ref mut quant, .. } = self.dane_merge.rozszerzenie
                                 {
-                                    *quant = v.clone();
+                                    *quant = *v;
                                 }
-                            }
+
                         }
                         DropdownType::MergeAvifChroma => {
-                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>() {
-                                if let RozszerzeniaPojedyncze::Avif { ref mut chroma, .. } = self.dane_merge.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>()
+                                && let RozszerzeniaPojedyncze::Avif { ref mut chroma, .. } = self.dane_merge.rozszerzenie
                                 {
                                     *chroma = v.clone();
                                 }
-                            }
+
                         }
                         DropdownType::MergeAvifKompresja => {
-                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>() {
-                                if let RozszerzeniaPojedyncze::Avif { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>()
+                                && let RozszerzeniaPojedyncze::Avif { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
                                 {
                                     *metoda_kompresji = v.clone();
                                 }
-                            }
+
                         }
                         DropdownType::MergeKompresjaFf => {
-                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>() {
-                                if let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>()
+                                && let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
                                 {
-                                    *metoda_kompresji = v.clone().ustaw_domyslny_poziom();
+                                    *metoda_kompresji = v.ustaw_domyslny_poziom();
                                 }
-                            }
+
                         }
                         DropdownType::DdsPakComp => {
                             if let Some(v) = wybrane.downcast_ref::<ForDdsKompresja>() {
-                                self.dane_dds_pak.kompresja= v.clone();
+                                self.dane_dds_pak.kompresja= *v;
                             }
                         }
                         DropdownType::DdsPakFormat => {
                             if let Some(v) = wybrane.downcast_ref::<ForDds>() {
-                                self.dane_dds_pak.format= v.clone();
+                                self.dane_dds_pak.format= *v;
                             }
                         }
                         DropdownType::DdsKompresjaFf => {
-                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>() {
-                                if let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>()
+                                && let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie
                                 {
-                                    *metoda_kompresji = v.clone().ustaw_domyslny_poziom();
+                                    *metoda_kompresji = v.ustaw_domyslny_poziom();
                                 }
-                            }
+
                         }
                         DropdownType::DdsAvifKompresja => {
-                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>() {
-                                if let ImgExt::Avif { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>()
+                                && let ImgExt::Avif { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie
                                 {
                                     *metoda_kompresji = v.clone();
                                 }
-                            }
+
                         }
                         DropdownType::DdsAvifChroma => {
-                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>() {
-                                if let ImgExt::Avif { ref mut chroma, .. } = self.dane_dds_rozpak.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>()
+                                && let ImgExt::Avif { ref mut chroma, .. } = self.dane_dds_rozpak.rozszerzenie
                                 {
                                     *chroma = v.clone();
                                 }
-                            }
+
                         }
                         DropdownType::DdsJpgQuant => {
-                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>() {
-                                if let ImgExt::Jpg { ref mut quant, .. } = self.dane_dds_rozpak.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>()
+                                && let ImgExt::Jpg { ref mut quant, .. } = self.dane_dds_rozpak.rozszerzenie
                                 {
-                                    *quant = v.clone();
+                                    *quant = *v;
                                 }
-                            }
+
                         }
                         DropdownType::DdsJpgSample => {
-                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>() {
-                                if let ImgExt::Jpg { ref mut sampling, .. } = self.dane_dds_rozpak.rozszerzenie
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>()
+                                && let ImgExt::Jpg { ref mut sampling, .. } = self.dane_dds_rozpak.rozszerzenie
                                 {
-                                    *sampling = v.clone();
+                                    *sampling = *v;
                                 }
-                            }
+
                         }
                     }
 
@@ -667,104 +663,89 @@ impl Program {
             Message::Slidery(typ,wartość ) => {
                 match typ{
                     SliderType::KonwJpgQuality => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Jpg { jakosc, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Jpg { .. }))
                         {
-                            if let ImgExt::Jpg { jakosc, .. } = format {
-                                *jakosc = wartość as u8;
-                            }
+                            *jakosc = wartość as u8;
                         }
                     }
                     SliderType::KonwersjaJpgScans => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Jpg { scans, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Jpg { .. }))
                         {
-                            if let ImgExt::Jpg { scans, .. } = format {
-                                *scans = wartość as u8;
-                            }
+                            *scans = wartość as u8;
                         }
                     }
                     SliderType::KonwersjaAvifSpeed => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Avif { speed, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Avif { .. }))
                         {
-                            if let ImgExt::Avif { speed, .. } = format {
-                                *speed = wartość;
-                            }
+                            *speed = wartość;
                         }
                     
                     }
                     SliderType::KonwersjaAvifQuality => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Avif { lossy, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Avif { .. }))
                         {
-                            if let ImgExt::Avif { lossy, .. } = format {
-                                *lossy = Some(wartość as u8);
-                            }
+                            *lossy = Some(wartość as u8);
+
                         }
                     }
                     SliderType::KonwersjaPngKompresja => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Png { kompresja, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Png { .. }))
                         {
-                            if let ImgExt::Png { kompresja, .. } = format {
-                                *kompresja = wartość as u8;
-                            }
+                            *kompresja = wartość as u8;
                         }
                     }
                     SliderType::KonwersjaWebpJakosc => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Webp { jakosc, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Webp { .. }))
                         {
-                            if let ImgExt::Webp { jakosc, .. } = format {
                                 *jakosc = wartość as u8;
-                            }
                         }
                     }
                     SliderType::KonwersjaFfZstd => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Ff { metoda_kompresji, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Ff { .. }))
                         {
-                            if let ImgExt::Ff { metoda_kompresji, .. } = format {
                                 *metoda_kompresji = ForFfKompresja::Zstd(wartość as u8);
-                            }
                         }
                     }
                     SliderType::KonwersjaFfBzip2 => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Ff { metoda_kompresji, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Ff { .. }))
                         {
-                            if let ImgExt::Ff { metoda_kompresji, .. } = format {
-                                *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
-                            }
+                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
                         }
+
                     }
                     SliderType::KonwersjaFfXz => {
-                        if let Some(format) = self.dane_konw
+                        if let Some(ImgExt::Ff { metoda_kompresji, .. }) = self.dane_konw
                             .rozszerzenia
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Ff { .. }))
                         {
-                            if let ImgExt::Ff { metoda_kompresji, .. } = format {
-                                *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
-                            }
+                            *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
                         }
+
                     }
                     SliderType::KonwersjaNoising => {
                         if wartość == 0 {
@@ -855,11 +836,7 @@ impl Program {
                     }
                     SliderType::DdsAvifQuality => {
                         if let ImgExt::Avif { ref mut lossy, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *lossy = match lossy{
-                                Some(_) =>  Some(wartość as u8),
-                                None => None
-                            };
-
+                            *lossy = lossy.as_mut().map(|_| wartość as u8)
                         }
                     }
                     SliderType::DdsPngKompresja => {
@@ -956,8 +933,8 @@ impl Program {
                     .all(|format| format.ma_wybrany_bit_depth());
                 let check_konwersja = self.dane_konw.ścieżka_wejściowa.exists() &&
                     self.dane_konw.ścieżka_wyjściowa.exists() &&
-                    self.dane_konw.opcje_rozdzielczości.len() != 0 &&
-                    self.dane_konw.rozszerzenia.len() != 0 &&
+                    !self.dane_konw.opcje_rozdzielczości.is_empty() &&
+                    !self.dane_konw.rozszerzenia.is_empty() &&
                     konwersja_bdepth_check;
 
                 self.temat.temp.start_btn_status.konwersja = match (check_konwersja, self.temat.temp.act_proc.clone()) {
@@ -987,7 +964,7 @@ impl Program {
 
                 // dds pakowanie
                 let check_dds_pakowanie =
-                    self.dane_dds_pak.ścieżka_wejściowa.as_ref().is_some_and(|xx| xx.len() != 0) &&
+                    self.dane_dds_pak.ścieżka_wejściowa.as_ref().is_some_and(|xx| xx.is_empty()) &&
                         self.dane_dds_pak.ścieżka_wyjściowa.exists() &&
                         !self.dane_dds_pak.nazwa.is_empty();
 
@@ -1118,7 +1095,7 @@ impl Program {
                 // &self.status_dds_rozpakowywanie,
             ),
             UiPods::Ustawienia => ustawienia_view(&self.ui_ustawienia, &self.temat),
-            _ => column![text("Opcja jest, lecz UI jeszcze nie").size(50)].into(),
+            // _ => column![text("Opcja jest, lecz UI jeszcze nie").size(50)].into(),
         };
 
         let lewa_kolumna =
@@ -1139,8 +1116,8 @@ impl Program {
                 // Cień o tym samym kolorze
                 shadow: Shadow {
                     color: Color::from_rgb(0.1, 0.15, 0.2),
-                    offset: Vector::new(0.0, 0.0), 
-                    blur_radius: 0.0,              
+                    offset: Vector::new(0.0, 0.0),
+                    blur_radius: 0.0,
                 },
 
                 border: Border {
@@ -1233,7 +1210,7 @@ impl Program {
                 shadow: Shadow {
                     color: Color::from_rgb(0.1, 0.11, 0.11),
                     offset: Vector::new(0.0, 0.0),
-                    blur_radius: 10.0,            
+                    blur_radius: 10.0,
                 },
 
                 border: Border {

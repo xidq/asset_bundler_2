@@ -1,15 +1,15 @@
-use iced::Element;
-use iced::widget::{Column, Row};
-use iced_core::Length;
-use enumy::dane_do_przetwarzania::{DaneBinUnpak, DaneBinPak};
-use enumy::enums_structs_io::{LogPakowanie, LogRozpakowywanie};
-use enumy::inne_ui::{ActProces, UiPods, UstawieniaThemeWsio};
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::podstrony::binarka::lewa::strona_wyboru;
 use crate::ui::podstrony::binarka::pakowanie::binarka_pak;
 use crate::ui::podstrony::binarka::rozpakowanie::binarka_rozpakowanie;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::oddzielacze::oddzielacz_pionowy;
+use enumy::dane_do_przetwarzania::{DaneBinPak, DaneBinUnpak};
+use enumy::enums_structs_io::{LogPakowanie, LogRozpakowywanie};
+use enumy::inne_ui::{UiPods, UstawieniaThemeWsio};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{Column, Row};
+use iced::Element;
+use iced_core::Length;
 
 pub fn binarka_view<'a>(
     dane_p: &'a DaneBinPak,

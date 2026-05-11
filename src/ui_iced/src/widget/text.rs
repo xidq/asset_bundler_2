@@ -1,8 +1,8 @@
-use iced::Element;
-use iced::widget::text;
-use iced_core::Color;
-use enumy::inne_ui::{BtnState, UstawieniaThemeWsio};
 use crate::ui::wiadomosci::message_ui::Message;
+use enumy::inne_ui::UstawieniaThemeWsio;
+use iced::widget::text;
+use iced::Element;
+use iced_core::Color;
 pub(crate) const ROZMIARWYBRANYCHROZSZERZEN: iced::Pixels = iced::Pixels(12.);
 
 pub fn info_male<'a>(nazwa:String, var: bool, _temat:&'a UstawieniaThemeWsio) -> Element<'a, Message> {

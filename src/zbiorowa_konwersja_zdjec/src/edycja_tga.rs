@@ -2,7 +2,7 @@ use crate::wczytanie_zdjec::aktualizuj_postep;
 use enumy::opcje::OptInterpolacja;
 use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc::Sender;
-use image::{imageops::FilterType, DynamicImage, GenericImageView};
+use image::{imageops::FilterType, DynamicImage};
 use std::fs::{create_dir_all, File};
 use std::path::Path;
 use std::sync::Arc;
@@ -10,13 +10,13 @@ use tokio::sync::Mutex;
 use encodery::halper::{usun_kanal_alpha, zaszumianie};
 use enumy::rozszerzenia::bdepth::BdepthTga;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-
+#[allow(clippy::too_many_arguments)]
 pub async fn edycja_tga(
     bufor: DynamicImage,
     rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca: &String,
-    OptInterpolacja: &OptInterpolacja,
+    opt_interpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
     alfa_rgb: &(u16, u16, u16),
     bit_depth: &Vec<BdepthTga>,
@@ -26,7 +26,7 @@ pub async fn edycja_tga(
     mut tx: Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
     // 1. Wybór filtra interpolacji
-    let filtr = match OptInterpolacja {
+    let filtr = match opt_interpolacja {
         OptInterpolacja::Nearest => FilterType::Nearest,
         OptInterpolacja::Triangle => FilterType::Triangle,
         OptInterpolacja::CatmullRom => FilterType::CatmullRom,
@@ -184,8 +184,7 @@ pub async fn edycja_tga(
 
                 BdepthTga::TrueColorA32 => {
                     dbg!("[debug] tga tc32");
-                    // 1. Tutaj zostawiamy alfę, więc prosto do RGBA8
-                    let obrazek = bufor.clone();
+
                     let res = if docelowy_wymiar == 0 {
                         match zaszumianie_zmienna {
                             Some(x) => zaszumianie(x, bufor.clone()),

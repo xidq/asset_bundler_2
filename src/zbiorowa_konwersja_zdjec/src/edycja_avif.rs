@@ -15,7 +15,7 @@ use enumy::rozszerzenia::bdepth::BdepthAvif;
 use enumy::rozszerzenia::kolor::ForAvifChroma;
 use enumy::rozszerzenia::kompresje::ForAvifKompresja;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-
+#[allow(clippy::too_many_arguments)]
 pub async fn edycja_avif(
     bufor: DynamicImage,
     rozdzielczości: &Vec<Rozdzielczości>,
@@ -49,7 +49,7 @@ pub async fn edycja_avif(
     // 3. Iteracja przez wszystkie żądane rozdzielczości
     for wariant in rozdzielczości {
         // dbg!("jestem w pętli wariant");
-        let (docelowy_wymiar, nazwa_wariantu) = match wariant {
+        let (docelowy_wymiar, _nazwa_wariantu) = match wariant {
             Rozdzielczości::R16 => (16, "_16"),
             Rozdzielczości::R32 => (32, "_32"),
             Rozdzielczości::R64 => (64, "_64"),
@@ -82,7 +82,7 @@ pub async fn edycja_avif(
 
             let buforeczek = match wybór{
                 BdepthAvif::Rgb8 => {
-                    let res = if docelowy_wymiar == 0 {
+                    if docelowy_wymiar == 0 {
                         DynamicImage::ImageRgb8(usun_kanal_alpha(bufor.clone(), *alfa_rgb).to_rgb8())
                     } else {
                         DynamicImage::ImageRgb8(
@@ -93,11 +93,10 @@ pub async fn edycja_avif(
                                 docelowy_wymiar,
                                 filtr,
                             )
-                    };
-                    res
+                    }
                 }
                 BdepthAvif::Rgb8Alpha => {
-                    let res = if docelowy_wymiar == 0 {
+                    if docelowy_wymiar == 0 {
                         DynamicImage::ImageRgba8(bufor.to_rgba8())
                     } else {
                         DynamicImage::ImageRgba8(
@@ -108,11 +107,10 @@ pub async fn edycja_avif(
                                 docelowy_wymiar,
                                 filtr,
                             )
-                    };
-                    res
+                    }
                 }
                 BdepthAvif::Rgb10 => {
-                    let res = if docelowy_wymiar == 0 {
+                    if docelowy_wymiar == 0 {
                         DynamicImage::ImageRgb16(usun_kanal_alpha(bufor.clone(), *alfa_rgb).to_rgb16())
                     } else {
                         DynamicImage::ImageRgb16(
@@ -123,11 +121,10 @@ pub async fn edycja_avif(
                                 docelowy_wymiar,
                                 filtr,
                             )
-                    };
-                    res
+                    }
                 }
                 BdepthAvif::Rgb10Alpha => {
-                    let res = if docelowy_wymiar == 0 {
+                    if docelowy_wymiar == 0 {
                         DynamicImage::ImageRgba16(bufor.to_rgba16())
                     } else {
                         DynamicImage::ImageRgba16(
@@ -138,8 +135,8 @@ pub async fn edycja_avif(
                                 docelowy_wymiar,
                                 filtr,
                             )
-                    };
-                    res
+                    }
+
                 }
             };
             // dbg!("jestem po aktualizacji postępu");
@@ -168,7 +165,7 @@ pub async fn edycja_avif(
                 metryka_operacji,
                 &mut tx,
             ).await;
-            avif_zapis(avf_img, nazwa_organu, ścieżka_wyjściowa, ścieżka_dopełniająca, nazwa_pliku, *lossy, szybkość, &chrummaaa, &metoda_kompresji).await?;
+            avif_zapis(avf_img, nazwa_organu, ścieżka_wyjściowa, ścieżka_dopełniająca, nazwa_pliku, *lossy, szybkość, chrummaaa, metoda_kompresji).await?;
 
             // 3. Aktualizacja postępu
             aktualizuj_postep(

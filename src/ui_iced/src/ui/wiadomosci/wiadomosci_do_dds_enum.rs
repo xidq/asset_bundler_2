@@ -1,6 +1,6 @@
 use enumy::rozszerzenia::bdepth_impl::BitDepth;
 use enumy::rozszerzenia::kompresje::{ForDds, ForDdsKompresja, ForFfKompresja};
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use enumy::statusy::{LogTxDdsPak, LogTxDdsUnpak};
 use std::sync::Arc;
 

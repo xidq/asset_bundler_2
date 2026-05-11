@@ -1,9 +1,7 @@
-use std::any::Any;
-use std::fmt;
-use std::fmt::Display;
-use strum::EnumMessage;
 use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp, TrybLączenia};
-use crate::rozszerzenia::rozszerzenia::ImgExtTag;
+use crate::rozszerzenia::ext::ImgExtTag;
+use std::any::Any;
+use strum::EnumMessage;
 
 pub trait BitDepth: std::fmt::Debug + Any + Send + Sync{
     fn label_min(&self) -> &'static str;
@@ -13,113 +11,6 @@ pub trait BitDepth: std::fmt::Debug + Any + Send + Sync{
     fn jest_rowny(&self, inny: &dyn Any) -> bool;
     fn format(&self) -> ImgExtTag;
 }
-
-
-
-
-impl BdepthJpg {
-    pub const BDEPTHJPG: [Self; 2] = [
-        Self::Luma8,
-        Self::Rgb8
-    ];
-    fn nazwy(&self) -> (&'static str, &'static str, &'static str) {
-        match self {
-            Self::Luma8  => ("L8", "Luma 8", "8-bit Luminance"),
-            Self::Rgb8 => ("R8", "Rgb 8", "8-bit Rgb"),
-        }
-    }
-
-}
-impl BdepthPng {
-    pub const BDEPTHPNG: [Self; 8] = [
-        Self::Luma8  ,
-        Self::Luma8Alpha ,
-        Self::Rgb8 ,
-        Self::Rgb8Alpha ,
-        Self::Luma16 ,
-        Self::Luma16Alpha ,
-        Self::Rgb16 ,
-        Self::Rgb16Alpha ,
-    ];
-    fn nazwy(&self) -> (&'static str, &'static str, &'static str) {
-        match self {
-            Self::Luma8  => ("L8", "Luma 8", "8-bit Luminance"),
-            Self::Luma8Alpha => ("L8a", "Luma 8a", "8-bit Luminance + Alpha"),
-            Self::Rgb8 => ("R8", "Rgb 8", "8-bit Rgb"),
-            Self::Rgb8Alpha => ("R8a", "Rgb 8a", "8-bit Rgb + Alpha"),
-            Self::Luma16 => ("L16", "Luma 16", "16-bit Luminance"),
-            Self::Luma16Alpha => ("L16a", "Luma 16a", "16-bit Luminance + Alpha"),
-            Self::Rgb16 => ("R16", "Rgb 16", "16-bit Rgb"),
-            Self::Rgb16Alpha => ("R16a", "Rgb 16a", "16-bit Rgb + Alpha"),
-            // Self::F32 => ("F32","Float 32", "32-bit Float"),
-            // Self::F32Alpha => ("F32a", "Float 32", "32-bit Float + Alpha"),
-        }
-    }
-
-}
-impl BdepthWebp {
-    pub const BDEPTHWEBP: [Self; 2] = [
-        Self::Rgb8,
-        Self::Rgb8Alpha,
-    ];
-    fn nazwy(&self) -> (&'static str, &'static str, &'static str) {
-        match self {
-            Self::Rgb8 => ("R8", "Rgb 8", "8-bit Rgb"),
-            Self::Rgb8Alpha => ("R8a", "Rgb 8a", "8-bit Rgb + Alpha"),
-        }
-    }
-}
-
-impl BdepthAvif {
-    pub const BDEPTHAVIF: [Self; 4] = [
-        Self::Rgb8 ,
-        Self::Rgb8Alpha ,
-        Self::Rgb10 ,
-        Self::Rgb10Alpha ,
-    ];
-    fn nazwy(&self) -> (&'static str, &'static str, &'static str) {
-        match self {
-            Self::Rgb8 => ("R8", "Rgb 8", "8-bit Rgb"),
-            Self::Rgb8Alpha => ("R8a", "Rgb 8a", "8-bit Rgb + Alpha"),
-            Self::Rgb10 => ("R10", "Rgb 10", "10-bit Rgb"),
-            Self::Rgb10Alpha => ("R10a", "Rgb 10a", "10-bit Rgb + Alpha"),
-        }
-    }
-
-}
-impl BdepthTga {
-    pub const BDEPTHTGA: [Self; 4] = [
-        Self::Luma8 ,
-        Self::HighColor16 ,
-        Self::TrueColor24 ,
-        Self::TrueColorA32 ,
-    ];
-    fn nazwy(&self) -> (&'static str, &'static str, &'static str) {
-        match self {
-            Self::Luma8  => ("L8", "Luma 8", "8-bit Luminance"),
-            Self::HighColor16 => ("HC16", "High Color 16", "16-bit Rgb + Alpha"),
-            Self::TrueColor24  => ("TC24", "TC 24", "24-bit Rgb"),
-            Self::TrueColorA32 => ("TC32", "True Color 32", "32-bit Rgb + Alpha"),
-        }
-    }
-
-}
-
-impl BdepthQoi {
-    pub const BDEPTHQOI: [Self; 2] = [
-        Self::Color24 ,
-        Self::Color32 ,
-    ];
-    fn nazwy(&self) -> (&'static str, &'static str, &'static str) {
-        match self {
-            Self::Color24  => ("TC24", "TC 24", "24-bit Rgb"),
-            Self::Color32 => ("TC32", "True Color 32", "32-bit Rgb + Alpha"),
-        }
-    }
-
-}
-
-
 
 
 

@@ -1,19 +1,19 @@
-use iced::Element;
-use iced::widget::{container, space, Column, Row};
-use iced_core::{Color, Length};
-use strum::IntoEnumIterator;
-use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg};
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::kompresje::ForAvifKompresja;
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::button::{btn_bdepth_konwersja, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
+use enumy::dane_do_przetwarzania::DaneKonw;
+use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
+use enumy::rozszerzenia::bdepth::BdepthAvif;
+use enumy::rozszerzenia::kolor::ForAvifChroma;
+use enumy::rozszerzenia::kompresje::ForAvifKompresja;
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, space, Column, Row};
+use iced::Element;
+use iced_core::{Color, Length};
+use strum::IntoEnumIterator;
 
 pub fn avif<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
@@ -38,12 +38,12 @@ pub fn avif<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, 
                                 .push(
                                     Row::new().spacing(15).height(50.)
                                         .push(pole_tekstowe_przycisku(format!("S: {}", speed), jezyk, temat))
-                                        .push(slajderr(*speed as i32, (0,100), &SliderType::KonwersjaAvifSpeed, kolor, temat, Length::FillPortion(2)  ))
+                                        .push(slajderr(*speed, (0,100), &SliderType::KonwersjaAvifSpeed, kolor, temat, Length::FillPortion(2)  ))
                                         .push(space().width(15.))
                                 )
                                 .push(
                                     BdepthAvif::iter()
-                                        .into_iter()
+                                        
                                         .fold(
                                             Row::new(), |row, wariant| {
                                                 row.push(

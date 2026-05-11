@@ -1,16 +1,16 @@
-use iced::Element;
-use iced::widget::{container, space, Column, Row};
-use iced_core::{Color, Length};
-use strum::IntoEnumIterator;
-use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthPng};
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::button::{btn_bdepth_konwersja, pole_tekstowe_przycisku, przycisk_rozszerzenia};
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
+use enumy::dane_do_przetwarzania::DaneKonw;
+use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
+use enumy::rozszerzenia::bdepth::BdepthPng;
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, space, Column, Row};
+use iced::Element;
+use iced_core::{Color, Length};
+use strum::IntoEnumIterator;
 
 pub fn png<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
@@ -35,7 +35,7 @@ pub fn png<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                 )
                                 .push(
                                     BdepthPng::iter()
-                                        .into_iter()
+                                        
                                         .step_by(2)
                                         .fold(
                                             Row::new(), |row, wariant| {
@@ -53,7 +53,7 @@ pub fn png<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                 )
                                 .push(
                                     BdepthPng::iter()
-                                        .into_iter()
+                                        
                                         .skip(1)
                                         .step_by(2)
                                         .fold(

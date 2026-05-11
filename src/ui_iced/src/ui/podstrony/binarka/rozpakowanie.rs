@@ -1,15 +1,14 @@
-use iced::widget::{space, Column, Row};
-use iced_core::{Color, Length};
-use enumy::dane_do_przetwarzania::{DaneBinUnpak, DaneBinPak};
-use enumy::enums_structs_io::{LogPakowanie, LogRozpakowywanie};
-use enumy::ikony::folder_icon;
-use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
-use enumy::wybranie_jezykowe::WybórJęzyka;
-use crate::ui::podstrony::binarka::pakowanie_status::status_pakowanie;
 use crate::ui::podstrony::binarka::rozpakowanie_status::status_rozpakowanie;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::button::{przycisk, przycisk_startu};
 use crate::widget::text_place::tekstowe_pole_wypelniane;
+use enumy::dane_do_przetwarzania::DaneBinUnpak;
+use enumy::enums_structs_io::LogRozpakowywanie;
+use enumy::ikony::folder_icon;
+use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{space, Column, Row};
+use iced_core::{Color, Length};
 
 pub fn binarka_rozpakowanie<'a>(
     dane:&'a DaneBinUnpak,

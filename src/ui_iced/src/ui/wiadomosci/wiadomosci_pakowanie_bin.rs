@@ -1,19 +1,13 @@
 use crate::ui::program::Program;
+use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::BinPakMsg;
 use binarka::pakowanie_plikow::ogarnianie_eksportu;
 use chrono::Local;
 use enumy::enums_structs_io::LogPakowanie;
-use enumy::inne_ui::{ActProces, BtnState};
+use enumy::inne_ui::ActProces;
 use enumy::statusy::LogTxBinPak;
 use futures::channel::mpsc;
 use iced::Task;
-use std::path::PathBuf;
-use std::rc::Rc;
-use std::sync::Arc;
-use strum::IntoEnumIterator;
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
 
 impl Program {
     pub fn update_message_pakowanie_binarki(&mut self, msg: BinPakMsg) -> Task<BinPakMsg> {

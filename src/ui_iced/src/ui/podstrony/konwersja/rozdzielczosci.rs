@@ -1,12 +1,11 @@
-use iced::Element;
-use iced::widget::{Column, Row};
-use iced_core::Color;
+use crate::ui::wiadomosci::message_ui::Message;
+use crate::widget::button::btn_rozdzielczosci;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::{BtnState, UstawieniaThemeWsio};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::widget::button::btn_rozdzielczosci;
+use iced::widget::{Column, Row};
+use iced_core::Color;
 
 pub fn rozdzielczosci<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Column<'a, Message> {
     Column::new()

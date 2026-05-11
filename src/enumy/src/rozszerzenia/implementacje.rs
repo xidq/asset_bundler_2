@@ -1,11 +1,8 @@
-use std::fmt;
-use std::fmt::Formatter;
 use crate::opcje::{OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
-use crate::rozszerzenia::bdepth::BdepthAvif;
-// use crate::rozszerzenia::bdepth::RozszerzeniaBdepth;
-use crate::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use crate::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
+use crate::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use crate::rozszerzenia::kolor::ForAvifChroma;
+use crate::rozszerzenia::kompresje::ForFfKompresja;
+use std::fmt;
 
 // impl fmt::Display for RozszerzeniaBdepth {
 //     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {

@@ -15,14 +15,13 @@ pub fn przelicz_bajty(val:impl Into<u64> + std::clone::Clone )->String{
         let mb: u64 = 1024_u64.pow(2) * 8;
         let gb: u64 = 1024_u64.pow(3) * 8;
         let tb: u64 = 1024_u64.pow(4) * 8;
-        let ccvbfd = match xx.clone(){
+        match xx{
             0..=8 => { format!("{}b",xx) }
             n if n < kb => { format!("{:.2}B",xx as f64/8.) }
             n if n < mb => { format!("{:.2}kB",xx as f64/kb as f64) }
             n if n < gb => { format!("{:.2}MB",xx as f64/mb as f64) }
             n if n < tb => { format!("{:.2}GB",xx as f64/gb as f64) }
             _ => { format!("{:.2}TB", xx as f64/tb as f64 ) }
-        };
-        ccvbfd
+        }
 
 }

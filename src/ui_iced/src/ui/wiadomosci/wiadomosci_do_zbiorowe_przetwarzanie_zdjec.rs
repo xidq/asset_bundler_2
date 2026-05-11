@@ -1,20 +1,19 @@
 use crate::ui::program::Program;
+use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::{ActProces, BtnState};
 use enumy::opcje::OptInterpolacja;
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
-use std::slice::Iter;
 use strum::IntoEnumIterator;
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
 use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
-use crate::ui::wiadomosci::message_ui::Message;
 
 fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
     if let Some(pos) = vec.iter().position(|x| x == element) {
@@ -402,16 +401,16 @@ impl Program {
                     .iter()
                     .position(|t| *t == gwiazdek);
                 let pozycja = self.dane_konw.rozszerzenia.iter().position(|f| {
-                    match (f, &gwiazdek) {
-                        (ImgExt::Jpg {..}, ImgExtTag::Jpg) => true,
-                        (ImgExt::Png {..}, ImgExtTag::Png) => true,
-                        (ImgExt::Webp {..}, ImgExtTag::Webp) => true,
-                        (ImgExt::Tga {..}, ImgExtTag::Tga) => true,
-                        (ImgExt::Ff {..}, ImgExtTag::Ff) => true,
-                        (ImgExt::Qoi {..}, ImgExtTag::Qoi) => true,
-                        (ImgExt::Avif {..}, ImgExtTag::Avif) => true,
-                        _ => false,
-                    }
+                    matches!(
+                        (f, &gwiazdek),
+                        (ImgExt::Jpg {..}, ImgExtTag::Jpg) |
+                        (ImgExt::Png {..}, ImgExtTag::Png) |
+                        (ImgExt::Webp {..}, ImgExtTag::Webp) |
+                        (ImgExt::Tga {..}, ImgExtTag::Tga) |
+                        (ImgExt::Ff {..}, ImgExtTag::Ff) |
+                        (ImgExt::Qoi {..}, ImgExtTag::Qoi) |
+                        (ImgExt::Avif {..}, ImgExtTag::Avif)
+                    )
                 });
                 if let Some(idx) = pozycja_tag {
                     self.dane_konw.tag.remove(idx);

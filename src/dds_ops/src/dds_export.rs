@@ -5,9 +5,7 @@ use enumy::rozszerzenia::kompresje::ForDds;
 use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc::Sender;
 use std::fs::File;
-use std::thread::sleep;
-use std::time::Duration;
-
+#[allow(clippy::too_many_arguments)]
 pub fn save_rgba_image_with_mipmaps(
     file: &mut File,
     image_data: Vec<&[u8]>,
@@ -15,9 +13,9 @@ pub fn save_rgba_image_with_mipmaps(
     height: u32,
     format: &ForDds,
     kompresja: CompressionQuality,
-    mut przerób: &mut f32,
+    przerób: &mut f32,
     max_plikow:usize,
-    mut percent:&mut u8,
+    percent:&mut u8,
     mut tx: Sender<LogTxDdsPak>,
 ) -> Result<(), EncodingError> {
     dbg!("jestem w save_rgba_image_with_mipmaps");
@@ -31,7 +29,7 @@ pub fn save_rgba_image_with_mipmaps(
         }
     };
 
-    let mut licznik_w_pętli:u32 = 0;
+    // let mut licznik_w_pętli:u32 = 0;
 
     wywoływacz();
 
@@ -88,7 +86,7 @@ pub fn save_rgba_image_with_mipmaps(
 
 
 
-    for (i,data) in image_data.iter().enumerate() {
+    for data in image_data.iter() {
         let view = ImageView::new(data, Size::new(width, height), ColorFormat::RGBA_U8)
             .expect("Błąd danych obrazka");
 

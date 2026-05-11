@@ -14,13 +14,13 @@ use xz2::write::XzEncoder;
 use encodery::halper::{usun_kanal_alpha, zaszumianie};
 use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-
+#[allow(clippy::too_many_arguments)]
 pub async fn edycja_ff(
-    mut bufor: DynamicImage,
+    bufor: DynamicImage,
     rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca: &String,
-    OptInterpolacja: &OptInterpolacja,
+    opt_interpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
     alfa_rgb: &(u16, u16, u16),
     do_zaszumienia: Option<u8>,
@@ -29,17 +29,10 @@ pub async fn edycja_ff(
     wybrana_kompresja: &ForFfKompresja,
     mut tx: Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
-    // println!(" [edycja_jpg] ścieżka dopełniająaca: {:?}\nścieżka wyjściowa: {:?}", ścieżka_dopełniająca,ścieżka_wyjściowa);
-    // 1. Obsługa koloru (B/W)
-    let mut przyrostek_koloru = "";
-    // if !*kolor {
-    //     bufor = bufor.grayscale();
-    //     przyrostek_koloru = "_bw";
-    // }
-    // println!("[jpg] ma w vec: {:?}",bit_depth);
 
-    // 2. Wybór filtra interpolacji
-    let filtr = match OptInterpolacja {
+
+
+    let filtr = match opt_interpolacja {
         OptInterpolacja::Nearest => FilterType::Nearest,
         OptInterpolacja::Triangle => FilterType::Triangle,
         OptInterpolacja::CatmullRom => FilterType::CatmullRom,
@@ -177,7 +170,7 @@ pub async fn edycja_ff(
 
                 final_finalv3_temp_final_ostatecznyv5
                     .write_with_encoder(encoder)
-                    .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?
+                    .map_err(std::io::Error::other)?
             }
         }
 

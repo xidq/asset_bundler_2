@@ -5,7 +5,7 @@ use crate::metody_mielenia::laczenie_qoi::laczenie_qoi;
 use crate::metody_mielenia::laczenie_tga::laczenie_tga;
 use crate::metody_mielenia::laczenie_webp::laczenie_webp;
 use enumy::dane_do_przetwarzania::DaneMerge;
-use enumy::rozszerzenia::rozszerzenia::RozszerzeniaPojedyncze;
+use enumy::rozszerzenia::ext::RozszerzeniaPojedyncze;
 use futures::SinkExt;
 use futures::channel::mpsc;
 use image::DynamicImage;
@@ -19,10 +19,9 @@ pub async fn fn_do_laczenia_fot(
     mut tx: mpsc::Sender<LogTxDoŁączeniaZdjęć>,
 ) -> Result<(), tokio::io::Error> {
     
-    let kolor_alfa=(0_u16,0_u16,0_u16);
     let _ = tx.send(LogTxDoŁączeniaZdjęć::Start).await;
 
-    let start_czas = std::time::Instant::now();
+    // let start_czas = std::time::Instant::now();
 
     let sciezki = [
         dane.sciezka_r,
@@ -56,7 +55,7 @@ pub async fn fn_do_laczenia_fot(
     }
 
     // --- ETAP 2: PRZYGOTOWANIE KANAŁÓW ---
-    let mut przygotuj_final = |opt_img: Option<DynamicImage>| -> DynamicImage {
+    let przygotuj_final = |opt_img: Option<DynamicImage>| -> DynamicImage {
         match opt_img {
             Some(img) => {
                 // if img.width() == max_x || img.height() == max_y {
@@ -135,7 +134,7 @@ pub async fn fn_do_laczenia_fot(
         RozszerzeniaPojedyncze::Jpg {
             jakosc,
             progresywny,
-            bit_depth, sampling, quant, scans,
+            bit_depth, sampling:_, quant:_, scans:_,
         } => {
             laczenie_jpg(
                 obrazki,
@@ -217,7 +216,7 @@ pub async fn fn_do_laczenia_fot(
 
     match wynik {
         Ok(_) => {
-            let czas_napis = format!("{:.2?}", start_czas.elapsed());
+            // let czas_napis = format!("{:.2?}", start_czas.elapsed());
             let _ = tx.send(LogTxDoŁączeniaZdjęć::Finito).await;
             Ok(())
         }

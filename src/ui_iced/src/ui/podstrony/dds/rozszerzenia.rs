@@ -1,25 +1,25 @@
-use iced::widget::{container, space, Column, Row};
-use iced_core::{Color, Length};
-use strum::IntoEnumIterator;
-use enumy::dane_do_przetwarzania::{DaneDdsUnpak, DaneMerge};
+use crate::ui::wiadomosci::message_ui::Message;
+use crate::widget::button::{btn_bdepth_dds, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
+use crate::widget::dropdown::dropdown;
+use crate::widget::slajder::slajderr;
+use crate::widget::styles::styl_kontenera;
+use enumy::dane_do_przetwarzania::DaneDdsUnpak;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use crate::ui::wiadomosci::message_ui::Message;
-use crate::widget::button::{btn_bdepth_konwersja, btn_bdepth_dds, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
-use crate::widget::dropdown::dropdown;
-use crate::widget::slajder::slajderr;
-use crate::widget::styles::styl_kontenera;
+use iced::widget::{container, space, Column, Row};
+use iced_core::{Color, Length};
+use strum::IntoEnumIterator;
 
 pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Column<'a, Message> {
     Column::new()
         .push(space().height(Length::FillPortion(1)))
         .push(
             ImgExtTag::iter()
-                .into_iter()
+                
                 .fold(
                     Row::new(), |row, wariant| {
                         row.push(
@@ -60,7 +60,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         )
                                         .push(
                                             BdepthJpg::iter()
-                                                .into_iter()
+                                                
                                                 // .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {
@@ -121,7 +121,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         )
                                         .push(
                                             BdepthPng::iter()
-                                                .into_iter()
+                                                
                                                 .step_by(2)
                                                 // .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
@@ -140,7 +140,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         )
                                         .push(
                                             BdepthPng::iter()
-                                                .into_iter()
+                                                
                                                 .skip(1)
                                                 .step_by(2)
                                                 .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
@@ -188,7 +188,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         )
                                         .push(
                                             BdepthWebp::iter()
-                                                .into_iter()
+                                                
                                                 .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {
@@ -224,7 +224,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         .push(space().height(50.))
                                         .push(
                                             BdepthTga::iter()
-                                                .into_iter()
+                                                
                                                 // .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {
@@ -304,7 +304,6 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         .push(Row::new().height(50.))
                                         .push(
                                             BdepthQoi::iter()
-                                                .into_iter()
                                                 // .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {
@@ -343,12 +342,11 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         .push(
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("S: {}", speed), jezyk, temat))
-                                                .push(slajderr(speed as i32, (0,100), &SliderType::DdsAvifSpeed, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(speed, (0,100), &SliderType::DdsAvifSpeed, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         )
                                         .push(
                                             BdepthAvif::iter()
-                                                .into_iter()
                                                 // .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
                                                 .fold(
                                                     Row::new(), |row, wariant| {

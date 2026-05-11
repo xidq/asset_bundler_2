@@ -1,13 +1,12 @@
-use std::any::Any;
+use crate::dane_do_przetwarzania::{DaneBinPak, DaneDdsPak, DaneDdsUnpak, DaneKonw, DaneMerge};
+use crate::inne_ui::{ActProces, DropdownType};
 use crate::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
-use std::fmt;
-use std::fmt::Debug;
-use strum::IntoEnumIterator;
-use crate::dane_do_przetwarzania::{DaneKonw, DaneBinPak, DaneDdsPak, DaneDdsUnpak, DaneMerge};
-use crate::inne_ui::{ActProces, DropdownType, UiPods};
+use crate::rozszerzenia::ext::{ImgExt, RozszerzeniaPojedyncze};
 use crate::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForFfKompresja};
-use crate::rozszerzenia::rozszerzenia::{ImgExt, RozszerzeniaPojedyncze};
+use std::any::Any;
+use std::fmt::Debug;
+use strum::IntoEnumIterator;
 
 
 pub trait ElementyDropdown: Debug + Send + Sync{

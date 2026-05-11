@@ -1,23 +1,23 @@
-use std::path::PathBuf;
-use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Luma, LumaA, Rgb, Rgba};
+use image::{ColorType, DynamicImage, ImageBuffer};
 use rand::RngExt;
+use std::path::{Path, PathBuf};
 
-pub fn zaszumianie(noising: u8, mut bufor: DynamicImage) -> DynamicImage {
+pub fn zaszumianie(noising: u8, bufor: DynamicImage) -> DynamicImage {
     // let mut xoxo = bufor.clone();
     let mut rng = rand::rng();
-    let (w, h) = bufor.dimensions();
+    // let (w, h) = bufor.dimensions();
     let n_factor = noising as f64 / 100.0;
-    let bit_depth = bufor.color().bits_per_pixel() / bufor.color().channel_count() as u16;
+    // let bit_depth = bufor.color().bits_per_pixel() / bufor.color().channel_count() as u16;
 
-    let max_val: f64 = match bit_depth {
-        8 => 255.0,
-        16 => 65535.0,
-        32 => 1.0, // Dla obrazów HDR (f32)
-        _ => 255.0,
-    };
+    // let max_val: f64 = match bit_depth {
+    //     8 => 255.0,
+    //     16 => 65535.0,
+    //     32 => 1.0, // Dla obrazów HDR (f32)
+    //     _ => 255.0,
+    // };
 
 
-    let max_delta = (max_val * (noising as f64 / 100.0));
+    // let max_delta = (max_val * (noising as f64 / 100.0));
 
     match bufor {
         // --- OBSŁUGA 8-BIT ---
@@ -125,8 +125,8 @@ pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> Dynam
     let mapuj_u16_na_u8 = |v: u16| -> u8 { ((v as f32 / 65535.0) * 255.0).round() as u8 };
 
 
-    let (w, h) = (bufor.width(), bufor.height());
-    let mut obraz_koncowy = bufor.clone();
+    // let (w, h) = (bufor.width(), bufor.height());
+    let obraz_koncowy = bufor.clone();
 
     let usuniete_alpha: DynamicImage = if bufor.has_alpha() {
         match bufor.color() {
@@ -152,7 +152,7 @@ pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> Dynam
                 let luma = bufor.as_luma_alpha8().unwrap();
                 let (w, h) = luma.dimensions();
 
-                let mut dane_luma = Vec::with_capacity((w * h * 1) as usize);
+                let mut dane_luma = Vec::with_capacity((w * h) as usize);
 
 
                 // let mut nowy_bufor = image::ImageBuffer::new(w, h);
@@ -301,7 +301,7 @@ pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> Dynam
                     } else {
                         // Alpha blending na liczbach całkowitych (szybsze niż floaty)
                         // Formuła: (kolor * alpha + tlo * (255 - alpha)) / 255
-                        let inv_alpha = u16::max as u32 - alpha;
+                        let inv_alpha = u16::MAX as *const () as u32 - alpha;
 
                         dane_rgb.push(((p[0] as u32 * alpha + tlo_szare * inv_alpha) / 255) as u16);
                     }
@@ -365,7 +365,7 @@ pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> Dynam
                     } else {
                         // Alpha blending na liczbach całkowitych (szybsze niż floaty)
                         // Formuła: (kolor * alpha + tlo * (255 - alpha)) / 255
-                        let inv_alpha = u16::max as u32 - alpha;
+                        let inv_alpha = u16::MAX as *const () as u32 - alpha;
 
                         dane_rgb.push(((p[0] as u32 * alpha + tlo_r * inv_alpha) / 255) as u16);
                         dane_rgb.push(((p[1] as u32 * alpha + tlo_g * inv_alpha) / 255) as u16);
@@ -385,8 +385,8 @@ pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> Dynam
     usuniete_alpha
 }
 
-pub fn merge_sciezki<'a>(ścieżka_wyjściowa:&PathBuf, ścieżka_dopełniająca: &String) -> PathBuf {
-    let mut huehuehue = ścieżka_wyjściowa.clone();
+pub fn merge_sciezki(ścieżka_wyjściowa:&Path, ścieżka_dopełniająca: &String) -> PathBuf {
+    let mut huehuehue = ścieżka_wyjściowa.to_path_buf();
     huehuehue.push(ścieżka_dopełniająca);
     huehuehue
 }

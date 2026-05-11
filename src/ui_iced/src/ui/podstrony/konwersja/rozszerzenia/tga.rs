@@ -1,15 +1,15 @@
-use iced::Element;
-use iced::widget::{container, space, Column, Row};
-use iced_core::Color;
-use strum::IntoEnumIterator;
-use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthTga};
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::button::{btn_bdepth_konwersja, przycisk_rozszerzenia};
 use crate::widget::styles::styl_kontenera;
+use enumy::dane_do_przetwarzania::DaneKonw;
+use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, UstawieniaThemeWsio};
+use enumy::rozszerzenia::bdepth::BdepthTga;
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, space, Column, Row};
+use iced::Element;
+use iced_core::Color;
+use strum::IntoEnumIterator;
 
 pub fn tga<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
@@ -29,7 +29,7 @@ pub fn tga<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                 .push(space().height(50.))
                                 .push(
                                     BdepthTga::iter()
-                                        .into_iter()
+                                        
                                         .fold(
                                             Row::new(), |row, wariant| {
                                                 row.push(

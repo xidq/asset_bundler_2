@@ -1,8 +1,4 @@
-use iced::widget::{scrollable, Column, Row};
-use iced_core::Color;
-use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::UstawieniaThemeWsio;
-use enumy::wybranie_jezykowe::WybórJęzyka;
+use crate::ui::podstrony::konwersja::rozszerzenia::qoi::qoi;
 use crate::ui::podstrony::konwersja::rozszerzenia::{
     avif::avif,
     ff::ff,
@@ -11,10 +7,14 @@ use crate::ui::podstrony::konwersja::rozszerzenia::{
     tga::tga,
     webp::webp
 };
-use crate::ui::podstrony::konwersja::rozszerzenia::qoi::qoi;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::oddzielacze::oddzielacz_poziomy;
 use crate::widget::styles::styl_scrollable;
+use enumy::dane_do_przetwarzania::DaneKonw;
+use enumy::inne_ui::UstawieniaThemeWsio;
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{scrollable, Column};
+use iced_core::Color;
 
 pub fn rozszerzenia<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Column<'a, Message>{
     Column::new()

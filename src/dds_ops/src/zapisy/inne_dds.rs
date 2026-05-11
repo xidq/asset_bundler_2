@@ -1,9 +1,7 @@
 use enumy::statusy::LogTxDdsUnpak;
-use futures::SinkExt;
 use futures::channel::mpsc::Sender;
+use futures::SinkExt;
 use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Luma, LumaA, Rgb, Rgba};
-use std::sync::Arc;
-use tokio::sync::Mutex;
 
 pub async fn aktualizuj_postep_dds(
     obecna_op: &mut u32,
@@ -13,7 +11,7 @@ pub async fn aktualizuj_postep_dds(
 ) {
     *obecna_op += 1;
 
-    let mut procenciki = procent_pro;
+    let procenciki = procent_pro;
     let nowy_procent = ((*obecna_op as f32 / metryka as f32) * 100.0).round() as u8;
 
     if nowy_procent > *procenciki {

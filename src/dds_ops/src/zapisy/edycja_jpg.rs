@@ -5,9 +5,9 @@ use futures::channel::mpsc::Sender;
 use image::{DynamicImage, ImageEncoder};
 use std::fs::{File, create_dir_all};
 use std::path::Path;
-
+#[allow(clippy::too_many_arguments)]
 pub async fn dds_ex_jpg(
-    mut bufor: DynamicImage,
+    bufor: DynamicImage,
     ścieżka_wyjściowa: &Path,
     nazwa_pliku: &str,
     jakość: &u8,
@@ -17,7 +17,7 @@ pub async fn dds_ex_jpg(
     procent_progress: &mut u8,
     mut tx: Sender<LogTxDdsUnpak>,
 ) -> Result<(), tokio::io::Error> {
-    let (docelowy_wymiar, nazwa_wariantu) = (0, "");
+    let nazwa_wariantu = "";
 
     aktualizuj_postep_dds(obecna_operacja, procent_progress, metryka_operacji, &mut tx).await;
 
@@ -35,7 +35,7 @@ pub async fn dds_ex_jpg(
 
     let mut output_file = File::create(&ścieżka_pliku)?;
 
-    let mut encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output_file, *jakość);
+    let encoder = image::codecs::jpeg::JpegEncoder::new_with_quality(&mut output_file, *jakość);
 
     // encoder.encode_image(&final_finalv3_temp_final_ostatecznyv5).map_err(std::io::Error::other)?;
     let width = final_img.width();

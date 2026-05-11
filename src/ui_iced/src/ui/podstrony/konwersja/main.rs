@@ -29,7 +29,7 @@ pub fn konwersja_view<'a>(
     };
 
     Row::new()
-        .push(strona_wyboru(dane, &temat.kolory.konwersja,jezyk,temat).width(Length::FillPortion(1)).padding(15).spacing(15))
+        .push(strona_wyboru(dane,jezyk,temat).width(Length::FillPortion(1)).padding(15).spacing(15))
         .push(oddzielacz_pionowy())
         .push(prawe.width(Length::FillPortion(2))).into()
 

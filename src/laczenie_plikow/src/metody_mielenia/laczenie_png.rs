@@ -1,14 +1,9 @@
-use enumy::rozszerzenia::bdepth::{BdepthPng};
-use futures::SinkExt;
-use futures::channel::mpsc;
-use futures::channel::mpsc::Sender;
-use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Rgba, imageops::FilterType};
+use enumy::rozszerzenia::bdepth::BdepthPng;
+use image::{DynamicImage, };
 
-use std::fs::{File, create_dir_all};
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
-use tokio::sync::Mutex;
 use encodery::halper::usun_kanal_alpha;
+use std::fs::{create_dir_all, File};
+use std::path::Path;
 
 pub async fn laczenie_png(
     mut bufor: Vec<DynamicImage>,

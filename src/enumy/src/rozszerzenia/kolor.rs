@@ -1,22 +1,23 @@
 use strum::{Display, EnumIter, EnumMessage, EnumString};
 
 #[allow(dead_code)]
-#[derive(Clone, Copy, Debug, PartialEq, EnumIter,Display)]
+#[derive(Clone, Copy, Debug, PartialEq, EnumIter,Display, Default)]
 pub enum ForJpgSamplingFac {
     R444,
     R440,
     R441,
     R422,
+    #[default]
     R420,
     R421,
     R411,
     R410,
 }
-impl Default for ForJpgSamplingFac {fn default() -> ForJpgSamplingFac { ForJpgSamplingFac::R420}}
 
 #[allow(dead_code)]
-#[derive(Clone, Copy, Debug, PartialEq, EnumIter, EnumMessage, Display)]
+#[derive(Clone, Copy, Debug, PartialEq, EnumIter, EnumMessage, Display, Default)]
 pub enum ForJpgQuant {
+    #[default]
     #[strum(message = "def", detailed_message = "Default")]
     Default,
     #[strum(message = "flat", detailed_message = "Flat")]
@@ -36,16 +37,13 @@ pub enum ForJpgQuant {
     #[strum(message = "IDM", detailed_message = "ImprovedDetectionModel")]
     ImprovedDetectionModel,
 }
-impl Default for ForJpgQuant {fn default() -> Self { ForJpgQuant::Default}}
 
 #[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, EnumIter, EnumString)]
+#[derive(Clone, Debug, PartialEq, EnumIter, EnumString, Default)]
 pub enum ForAvifChroma {
     C444,
     C422,
+    #[default]
     C420,
 
 }
-impl Default for ForAvifChroma {fn default() -> Self {
-        ForAvifChroma::C420
-    }}

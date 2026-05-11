@@ -1,6 +1,6 @@
 use enumy::rozszerzenia::bdepth::BdepthQoi;
 use image::ImageEncoder;
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage,};
 use std::fs::{File, create_dir_all};
 use std::path::Path;
 use encodery::halper::usun_kanal_alpha;

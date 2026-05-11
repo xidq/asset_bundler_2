@@ -1,9 +1,7 @@
-use image::ImageDecoder;
-use std::io::Read;
-use std::path::PathBuf;
 use image::DynamicImage;
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
-use enumy::rozszerzenia::rozszerzenia;
+use std::io::Read;
+use std::path::PathBuf;
 
 pub fn wczytaj_zdjęcie(
     ścieżka: PathBuf,
@@ -68,14 +66,14 @@ pub fn wczytaj_zdjęcie(
             // clean_vec
             let lib_heif = LibHeif::new();
             let ctx = HeifContext::read_from_bytes(&bajty)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                .map_err(std::io::Error::other)?;
             let handle = ctx.primary_image_handle()
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                .map_err(std::io::Error::other)?;
 
             let has_alpha = handle.has_alpha_channel();
             let bit_depth = handle.luma_bits_per_pixel(); // Sprawdzamy bity (8, 10, 12)
-            let width = handle.width() as usize;
-            let height = handle.height() as usize;
+            // let width = handle.width() as usize;
+            // let height = handle.height() as usize;
 
             // Decydujemy o formacie dekodowania
             // Jeśli bity > 8, używamy trybu HDR (16-bit na kanał)
@@ -89,7 +87,7 @@ pub fn wczytaj_zdjęcie(
                 &handle,
                 ColorSpace::Rgb(chroma),
                 None,
-            ).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+            ).map_err(std::io::Error::other)?;
 
             let width = image.width() as usize;
             let height = image.height() as usize;
@@ -97,7 +95,7 @@ pub fn wczytaj_zdjęcie(
 
             let planes = image.planes();
             let interleaved = planes.interleaved.ok_or_else(|| {
-                std::io::Error::new(std::io::ErrorKind::Other, "Brak danych interleaved")
+                std::io::Error::other("Brak danych interleaved")
             })?;
 
             let data = interleaved.data; // To jest &[u8]

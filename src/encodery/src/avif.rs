@@ -1,13 +1,13 @@
 use std::fs::create_dir_all;
 use std::path::Path;
 use enumy::rozszerzenia::kompresje::ForAvifKompresja;
-use image::{DynamicImage, GenericImageView};
+use image::{DynamicImage};
 use libheif_rs::{Channel, ColorSpace, CompressionFormat, EncoderParameterValue, EncoderQuality, HeifContext, Image, LibHeif, RgbChroma};
 use enumy::rozszerzenia::bdepth::BdepthAvif;
 use enumy::rozszerzenia::kolor::ForAvifChroma;
 
 pub async fn avif_match(
-    mut bufor: DynamicImage,
+    bufor: DynamicImage,
     bit_depth: &BdepthAvif,
 ) -> Result<(Image,String), tokio::io::Error> {
             let (heif_img, nazwa_bd) = match bit_depth {
@@ -22,7 +22,7 @@ pub async fn avif_match(
 
                         // 1. Tworzymy obraz RGBA
                         let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
-                            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                            .map_err(std::io::Error::other)?;
 
                         // 2. Tworzymy 4 osobne płaszczyzny po 10 bitów każda
                         heif_img.create_plane(Channel::R, w, h, 10).expect("Plane R fail");
@@ -71,7 +71,7 @@ pub async fn avif_match(
                         //
                         // }
                         {
-                            let mut planes = heif_img.planes_mut();
+                            let planes = heif_img.planes_mut();
 
                             let stride = planes.r.as_ref().unwrap().stride;
                             let data_r = planes.r.unwrap().data;
@@ -123,7 +123,7 @@ pub async fn avif_match(
 
                         // 1. Tworzymy obraz RGBA
                         let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
-                            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                            .map_err(std::io::Error::other)?;
 
                         // 2. Tworzymy 4 osobne płaszczyzny po 10 bitów każda
                         heif_img.create_plane(Channel::R, w, h, 8).expect("Plane R fail");
@@ -156,7 +156,7 @@ pub async fn avif_match(
                         //     }
                         // } // <--- Tutaj kończy się Twój blok kopiowania
                         {
-                            let mut planes = heif_img.planes_mut();
+                            let planes = heif_img.planes_mut();
 
                             let stride = planes.r.as_ref().unwrap().stride;
                             let data_r = planes.r.unwrap().data;
@@ -198,7 +198,7 @@ pub async fn avif_match(
 
                         // 1. Tworzymy obraz RGBA
                         let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
-                            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                            .map_err(std::io::Error::other)?;
 
                         // 2. Tworzymy 4 osobne płaszczyzny po 10 bitów każda
                         heif_img.create_plane(Channel::R, w, h, 10).expect("Plane R fail");
@@ -240,7 +240,7 @@ pub async fn avif_match(
                         //     dbg!("Bufor Planar wypełniony. Przed encode_image");
                         // }
                         {
-                            let mut planes = heif_img.planes_mut();
+                            let planes = heif_img.planes_mut();
 
                             let stride = planes.r.as_ref().unwrap().stride;
                             let data_r = planes.r.unwrap().data;
@@ -288,7 +288,7 @@ pub async fn avif_match(
 
                         // 1. Tworzymy obraz RGBA
                         let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
-                            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                            .map_err(std::io::Error::other)?;
 
                         // 2. Tworzymy 4 osobne płaszczyzny po 10 bitów każda
                         heif_img.create_plane(Channel::R, w, h, 8).expect("Plane R fail");
@@ -318,7 +318,7 @@ pub async fn avif_match(
                         //     }
                         // } // <--- Tutaj kończy się Twój blok kopiowania
                         {
-                            let mut planes = heif_img.planes_mut();
+                            let planes = heif_img.planes_mut();
 
                             let stride = planes.r.as_ref().unwrap().stride;
                             let data_r = planes.r.unwrap().data;
@@ -352,7 +352,7 @@ pub async fn avif_match(
     Ok((heif_img,nazwa_bd.to_string()))
 }
 
-
+#[allow(clippy::too_many_arguments)]
 pub async fn avif_zapis(
     heif_img: Image,
     nazwa_bd: String,
@@ -396,15 +396,15 @@ pub async fn avif_zapis(
             let lib = LibHeif::new();
             // dbg!("jestem po lib = LibHeif::new();");
             let mut context = HeifContext::new()
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                .map_err(std::io::Error::other)?;
 
             // dbg!("jestem po let mut context = HeifContext::new()");
             let mut encoder = lib.encoder_for_format(kompresja)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                .map_err(std::io::Error::other)?;
             // dbg!("jestem po let mut encoder = lib.encoder_for_format(CompressionFormat::Av1)");
 
             encoder.set_quality(qual)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                .map_err(std::io::Error::other)?;
             // dbg!("jestem po encoder.set_quality(EncoderQuality::LossLess)");
             // Dostępny parametr: chroma
             // Dostępny parametr: quality
@@ -437,12 +437,12 @@ pub async fn avif_zapis(
 
 
             // dbg!("Przed encode_image");
-            context.encode_image(&heif_img, &mut encoder, None).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+            context.encode_image(&heif_img, &mut encoder, None).map_err(std::io::Error::other)?;
             // dbg!("Po encode_image");
 
 
             let final_bytes = context.write_to_bytes()
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+                .map_err(std::io::Error::other)?;
             // dbg!("jestem po let final_bytes = context.write_to_bytes()");
 
 
@@ -468,8 +468,7 @@ pub async fn avif_zapis(
 
             // 2. Fizyczny zapis na dysk
             std::fs::write(&output_path, &final_bytes)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, format!("Błąd zapisu pliku: {}", e)))?;
-
+                .map_err(|e| std::io::Error::other(format!("Błąd zapisu pliku: {}", e)))?;
 
 
 

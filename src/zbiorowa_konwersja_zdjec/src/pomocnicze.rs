@@ -5,7 +5,7 @@ use enumy::opcje::OptInterpolacja;
 use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::rozszerzenia::bdepth::{BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::rozszerzenia::rozszerzenia::ImgExt;
+use enumy::rozszerzenia::ext::ImgExt;
 use enumy::statusy::LogTxKonw;
 
 
@@ -48,7 +48,7 @@ pub async fn sprawdz_czy_wsio_ok(
 
     for format in &mut dane.rozszerzenia {
         match format {
-            ImgExt::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans } => {
+            ImgExt::Jpg { jakosc, progresywny:_, bit_depth, sampling:_, quant:_, scans } => {
                 // 1. Korygowanie jakości (0-100)
                 if *jakosc > 100 { *jakosc = 100; }
                 if *jakosc == 0 { *jakosc = 1; }
@@ -123,7 +123,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 let _ = wyslij_update_status("Sprawdzanie danych Png: Git!".to_string()).await.ok();
             }
 
-            ImgExt::Webp { jakosc, lossless, bit_depth } => {
+            ImgExt::Webp { jakosc, lossless:_, bit_depth } => {
 
                 if *jakosc > 100 { *jakosc = 100; }
                 if *jakosc == 0 { *jakosc = 1; }

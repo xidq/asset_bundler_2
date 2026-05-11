@@ -1,18 +1,18 @@
-use std::fmt;
 use strum::{Display, EnumIter, EnumMessage, IntoStaticStr};
 
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, IntoStaticStr, Display)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumIter, IntoStaticStr, Display, Default)]
 pub enum ForDdsKompresja {
     Fast,
+    #[default]
     Normal,
     High,
     Unreasonable,
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Copy, Clone, PartialEq, EnumIter, EnumMessage, Display,)]
+#[derive(Debug, Copy, Clone, PartialEq, EnumIter, EnumMessage, Display,Default)]
 pub enum ForFfKompresja {
     #[strum(message = "comp_Zstd", detailed_message = "hint_comp_Zstd")]
     Zstd(u8),  //1-22|3
@@ -20,10 +20,11 @@ pub enum ForFfKompresja {
     Bzip2(u8), //1-9|6?
     #[strum(message = "comp_Xz", detailed_message = "hint_comp_Xz")]
     Xz(u8),    //1-9|6
+    #[default]
     #[strum(message = "comp_Zstd", detailed_message = "hint_comp_Zstd")]
     Brak,
 }
-impl Default for ForFfKompresja {fn default() -> ForFfKompresja { ForFfKompresja::Brak}}
+
 impl ForFfKompresja {
     pub fn ustaw_domyslny_poziom(self) -> Self {
         match self {
@@ -62,12 +63,13 @@ pub enum ForDds {
 }
 
 #[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq, EnumIter, EnumMessage, Display)]
+#[derive(Clone, Debug, PartialEq, EnumIter, EnumMessage, Display, Default)]
 pub enum ForAvifKompresja {
     Undefined,
     Hevc,
     Avc,
     Jpeg,
+    #[default]
     Av1, //default
     Vvc,
     Evc,
@@ -76,7 +78,7 @@ pub enum ForAvifKompresja {
     Mask,
     HtJ2k,
 }
-impl Default for ForAvifKompresja {fn default() -> ForAvifKompresja { ForAvifKompresja::Av1 }}
+
 impl ForAvifKompresja {
     pub fn krotkie(&self) -> &'static str{
         match self{

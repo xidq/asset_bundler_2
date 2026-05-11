@@ -3,7 +3,7 @@ use image::DynamicImage;
 use std::fs::create_dir_all;
 use std::path::Path;
 use encodery::halper::usun_kanal_alpha;
-
+#[allow(clippy::too_many_arguments)]
 pub async fn laczenie_webp(
     mut bufor: Vec<DynamicImage>,
     ścieżka_wyjściowa: &Path,
@@ -14,7 +14,7 @@ pub async fn laczenie_webp(
     alfa_rgb: &(u16, u16, u16),
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
-    let (docelowy_wymiar, nazwa_wariantu) = (0, "");
+    let (_docelowy_wymiar, nazwa_wariantu) = (0, "");
     let depth = bit_depth;
 
         let (final_img, nazwa_bd) = match depth {
@@ -80,7 +80,7 @@ pub async fn laczenie_webp(
         ścieżka_pliku.push(finalna_nazwa);
 
         let encoder = webp::Encoder::from_image(&final_img)
-            .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+            .map_err(std::io::Error::other)?;
 
         // 2. Kodujesz z wybraną jakością (lossy) -> zwraca WebPMemory
         // *strata to Twoja wartość u8 (0-100)

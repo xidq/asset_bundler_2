@@ -1,28 +1,26 @@
+use crate::edycja_avif::edycja_avif;
 use crate::edycja_ff::edycja_ff;
 use crate::edycja_jpg::edycja_jpg;
 use crate::edycja_png::edycja_png;
 use crate::edycja_qoi::edycja_qoi;
 use crate::edycja_tga::edycja_tga;
 use crate::edycja_webp::edycja_webp;
+use crate::pomocnicze::sprawdz_czy_wsio_ok;
+use encodery::halper::merge_sciezki;
+use encodery::wczytaj_foto::wczytaj_zdjęcie;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::enums_structs_io::FILTERFOTO;
-use enumy::rozszerzenia::rozszerzenia::ImgExt;
+use enumy::rozszerzenia::ext::ImgExt;
 use enumy::statusy::LogTxKonw;
-use futures::SinkExt;
 use futures::channel::mpsc;
 use futures::executor::block_on;
-use image::{DynamicImage, GenericImageView};
-use rand::RngExt;
+use futures::SinkExt;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
-use encodery::halper::merge_sciezki;
-use encodery::wczytaj_foto::wczytaj_zdjęcie;
-use crate::edycja_avif::edycja_avif;
-use crate::pomocnicze::sprawdz_czy_wsio_ok;
 
 pub async fn ogarnianie_foto(
     zestaw_danych: DaneKonw,
@@ -30,7 +28,6 @@ pub async fn ogarnianie_foto(
 ) -> Result<(), tokio::io::Error> {
     let start_czas = Instant::now();
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
-    let procent_progress: Arc<Mutex<u8>> = Arc::new(Mutex::new(0));
     let saf = sprawdz_czy_wsio_ok(zestaw_danych, tx.clone()).await?;
     let wsio_dane = Arc::new(saf);
 
@@ -139,7 +136,6 @@ pub async fn ogarnianie_foto(
                         return Ok::<(), tokio::io::Error>(()); // Kontynuuj pętlę (pomiń ten plik)
                     }
                 };
-                let cimcirimcim = false;
 
 
 
@@ -282,7 +278,7 @@ pub async fn ogarnianie_foto(
                 }
                 Ok::<(), tokio::io::Error>(())
             })
-        }).await.map_err(|e| tokio::io::Error::new(tokio::io::ErrorKind::Other, e.to_string()))?
+        }).await.map_err(tokio::io::Error::other)?
     }.await;
 
     match wynik {
@@ -384,14 +380,8 @@ fn zgarnij_dane_z_pliku(
                 .to_lowercase();
 
             if opt_rozszerzenia_plików_zdjęciowych.contains(&ext.as_str()) {
-                // 2. Wyciągamy ścieżkę do folderu (bez nazwy pliku)
-                // parent() zwraca ścieżkę o jeden poziom wyżej
-                let sciezka_bez_pliku = path
-                    .parent()
-                    .map(|p| p.to_path_buf())
-                    .unwrap_or_else(PathBuf::new);
 
-                // 3. Wyciągamy nazwę pliku bez rozszerzenia_plików_zdjęciowych (file_stem)
+
                 let nazwa_pliku = path
                     .file_stem()
                     .and_then(|s| s.to_str())

@@ -1,15 +1,12 @@
-use std::fmt::Display;
-use std::sync::Arc;
-use iced::advanced::graphics::damage::list;
-use iced::Element;
-use iced::widget::pick_list;
-use iced_core::border::width;
-use iced_core::{Color, Length};
-use enumy::dane_do_przetwarzania::DaneDoObrbki;
-use enumy::implementacje::{DaneDropdown, ElementyDropdown};
-use enumy::inne_ui::UstawieniaThemeWsio;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::styles::{styl_menu_pick, styl_pick_list};
+use enumy::implementacje::{DaneDropdown, ElementyDropdown};
+use enumy::inne_ui::UstawieniaThemeWsio;
+use iced::widget::pick_list;
+use iced::Element;
+use iced_core::{Color, Length};
+use std::fmt::Display;
+use std::sync::Arc;
 
 pub fn dropdown<'a, T, F>(
     dane: &'a F,

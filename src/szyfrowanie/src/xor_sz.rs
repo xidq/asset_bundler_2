@@ -28,7 +28,7 @@ pub async fn szyfruj_xor(
     let klucz = BAŁDZOTAJNEHASŁO.as_bytes();
     let mut przeczytano_razem = 0u64;
     let mut bufor = vec![0u8; 128 * 1024]; // 128KB bufor
-    let mut ostatni_procent = 0u8;
+    // let mut ostatni_procent = 0u8;
 
     // 3. Pętla szyfrowania
     while let Ok(n) = plik_in.read(&mut bufor).await {

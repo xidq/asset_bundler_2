@@ -11,13 +11,13 @@ use tokio::sync::Mutex;
 use encodery::halper::{usun_kanal_alpha, zaszumianie};
 use enumy::rozszerzenia::bdepth::BdepthWebp;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-
+#[allow(clippy::too_many_arguments)]
 pub async fn edycja_webp(
-    mut bufor: DynamicImage,
+    bufor: DynamicImage,
     rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca: &String,
-    OptInterpolacja: &OptInterpolacja,
+    opt_interpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
     jakość: &u8,
     czy_lossless: bool,
@@ -30,7 +30,6 @@ pub async fn edycja_webp(
 ) -> Result<(), tokio::io::Error> {
     // println!(" [edycja_jpg] ścieżka dopełniająaca: {:?}\nścieżka wyjściowa: {:?}", ścieżka_dopełniająca,ścieżka_wyjściowa);
     // 1. Obsługa koloru (B/W)
-    let mut przyrostek_koloru = "";
     // if !*kolor {
     //     bufor = bufor.grayscale();
     //     przyrostek_koloru = "_bw";
@@ -38,7 +37,7 @@ pub async fn edycja_webp(
     // println!("[jpg] ma w vec: {:?}",bit_depth);
 
     // 2. Wybór filtra interpolacji
-    let filtr = match OptInterpolacja {
+    let filtr = match opt_interpolacja {
         OptInterpolacja::Nearest => FilterType::Nearest,
         OptInterpolacja::Triangle => FilterType::Triangle,
         OptInterpolacja::CatmullRom => FilterType::CatmullRom,
@@ -125,10 +124,10 @@ pub async fn edycja_webp(
                     },
                     "_8b",
                 ),
-                _ => {
-                    // placeholder
-                    (DynamicImage::ImageRgb8(bufor.to_rgb8()), "_nimainnych")
-                }
+                // _ => {
+                //     // placeholder
+                //     (DynamicImage::ImageRgb8(bufor.to_rgb8()), "_nimainnych")
+                // }
             };
             aktualizuj_postep(
                 &obecna_operacja,
@@ -155,7 +154,7 @@ pub async fn edycja_webp(
             ścieżka_pliku.push(finalna_nazwa);
 
             let encoder = webp::Encoder::from_image(&final_finalv3_temp_final_ostatecznyv5)
-                .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+                .map_err(tokio::io::Error::other)?;
 
             // 2. Kodujesz z wybraną jakością (lossy) -> zwraca WebPMemory
             // *strata to Twoja wartość u8 (0-100)

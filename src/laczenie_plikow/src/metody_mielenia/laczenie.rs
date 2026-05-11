@@ -8,11 +8,11 @@ pub async fn laczenie_vac_to_dyn(
     mut bufor: Vec<DynamicImage>,
     bit_depth: &dyn BitDepth,
     wymiar: (u32, u32),
-) -> Result<(DynamicImage), tokio::io::Error> {
+) -> Result<DynamicImage, tokio::io::Error> {
     let depth = bit_depth;
     let alfa_rgb:(u16, u16, u16) = (0, 0, 0);
 
-    let (final_img) = match depth.tryb_laczenia() {
+    let final_img = match depth.tryb_laczenia() {
         TrybLączenia::Rgb8 | TrybLączenia::Luma8 =>
             {
                 let img_r = bufor.remove(0);
@@ -119,10 +119,10 @@ pub async fn laczenie_vac_to_dyn(
 
 
     };
-    Ok((final_img))
+    Ok(final_img)
 }
 
-pub async fn ogarnij_sciezki_w_koncu(sciezka_out:PathBuf, nazwa:String)-> Result<(PathBuf), tokio::io::Error> {
+pub async fn ogarnij_sciezki_w_koncu(sciezka_out:PathBuf, nazwa:String)-> Result<PathBuf, tokio::io::Error> {
 
     let mut gfdsdf = sciezka_out;
     gfdsdf.push(nazwa);

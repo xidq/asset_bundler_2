@@ -1,8 +1,8 @@
-use strum::{Display, EnumIter, EnumMessage};
 use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use crate::rozszerzenia::ext::ImgExt::Jpg;
 use crate::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use crate::rozszerzenia::rozszerzenia::ImgExt::{Jpg, Png};
+use strum::{Display, EnumIter, EnumMessage};
 
 // pub const OPTFORMATDDS: &[OptFormatDds] = &[
 //     OptFormatDds::DxgiFormatBc1Unorm,

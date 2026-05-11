@@ -1,7 +1,5 @@
-use std::ffi::OsStr;
-use std::path::{Component, Path};
-// use crate::enums_structs_io::ProcesStatus;
 use crate::wybranie_jezykowe::WybórJęzyka;
+use std::path::Path;
 
 pub fn zmieniacz_ilosci_bajtow<T>(liczba: T) -> String
 where
@@ -99,7 +97,7 @@ impl WybórJęzyka {
     pub fn normal_u32_option(&self,var: (impl Into<u32> + std::clone::Clone, Option<impl Into<u32> + std::clone::Clone>)) -> (u32, Option<u32>){
         let vwar0: u32 = var.0.clone().into();
         let f1:u32 = vwar0;
-        let mut xxx = None;
+        let xxx;
 
         if let Some(wartosc2) = var.1 {
             xxx = Some(wartosc2.clone().into() )
@@ -115,15 +113,14 @@ impl WybórJęzyka {
         let mb: u64 = 1024_u64.pow(2) * 8;
         let gb: u64 = 1024_u64.pow(3) * 8;
         let tb: u64 = 1024_u64.pow(4) * 8;
-        let ccvbfd = match xx.clone(){
+        match xx{
             0..=8 => { format!("{}b",xx) }
             n if n < kb => { format!("{:.2}B",xx as f64/8.) }
             n if n < mb => { format!("{:.2}kB",xx as f64/kb as f64) }
             n if n < gb => { format!("{:.2}MB",xx as f64/mb as f64) }
             n if n < tb => { format!("{:.2}GB",xx as f64/gb as f64) }
             _ => { format!("{:.2}TB", xx as f64/tb as f64 ) }
-        };
-        ccvbfd
+        }
 
     }
 }

@@ -1,20 +1,18 @@
-use std::path::PathBuf;
-use iced::Element;
-use iced::widget::{space, Column};
-use iced::widget::{text, Row};
-use iced_core::{Color, Length};
-use enumy::dane_do_przetwarzania::DaneDdsPak;
-use enumy::ikony::folder_icon;
-use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::kolor::ForJpgQuant;
-use enumy::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::button::{pole_tekstowe_przycisku, przycisk, przycisk_startu};
 use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
 use crate::widget::dropdown::dropdown;
-use crate::widget::oddzielacze::oddzielacz_poziomy;
 use crate::widget::text_place::tekstowe_pole_wypelniane;
+use enumy::dane_do_przetwarzania::DaneDdsPak;
+use enumy::ikony::folder_icon;
+use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
+use enumy::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{space, Column};
+use iced::widget::{text, Row};
+use iced::Element;
+use iced_core::{Color, Length};
+use std::path::PathBuf;
 
 fn tekst_sciezek<'a>(
     sciezki: &'a Option<Vec<PathBuf>>,

@@ -4,7 +4,7 @@ use crate::widget::styles::styl_kontenera;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, UstawieniaThemeWsio};
 use enumy::rozszerzenia::bdepth::BdepthQoi;
-use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{container, space, Column, Row};
 use iced::Element;
@@ -29,7 +29,7 @@ pub fn qoi<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                 .push(Row::new().height(50.))
                                 .push(
                                     BdepthQoi::iter()
-                                        .into_iter()
+                                        
                                         .fold(
                                             Row::new(), |row, wariant| {
                                                 row.push(

@@ -1,13 +1,11 @@
-use std::default;
 use crate::ui::program::Program;
+use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
 use binarka::rozpakowywanie_plikow::ogarnianie_dekompresji;
-use enumy::inne_ui::{ActProces, BtnState, UiPods};
+use enumy::inne_ui::ActProces;
 use enumy::statusy::LogTxBinUnpak;
 use futures::channel::mpsc;
 use iced::Task;
-use std::path::PathBuf;
-use crate::ui::wiadomosci::message_ui::Message;
 
 impl Program {
     pub fn update_message_rozpakowanie_binarki(&mut self, msg: BinUnpakMsg) -> Task<BinUnpakMsg> {

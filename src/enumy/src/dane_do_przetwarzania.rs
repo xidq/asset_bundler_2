@@ -1,12 +1,10 @@
-use std::any::Any;
-use std::cmp::PartialEq;
 use crate::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
-use std::path::PathBuf;
-use crate::inne_ui::BtnState;
-use crate::rozszerzenia::bdepth::TrybLączenia;
+use crate::rozszerzenia::ext::{ImgExt, ImgExtTag, RozszerzeniaPojedyncze};
 use crate::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use crate::rozszerzenia::rozszerzenia::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
+use std::any::Any;
+use std::cmp::PartialEq;
+use std::path::PathBuf;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]

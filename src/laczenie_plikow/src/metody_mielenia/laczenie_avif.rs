@@ -1,14 +1,14 @@
 use encodery::avif::{avif_match, avif_zapis};
 use encodery::halper::zaszumianie;
+use enumy::rozszerzenia::bdepth::BdepthAvif;
+use enumy::rozszerzenia::kolor::ForAvifChroma;
 use enumy::rozszerzenia::kompresje::ForAvifKompresja;
 use image::DynamicImage;
-use std::path::PathBuf;
-use enumy::rozszerzenia::bdepth::{BdepthAvif, };
-use enumy::rozszerzenia::kolor::ForAvifChroma;
-
+use std::path::Path;
+#[allow(clippy::too_many_arguments)]
 pub async fn laczenie_avif(
     bufor: DynamicImage,
-    ścieżka_wyjściowa: &PathBuf,
+    ścieżka_wyjściowa: &Path,
     lossy: Option<u8>,
     bit_depth: BdepthAvif,
     zaszumianie_zmienna: Option<u8>,

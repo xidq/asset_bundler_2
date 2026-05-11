@@ -8,7 +8,7 @@ use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
 use crate::halper::{usun_kanal_alpha, zaszumianie};
 
 pub async fn jpg_match(
-    mut bufor: &DynamicImage,
+    bufor: &DynamicImage,
     wymiar: u32,
     filtr:FilterType,
     alfa_rgb:&(u16, u16, u16),
@@ -56,7 +56,7 @@ pub async fn jpg_match(
     };
     Ok((final_img, nazwa_bd.to_string()))
 }
-
+#[allow(clippy::too_many_arguments)]
 pub async fn jpg_zapis(
     fotu: DynamicImage,
     nazwa_bd: String,
