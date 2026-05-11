@@ -10,16 +10,16 @@ use futures::SinkExt;
 use futures::channel::mpsc;
 use image::DynamicImage;
 use encodery::wczytaj_foto::wczytaj_zdjęcie;
-pub use enumy::statusy::LogTxDoŁączeniaZdjęć;
+pub use enumy::statusy::LogTxMerge;
 use crate::metody_mielenia::laczenie::{laczenie_vac_to_dyn, ogarnij_sciezki_w_koncu};
 use crate::metody_mielenia::laczenie_avif::laczenie_avif;
 
 pub async fn fn_do_laczenia_fot(
     dane: DaneMerge,
-    mut tx: mpsc::Sender<LogTxDoŁączeniaZdjęć>,
+    mut tx: mpsc::Sender<LogTxMerge>,
 ) -> Result<(), tokio::io::Error> {
     
-    let _ = tx.send(LogTxDoŁączeniaZdjęć::Start).await;
+    let _ = tx.send(LogTxMerge::Start).await;
 
     // let start_czas = std::time::Instant::now();
 
@@ -217,11 +217,11 @@ pub async fn fn_do_laczenia_fot(
     match wynik {
         Ok(_) => {
             // let czas_napis = format!("{:.2?}", start_czas.elapsed());
-            let _ = tx.send(LogTxDoŁączeniaZdjęć::Finito).await;
+            let _ = tx.send(LogTxMerge::Finito(String::new())).await;
             Ok(())
         }
         Err(e) => {
-            let _ = tx.send(LogTxDoŁączeniaZdjęć::Błąd(e.to_string())).await;
+            let _ = tx.send(LogTxMerge::Błąd(e.to_string())).await;
             Err(e)
         }
     }

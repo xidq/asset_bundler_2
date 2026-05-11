@@ -1,3 +1,17 @@
+
+pub trait Logi: Send + 'static {
+    // Wspólne dla wszystkich
+    fn start() -> Self;
+    fn status(msg: String) -> Self;
+    fn blad(msg: String) -> Self;
+    fn finito(msg: Option<String>) -> Self;
+
+
+    fn postep_liczbowy(_aktualny: u32, _max: Option<u32>) -> Option<Self> where Self: Sized { None }
+    fn postep_ilosc(_postep: Option<u32>) -> Option<Self> where Self: Sized { None }
+}
+
+
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum LogTxBinPak {
@@ -50,11 +64,22 @@ pub enum LogTxBinUnpak {
 pub enum LogTxKonw {
     Start,
     Sprawdzanie(String),
-    Rozpoczęot(u32, Option<u32>),
+    Rozpoczęto(u32, Option<u32>),
     FiltrowaniePlików(Option<u32>),
     Pominięte { sciezka: String, powod: String },
     Finito(String),
     Błąd(String),
+}
+impl Logi for LogTxKonw {
+    fn start() -> Self { Self::Start }
+    fn status(msg: String) -> Self { Self::Sprawdzanie(msg) }
+    fn blad(msg: String) -> Self { Self::Błąd(msg) }
+    fn finito(msg: Option<String>) -> Self { Self::Finito(msg.unwrap_or_default()) }
+
+    // Konwersja używa u32, więc mapujemy to tutaj
+    fn postep_liczbowy(aktualny: u32, max: Option<u32>) -> Option<Self> {
+        Some(Self::Rozpoczęto(aktualny, max))
+    }
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
@@ -68,13 +93,27 @@ pub enum LogTxDdsPak {
 #[derive(Debug, Clone)]
 pub enum LogTxDdsUnpak {
     Start,
+    Sprawdzanie(String),
     Pending(u8),
     Finito(String),
     Błąd(String),
 }
+impl Logi for LogTxDdsUnpak {
+    fn start() -> Self { Self::Start }
+    fn status(msg: String) -> Self { Self::Sprawdzanie(msg) }
+    fn blad(msg: String) -> Self { Self::Błąd(msg) }
+    fn finito(msg: Option<String>) -> Self { Self::Finito(msg.unwrap_or_default()) }
+}
 #[derive(Clone, Debug)]
-pub enum LogTxDoŁączeniaZdjęć {
+pub enum LogTxMerge {
     Start,
-    Finito,
+    Sprawdzanie(String),
+    Finito(String),
     Błąd(String),
+}
+impl Logi for LogTxMerge {
+    fn start() -> Self { Self::Start }
+    fn status(msg: String) -> Self { Self::Sprawdzanie(msg) }
+    fn blad(msg: String) -> Self { Self::Błąd(msg) }
+    fn finito(msg: Option<String>) -> Self { Self::Finito(msg.unwrap_or_default()) }
 }

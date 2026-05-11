@@ -7,7 +7,7 @@ use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, B
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
 use enumy::rozszerzenia::ext::{ImgExtTag, RozszerzeniaPojedyncze};
-use enumy::statusy::LogTxDoŁączeniaZdjęć;
+use enumy::statusy::LogTxMerge;
 use futures::channel::mpsc;
 use iced::Task;
 use laczenie_plikow::laczenie_fot_struct_enums::fn_do_laczenia_fot;
@@ -344,7 +344,7 @@ impl Program {
                 self.temat.temp.act_proc = Some(ActProces::Merge);
                 let _ = self.update(Message::ChckStatus);
 
-                let (tx, rx) = mpsc::channel::<LogTxDoŁączeniaZdjęć>(100);
+                let (tx, rx) = mpsc::channel::<LogTxMerge>(100);
 
                 let handle = tokio::runtime::Handle::current();
                 let operacja = Task::perform(
@@ -365,17 +365,18 @@ impl Program {
 
             }
             MergeMsg::PostepLaczeniaFot(progress) => match progress {
-                LogTxDoŁączeniaZdjęć::Start => {}
-                LogTxDoŁączeniaZdjęć::Finito => {
+                LogTxMerge::Start => {}
+                LogTxMerge::Finito(_) => {
                     self.temat.temp.act_proc = None;
                     let _ = self.update(Message::ChckStatus);
 
                 }
-                LogTxDoŁączeniaZdjęć::Błąd(_) => {
+                LogTxMerge::Błąd(_) => {
                     self.temat.temp.act_proc = None;
                     let _ = self.update(Message::ChckStatus);
 
                 }
+                LogTxMerge::Sprawdzanie(_) => {}
             },
             MergeMsg::JpgProg => {
                 if let RozszerzeniaPojedyncze::Jpg { ref mut progresywny, .. } = self

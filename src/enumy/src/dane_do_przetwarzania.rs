@@ -85,6 +85,17 @@ pub struct DaneDdsUnpak {
     pub rozszerzenie: ImgExt,
     pub tag: ImgExtTag,
 }
+#[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq)]
+pub struct DaneProces {
+    pub ścieżka_wejściowa: PathBuf,
+    pub ścieżka_wyjściowa: PathBuf,
+    pub opcje_rozdzielczości: Vec<Rozdzielczości>,
+    pub noising: Option<u8>,
+    pub rozszerzenia: Vec<ImgExt>,
+    pub inter: OptInterpolacja,
+    pub alfa_rgb: (u16, u16, u16),
+}
 
 pub trait DaneDoObrbki{
     fn jako_any(&self) -> &dyn Any;

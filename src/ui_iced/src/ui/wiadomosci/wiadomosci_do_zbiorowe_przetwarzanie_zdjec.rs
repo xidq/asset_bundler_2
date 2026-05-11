@@ -506,7 +506,7 @@ impl Program {
                     LogTxKonw::Sprawdzanie(gsd) => {
                         self.status_zmiany_fot_log.msg_walidacja = gsd;
                     }
-                    LogTxKonw::Rozpoczęot(
+                    LogTxKonw::Rozpoczęto(
                         wartość,
                         suma,
                     ) => {

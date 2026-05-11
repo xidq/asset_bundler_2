@@ -2,7 +2,7 @@ use enumy::rozszerzenia::bdepth_impl::BitDepth;
 use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::rozszerzenia::ext::ImgExtTag;
-use enumy::statusy::LogTxDoŁączeniaZdjęć;
+use enumy::statusy::LogTxMerge;
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
@@ -37,7 +37,7 @@ pub enum MergeMsg {
     ZdjeciaLaczenieZmianaKompresjiFfBzip2(u8),
     ZdjeciaLaczenieZmianaKompresjiFfXz(u8),
     Uruchom,
-    PostepLaczeniaFot(LogTxDoŁączeniaZdjęć),
+    PostepLaczeniaFot(LogTxMerge),
     ZdjeciaLaczenieZmianalosslessWebp,
     WybierzPlikInFotoLaczenieNazwaChanged(String),
     Nic,

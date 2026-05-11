@@ -8,7 +8,13 @@ pub trait BitDepth: std::fmt::Debug + Any + Send + Sync{
     fn label_max(&self) -> &'static str;
     fn tryb_laczenia(&self) -> TrybLączenia;
     fn jako_any(&self) -> &dyn Any;
-    fn jest_rowny(&self, inny: &dyn Any) -> bool;
+    // fn jest_rowny(&self, inny: &dyn Any) -> bool;
+    fn jest_rowny(&self, inny: &dyn Any) -> bool where Self: Sized, Self: PartialEq {
+        if let Some(v) = inny.downcast_ref::<Self>() {
+            return v == self;
+        }
+        false
+    }
     fn format(&self) -> ImgExtTag;
 }
 
@@ -16,8 +22,6 @@ pub trait BitDepth: std::fmt::Debug + Any + Send + Sync{
 
 
 impl BitDepth for BdepthJpg {
-
-    fn format(&self) -> ImgExtTag { ImgExtTag::Jpg}
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Jpg")}
     fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Jpg")}
     fn tryb_laczenia(&self) -> TrybLączenia {
@@ -27,15 +31,15 @@ impl BitDepth for BdepthJpg {
         }
     }
     fn jako_any(&self) -> &dyn Any { self }
-    fn jest_rowny(&self, inny: &dyn Any) -> bool {
-        if let Some(v) = inny.downcast_ref::<Self>() {
-            return v == self;
-        }
-        false
-    }
+    // fn jest_rowny(&self, inny: &dyn Any) -> bool {
+    //     if let Some(v) = inny.downcast_ref::<Self>() {
+    //         return v == self;
+    //     }
+    //     false
+    // }
+    fn format(&self) -> ImgExtTag { ImgExtTag::Jpg}
 }
 impl BitDepth for BdepthPng {
-    fn format(&self) -> ImgExtTag { ImgExtTag::Png}
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Png")}
     fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Png")}
     fn tryb_laczenia(&self) -> TrybLączenia {
@@ -51,15 +55,15 @@ impl BitDepth for BdepthPng {
     }
 }
     fn jako_any(&self) -> &dyn Any { self }
-    fn jest_rowny(&self, inny: &dyn Any) -> bool {
-        if let Some(v) = inny.downcast_ref::<Self>() {
-            return v == self;
-        }
-        false
-    }
+    // fn jest_rowny(&self, inny: &dyn Any) -> bool {
+    //     if let Some(v) = inny.downcast_ref::<Self>() {
+    //         return v == self;
+    //     }
+    //     false
+    // }
+    fn format(&self) -> ImgExtTag { ImgExtTag::Png}
 }
 impl BitDepth for BdepthWebp {
-    fn format(&self) -> ImgExtTag { ImgExtTag::Webp}
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Webp")}
     fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Webp")}
     fn tryb_laczenia(&self) -> TrybLączenia {
@@ -69,15 +73,15 @@ impl BitDepth for BdepthWebp {
     }
 }
     fn jako_any(&self) -> &dyn Any { self }
-    fn jest_rowny(&self, inny: &dyn Any) -> bool {
-        if let Some(v) = inny.downcast_ref::<Self>() {
-            return v == self;
-        }
-        false
-    }
+    fn format(&self) -> ImgExtTag { ImgExtTag::Webp}
+    // fn jest_rowny(&self, inny: &dyn Any) -> bool {
+    //     if let Some(v) = inny.downcast_ref::<Self>() {
+    //         return v == self;
+    //     }
+    //     false
+    // }
 }
 impl BitDepth for BdepthAvif {
-    fn format(&self) -> ImgExtTag { ImgExtTag::Avif}
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Avif")}
     fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Avif")}
     fn tryb_laczenia(&self) -> TrybLączenia {
@@ -89,15 +93,15 @@ impl BitDepth for BdepthAvif {
     }
 }
     fn jako_any(&self) -> &dyn Any { self }
-    fn jest_rowny(&self, inny: &dyn Any) -> bool {
-        if let Some(v) = inny.downcast_ref::<Self>() {
-            return v == self;
-        }
-        false
-    }
+    fn format(&self) -> ImgExtTag { ImgExtTag::Avif}
+    // fn jest_rowny(&self, inny: &dyn Any) -> bool {
+    //     if let Some(v) = inny.downcast_ref::<Self>() {
+    //         return v == self;
+    //     }
+    //     false
+    // }
 }
 impl BitDepth for BdepthTga {
-    fn format(&self) -> ImgExtTag { ImgExtTag::Tga}
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Tga")}
     fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Tga")}
     fn tryb_laczenia(&self) -> TrybLączenia {
@@ -109,15 +113,15 @@ impl BitDepth for BdepthTga {
         }
     }
     fn jako_any(&self) -> &dyn Any { self }
-    fn jest_rowny(&self, inny: &dyn Any) -> bool {
-        if let Some(v) = inny.downcast_ref::<Self>() {
-            return v == self;
-        }
-        false
-    }
+    fn format(&self) -> ImgExtTag { ImgExtTag::Tga}
+    // fn jest_rowny(&self, inny: &dyn Any) -> bool {
+    //     if let Some(v) = inny.downcast_ref::<Self>() {
+    //         return v == self;
+    //     }
+    //     false
+    // }
 }
 impl BitDepth for BdepthQoi {
-    fn format(&self) -> ImgExtTag { ImgExtTag::Qoi}
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Qoi")}
     fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Qoi")}
     fn tryb_laczenia(&self) -> TrybLączenia {
@@ -127,12 +131,13 @@ impl BitDepth for BdepthQoi {
     }
 }
     fn jako_any(&self) -> &dyn Any { self }
-    fn jest_rowny(&self, inny: &dyn Any) -> bool {
-        if let Some(v) = inny.downcast_ref::<Self>() {
-            return v == self;
-        }
-        false
-    }
+    fn format(&self) -> ImgExtTag { ImgExtTag::Qoi}
+    // fn jest_rowny(&self, inny: &dyn Any) -> bool {
+    //     if let Some(v) = inny.downcast_ref::<Self>() {
+    //         return v == self;
+    //     }
+    //     false
+    // }
 }
 
 impl BdepthAvif {

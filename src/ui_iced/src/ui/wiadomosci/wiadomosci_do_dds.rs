@@ -291,6 +291,7 @@ impl Program {
                         self.temat.temp.act_proc = None;
 
                     }
+                    LogTxDdsUnpak::Sprawdzanie(_) => {}
                 }
             }
             DdsMsg::JpgProg => {

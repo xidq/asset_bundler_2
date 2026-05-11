@@ -18,7 +18,7 @@ pub async fn aktualizuj_postep(
         
         let _ = nadawca
             .send(
-                LogTxKonw::Rozpoczęot(
+                LogTxKonw::Rozpoczęto(
                     obecnie,
                     Some(metryka),
                 ),

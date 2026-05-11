@@ -73,12 +73,13 @@ pub enum BdepthQoi{
     #[strum(default_with = "C32",message = "Color32", detailed_message = "Rgb 8 bit + Alpha (Color/w Alpha)")]
     Color32,
 }
-#[derive(Debug, Clone, Copy, PartialEq, EnumIter, EnumMessage, Display)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter, EnumMessage, Display, Default)]
 pub enum BdepthTga{
     #[strum(default_with = "L8",message = "Luma8", detailed_message = "Luma 8 bit (BW)")]
     Luma8,
     #[strum(default_with = "HC16",message = "HC16", detailed_message = "High Color 16 = Rgb 5 bit + Alpha(bool) (Color/w Alpcha 0-1)")]
     HighColor16,
+    #[default]
     #[strum(default_with = "TC24",message = "Color24", detailed_message = "True Color 24 = Rgb 8 bit (Color)")]
     TrueColor24,
     #[strum(default_with = "TC32",message = "Color32", detailed_message = "True Color 32 = Rgb 8 bit + Alpha (Color/w Alpha)")]
