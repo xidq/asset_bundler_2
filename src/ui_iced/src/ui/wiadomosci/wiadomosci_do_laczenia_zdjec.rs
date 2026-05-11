@@ -370,7 +370,7 @@ impl Program {
             }
             MergeMsg::PostepLaczeniaFot(progress) => match progress {
                 LogTxDoŁączeniaZdjęć::Start => {}
-                LogTxDoŁączeniaZdjęć::Koniec => {
+                LogTxDoŁączeniaZdjęć::Finito => {
                     self.temat.temp.act_proc = None;
                     let _ = self.update(Message::ChckStatus);
 

@@ -80,7 +80,7 @@ impl Program {
                         
                     }
 
-                    LogTxBinPak::SPakowanie { aktualny, suma } => {
+                    LogTxBinPak::Pakowanie { aktualny, suma } => {
 
                         self.status_pakowanie_log.pakowanie = (aktualny, suma)
                     }

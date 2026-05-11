@@ -218,7 +218,7 @@ pub async fn fn_do_laczenia_fot(
     match wynik {
         Ok(_) => {
             let czas_napis = format!("{:.2?}", start_czas.elapsed());
-            let _ = tx.send(LogTxDoŁączeniaZdjęć::Koniec).await;
+            let _ = tx.send(LogTxDoŁączeniaZdjęć::Finito).await;
             Ok(())
         }
         Err(e) => {

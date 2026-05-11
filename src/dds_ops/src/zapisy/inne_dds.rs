@@ -19,7 +19,7 @@ pub async fn aktualizuj_postep_dds(
     if nowy_procent > *procenciki {
         *procenciki = nowy_procent;
         let _ = nadawca
-            .send(LogTxDdsUnpak::StatusRozpakowanieDdsWtrakcie(
+            .send(LogTxDdsUnpak::Pending(
                 *procenciki,
             ))
             .await;

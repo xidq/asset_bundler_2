@@ -25,7 +25,7 @@ pub async fn aktualizuj_postep(
         
         let _ = nadawca
             .send(
-                LogTxKonw::StatusBathKonwersjaZdjęćRozpoczęto(
+                LogTxKonw::Rozpoczęot(
                     obecnie,
                     Some(metryka),
                 ),

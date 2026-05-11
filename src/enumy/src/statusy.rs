@@ -4,7 +4,8 @@ pub enum LogTxBinPak {
     StatusZnaleziono {
         pliki: u32
     },
-    SPakowanie {
+    Pakowanie
+    {
         aktualny: u32,
         suma: Option<u32>,
     },
@@ -47,33 +48,33 @@ pub enum LogTxBinUnpak {
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum LogTxKonw {
-    StatusBathKonwersjaZdjęćStart,
-    StatusBathKonwersjaZdjęćChecking(String),
-    StatusBathKonwersjaZdjęćRozpoczęto(u32, Option<u32>),
-    StatusBathKonwersjaZdjęćFiltrowaniePlików(Option<u32>),
-    StatusBathKonwersjaZdjęćPominiętePliki { sciezka: String, powod: String },
-    StatusBathKonwersjaZdjęćKoniec(String),
-    StatusBathKonwersjaZdjęćBłąd(String),
+    Start,
+    Sprawdzanie(String),
+    Rozpoczęot(u32, Option<u32>),
+    FiltrowaniePlików(Option<u32>),
+    Pominięte { sciezka: String, powod: String },
+    Finito(String),
+    Błąd(String),
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum LogTxDdsPak {
-    StatusPakowanieDdsStart,
-    StatusPakowanieDdsWtrakcie(u8),
-    StatusPakowanieDdsKoniec(String),
-    StatusPakowanieDdsBłąd(String),
+    Start,
+    Pending(u8),
+    Finito(String),
+    Błąd(String),
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum LogTxDdsUnpak {
-    StatusRozpakowanieDdsStart,
-    StatusRozpakowanieDdsWtrakcie(u8),
-    StatusRozpakowanieDdsKoniec(String),
-    StatusRozpakowanieDdsBłąd(String),
+    Start,
+    Pending(u8),
+    Finito(String),
+    Błąd(String),
 }
 #[derive(Clone, Debug)]
 pub enum LogTxDoŁączeniaZdjęć {
     Start,
-    Koniec,
+    Finito,
     Błąd(String),
 }

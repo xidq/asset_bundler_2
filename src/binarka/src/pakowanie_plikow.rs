@@ -92,7 +92,7 @@ async fn tworzenie_binarki(
     mut tx: mpsc::Sender<LogTxBinPak>, // Dodajemy kanał tutaj
 ) -> Result<(), tokio::io::Error> {
     let mut akt_stat = async |aktualny:u32,suma:Option<u32>|{
-        if let Err(e) = tx.send(LogTxBinPak::SPakowanie {
+        if let Err(e) = tx.send(LogTxBinPak::Pakowanie {
             aktualny,
             suma,
         }).await {

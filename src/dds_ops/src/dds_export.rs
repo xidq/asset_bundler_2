@@ -27,7 +27,7 @@ pub fn save_rgba_image_with_mipmaps(
         dbg!(&przerób);
         if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
             *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
-            let _ = tx.try_send(LogTxDdsPak::StatusPakowanieDdsWtrakcie(*percent));
+            let _ = tx.try_send(LogTxDdsPak::Pending(*percent));
         }
     };
 

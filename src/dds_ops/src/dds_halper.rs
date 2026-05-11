@@ -2,13 +2,9 @@ use std::num::NonZeroU32;
 
 pub fn oblicz_ilosc_mipmap(width: u32, height: u32) -> NonZeroU32 {
     let poziomy = (width.max(height) as f32).log2().floor() as u32 + 1;
-    NonZeroU32::new(poziomy).unwrap()
+    NonZeroU32::new(poziomy).unwrap_or(NonZeroU32::MIN)
 }
 
-
-
-
-// todo!("znalezc przyczyne czemu helper nie dziala tylko tu trzeba było wkleić");
 
 use std::path::PathBuf;
 use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Luma, LumaA, Rgb, Rgba};

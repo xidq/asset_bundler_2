@@ -2,11 +2,9 @@ use iced::futures::channel::mpsc;
 use iced::futures::SinkExt;
 use std::path::PathBuf;
 use std::time::Instant;
-
 use enumy::dane_do_przetwarzania::DaneBinUnpak;
 use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
 use enumy::statusy::LogTxBinUnpak;
-// pub(crate) use crate::io::import_for_compression::{KolejnośćDziałań, Progress};
 use kompresja::dekompresjazstd::dekompresujsuj;
 use szyfrowanie::xor_de::deszyfruj_xor;
 use tokio::io::AsyncReadExt;

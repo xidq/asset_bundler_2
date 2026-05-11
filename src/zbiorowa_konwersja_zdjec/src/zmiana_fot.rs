@@ -116,7 +116,7 @@ pub async fn ogarnianie_foto(
                         let powod_bledu = e.to_string();
 
                         // let _ = tx_dla_rayona.clone().send(LogTxDoBathKonwersjaZdjęć::PominiętePliki { sciezka: nazwa_pliku, powod: powod_bledu });
-                        let wynik_wysylki = tx_dla_rayona.clone().try_send(LogTxKonw::StatusBathKonwersjaZdjęćPominiętePliki {
+                        let wynik_wysylki = tx_dla_rayona.clone().try_send(LogTxKonw::Pominięte {
                             sciezka: nazwa_pliku.clone(),
                             powod: powod_bledu
                         });
@@ -293,7 +293,7 @@ pub async fn ogarnianie_foto(
             // Możesz użyć prostego formatowania:
             let czas_napis = format!("{:.2?}", trwanie);
             let _ = tx
-                .send(LogTxKonw::StatusBathKonwersjaZdjęćKoniec(czas_napis))
+                .send(LogTxKonw::Finito(czas_napis))
                 .await;
             Ok(())
         }
@@ -301,7 +301,7 @@ pub async fn ogarnianie_foto(
             // Jeśli cokolwiek powyżej sypnie błędem (przez znak zapytania),
             // wysyłamy opis błędu do UI zamiast po prostu "padać".
             let _ = tx
-                .send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(e.to_string()))
+                .send(LogTxKonw::Błąd(e.to_string()))
                 .await;
             Err(e)
         }
@@ -346,7 +346,7 @@ fn wez_sprawdz_sciezki(
                     // NALICZANIE
                     przetworzone_pliki += 1;
                     let _ = tx.try_send(
-                        LogTxKonw::StatusBathKonwersjaZdjęćFiltrowaniePlików(
+                        LogTxKonw::FiltrowaniePlików(
                             Some(przetworzone_pliki),
                         ),
                     );
@@ -399,7 +399,7 @@ fn zgarnij_dane_z_pliku(
                     .to_string();
                 przetworzone_pliki += 1;
                 let _ = tx.try_send(
-                    LogTxKonw::StatusBathKonwersjaZdjęćFiltrowaniePlików(
+                    LogTxKonw::FiltrowaniePlików(
                         Some(przetworzone_pliki),
                     ),
                 );
@@ -454,7 +454,7 @@ fn czy_sciezka_jest_git(
     for komponent in pelna.components() {
         if komponent.as_os_str().as_encoded_bytes().len() > 250 {
             let _ = tx.try_send(
-                LogTxKonw::StatusBathKonwersjaZdjęćPominiętePliki {
+                LogTxKonw::Pominięte {
                     sciezka: s.to_string(),
                     powod: format!(
                         "Człon ścieżki przekracza limit 250 bajtów, jest {} bajtów",

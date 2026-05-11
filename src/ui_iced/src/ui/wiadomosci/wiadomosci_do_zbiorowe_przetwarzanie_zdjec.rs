@@ -501,25 +501,25 @@ impl Program {
             }
             KonwMsg::Log(progress) => {
                 match progress {
-                    LogTxKonw::StatusBathKonwersjaZdjęćStart => {
+                    LogTxKonw::Start => {
                         self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
                     }
-                    LogTxKonw::StatusBathKonwersjaZdjęćChecking(gsd) => {
+                    LogTxKonw::Sprawdzanie(gsd) => {
                         self.status_zmiany_fot_log.msg_walidacja = gsd;
                     }
-                    LogTxKonw::StatusBathKonwersjaZdjęćRozpoczęto(
+                    LogTxKonw::Rozpoczęot(
                         wartość,
                         suma,
                     ) => {
                         // println!("Update dostał procent: {}", procent); // <-- DEBUG
                         self.status_zmiany_fot_log.plik_procent = (wartość,suma);
                     }
-                    LogTxKonw::StatusBathKonwersjaZdjęćFiltrowaniePlików(xoxo) => {
+                    LogTxKonw::FiltrowaniePlików(xoxo) => {
 
                         self.status_zmiany_fot_log.plik_początek = xoxo;
 
                     }
-                    LogTxKonw::StatusBathKonwersjaZdjęćPominiętePliki {
+                    LogTxKonw::Pominięte {
                         sciezka,
                         powod,
                     } => {
@@ -528,14 +528,14 @@ impl Program {
                             sciezka, powod
                         ));
                     }
-                    LogTxKonw::StatusBathKonwersjaZdjęćKoniec(czas) => {
+                    LogTxKonw::Finito(czas) => {
                         self.status_zmiany_fot_log.msg_end =
                             format!("Zakończono w czasie: {}", czas);
                         self.temat.temp.act_proc = None;
 
                         let _ = self.update(Message::ChckStatus);
                     }
-                    LogTxKonw::StatusBathKonwersjaZdjęćBłąd(err) => {
+                    LogTxKonw::Błąd(err) => {
                         self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
                         self.temat.temp.act_proc = None;
 

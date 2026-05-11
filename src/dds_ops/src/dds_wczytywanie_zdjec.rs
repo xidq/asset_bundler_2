@@ -17,7 +17,7 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
     mut tx: mpsc::Sender<LogTxDdsPak>,
 ) -> Result<(), std::io::Error> {
     let start_czas = Instant::now();
-    let _ = tx.send(LogTxDdsPak::StatusPakowanieDdsStart).await;
+    let _ = tx.send(LogTxDdsPak::Start).await;
     let kompresja = match &dane.kompresja {
         ForDdsKompresja::Fast => {dds::CompressionQuality::Fast}
         ForDdsKompresja::Normal => {dds::CompressionQuality::Normal}
@@ -204,13 +204,13 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
             let trwanie = start_czas.elapsed();
             let czas_napis = format!("{:.2?}", trwanie);
             let _ = tx
-                .send(LogTxDdsPak::StatusPakowanieDdsKoniec(czas_napis))
+                .send(LogTxDdsPak::Finito(czas_napis))
                 .await;
             Ok(())
         }
         Err(e) => {
             let _ = tx
-                .send(LogTxDdsPak::StatusPakowanieDdsBłąd(e.to_string()))
+                .send(LogTxDdsPak::Błąd(e.to_string()))
                 .await;
             Err(e)
         }

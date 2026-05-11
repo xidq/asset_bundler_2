@@ -113,21 +113,21 @@ impl Program {
             },
             DdsMsg::PakowaniePostęp(progress) => {
                 match progress {
-                    LogTxDdsPak::StatusPakowanieDdsStart => {
+                    LogTxDdsPak::Start => {
                         // self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
                     }
-                    LogTxDdsPak::StatusPakowanieDdsWtrakcie(procent) => {
+                    LogTxDdsPak::Pending(procent) => {
                         self.status_dds_pakowanie.w_trakcie = procent;
                     }
 
 
-                    LogTxDdsPak::StatusPakowanieDdsKoniec(czas) => {
+                    LogTxDdsPak::Finito(czas) => {
                         // self.status_zmiany_fot_log.msg_end =
                         //     format!("Zakończono w czasie: {}", czas);
                         self.status_dds_pakowanie.koniec = czas;
                         self.temat.temp.act_proc = None;
                     }
-                    LogTxDdsPak::StatusPakowanieDdsBłąd(err) => {
+                    LogTxDdsPak::Błąd(err) => {
                         self.status_dds_pakowanie.err = err;
                         // self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
                         // self.checker_bool_status_zbiorowe_przetwarzanie_zdjęć = false;
@@ -282,12 +282,12 @@ impl Program {
             }
             DdsMsg::RozpakPostęp(progress) => {
                 match progress {
-                    LogTxDdsUnpak::StatusRozpakowanieDdsStart => {}
-                    LogTxDdsUnpak::StatusRozpakowanieDdsWtrakcie(_) => {}
-                    LogTxDdsUnpak::StatusRozpakowanieDdsKoniec(_) => {
+                    LogTxDdsUnpak::Start => {}
+                    LogTxDdsUnpak::Pending(_) => {}
+                    LogTxDdsUnpak::Finito(_) => {
                         self.temat.temp.act_proc = None;
                     }
-                    LogTxDdsUnpak::StatusRozpakowanieDdsBłąd(_) => {
+                    LogTxDdsUnpak::Błąd(_) => {
                         self.temat.temp.act_proc = None;
 
                     }
