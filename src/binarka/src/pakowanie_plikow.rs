@@ -1,7 +1,7 @@
 use enumy::dane_do_przetwarzania::DaneBinPak;
 use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
 use enumy::opcje::OptKompresjaPlikówFiltracjaPlików;
-use enumy::statusy::LogTxDoKompresjiPliku;
+use enumy::statusy::LogTxBinPak;
 use iced::futures::channel::mpsc;
 use iced::futures::SinkExt;
 use kompresja::zetestede::kompresujsuj;
@@ -13,13 +13,13 @@ async fn zgarnij_pliki(
     ścieżka: PathBuf,
     opcja: &bool,
     filter: OptKompresjaPlikówFiltracjaPlików,
-    mut tx: mpsc::Sender<LogTxDoKompresjiPliku>,
+    mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<Vec<(String, Vec<u8>)>, tokio::io::Error> {
     let mut lista_plików = Vec::new();
     let mut licznik:u32 = 0;
     let mut foldery_do_przejrzenia = vec![ścieżka.clone()];
     let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówZnalezionePliki { pliki: 0 })
+        .send(LogTxBinPak::StatusZnaleziono { pliki: 0 })
         .await;
 
     while let Some(aktualny_folder) = foldery_do_przejrzenia.pop() {
@@ -50,7 +50,7 @@ async fn zgarnij_pliki(
 
                 let _ = tx
                     .send(
-                        LogTxDoKompresjiPliku::StatusKompresjaPlikówZnalezionePliki {
+                        LogTxBinPak::StatusZnaleziono {
                             pliki: licznik,
                         },
                     )
@@ -89,10 +89,10 @@ async fn tworzenie_binarki(
     pliki: Vec<(String, Vec<u8>)>,
     ścieżka_wyjściowa: PathBuf,
     nazwa_pliku: String,
-    mut tx: mpsc::Sender<LogTxDoKompresjiPliku>, // Dodajemy kanał tutaj
+    mut tx: mpsc::Sender<LogTxBinPak>, // Dodajemy kanał tutaj
 ) -> Result<(), tokio::io::Error> {
     let mut akt_stat = async |aktualny:u32,suma:Option<u32>|{
-        if let Err(e) = tx.send(LogTxDoKompresjiPliku::StatusKompresjaPlikówPakowanie {
+        if let Err(e) = tx.send(LogTxBinPak::SPakowanie {
             aktualny,
             suma,
         }).await {
@@ -132,7 +132,7 @@ async fn tworzenie_binarki(
 
     if let Err(e) = tokio::fs::write(&ścieżka_temp, blobloblob).await {
             let _ = tx
-                .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówBłąd(
+                .send(LogTxBinPak::Błąd(
                     e.to_string(),
                 ))
                 .await;
@@ -143,7 +143,7 @@ async fn tworzenie_binarki(
 
 pub async fn ogarnianie_eksportu(
     zestaw_danych: DaneBinPak,
-    mut tx: mpsc::Sender<LogTxDoKompresjiPliku>,
+    mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<(), tokio::io::Error> {
     println!("zaczynam pakować");
     let start_czas = Instant::now();
@@ -178,13 +178,13 @@ pub async fn ogarnianie_eksportu(
     match wynik {
         Ok(_) => {
             let _ = tx
-                .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówZakonczono { czas: przelicz_czas(start_czas) })
+                .send(LogTxBinPak::Finito { czas: przelicz_czas(start_czas) })
                 .await;
             Ok(())
         }
         Err(e) => {
             let _ = tx
-                .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówBłąd(
+                .send(LogTxBinPak::Błąd(
                     e.to_string(),
                 ))
                 .await;

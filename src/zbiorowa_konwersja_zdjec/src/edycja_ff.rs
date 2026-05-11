@@ -2,7 +2,7 @@ use crate::wczytanie_zdjec::aktualizuj_postep;
 use bzip2::Compression;
 use bzip2::write::BzEncoder;
 use enumy::opcje::OptInterpolacja;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc::Sender;
 use image::DynamicImage;
 use image::imageops::FilterType;
@@ -27,7 +27,7 @@ pub async fn edycja_ff(
     metryka_operacji: u32,
     obecna_operacja: Arc<Mutex<u32>>,
     wybrana_kompresja: &ForFfKompresja,
-    mut tx: Sender<LogTxDoBathKonwersjaZdjęć>,
+    mut tx: Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
     // println!(" [edycja_jpg] ścieżka dopełniająaca: {:?}\nścieżka wyjściowa: {:?}", ścieżka_dopełniająca,ścieżka_wyjściowa);
     // 1. Obsługa koloru (B/W)

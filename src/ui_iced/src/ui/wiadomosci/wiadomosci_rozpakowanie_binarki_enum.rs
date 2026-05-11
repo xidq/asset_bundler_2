@@ -1,4 +1,4 @@
-use enumy::statusy::LogTxDoDekompresjiPliku;
+use enumy::statusy::LogTxBinUnpak;
 
 #[derive(Debug, Clone)]
 pub enum BinUnpakMsg {
@@ -6,6 +6,6 @@ pub enum BinUnpakMsg {
     OutputPath,
     Uruchom,
     Nic,
-    LogProcesu(LogTxDoDekompresjiPliku),
+    LogProcesu(LogTxBinUnpak),
     InputPath,
 }

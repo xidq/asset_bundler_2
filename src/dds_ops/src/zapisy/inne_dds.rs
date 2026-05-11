@@ -1,4 +1,4 @@
-use enumy::statusy::LogTxDoRozpakowanieDds;
+use enumy::statusy::LogTxDdsUnpak;
 use futures::SinkExt;
 use futures::channel::mpsc::Sender;
 use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Luma, LumaA, Rgb, Rgba};
@@ -9,7 +9,7 @@ pub async fn aktualizuj_postep_dds(
     obecna_op: &mut u32,
     procent_pro: &mut u8,
     metryka: u32,
-    nadawca: &mut Sender<LogTxDoRozpakowanieDds>,
+    nadawca: &mut Sender<LogTxDdsUnpak>,
 ) {
     *obecna_op += 1;
 
@@ -19,7 +19,7 @@ pub async fn aktualizuj_postep_dds(
     if nowy_procent > *procenciki {
         *procenciki = nowy_procent;
         let _ = nadawca
-            .send(LogTxDoRozpakowanieDds::StatusRozpakowanieDdsWtrakcie(
+            .send(LogTxDdsUnpak::StatusRozpakowanieDdsWtrakcie(
                 *procenciki,
             ))
             .await;

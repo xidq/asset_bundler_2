@@ -1,4 +1,4 @@
-use enumy::statusy::LogTxDoDekompresjiPliku;
+use enumy::statusy::LogTxBinUnpak;
 use iced::futures::channel::mpsc;
 use iced::futures::SinkExt;
 use pass::BAŁDZOTAJNEHASŁO;
@@ -10,7 +10,7 @@ use std::time::Instant;
 pub async fn deszyfruj_xor(
     ścieżka_docelowa: PathBuf,
     nazwa_pliku: String,
-    mut tx: mpsc::Sender<LogTxDoDekompresjiPliku>,
+    mut tx: mpsc::Sender<LogTxBinUnpak>,
 ) -> Result<(), tokio::io::Error> {
 
 
@@ -52,7 +52,7 @@ pub async fn deszyfruj_xor(
             ostatni_stan = Instant::now();
             let _ = tx
                 .send(
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDeszyfracja {
+                    LogTxBinUnpak::Deszyfracja {
                         current: przeczytano_razem as u32,
                         max: Some(calkowity_rozmiar as u32 + 3),
                     },
@@ -63,7 +63,7 @@ pub async fn deszyfruj_xor(
 
     let _ = tx
         .send(
-            LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDeszyfracja {
+            LogTxBinUnpak::Deszyfracja {
                 current: przeczytano_razem as u32 + 1,
                 max: Some(calkowity_rozmiar as u32 + 3),
             },
@@ -79,7 +79,7 @@ pub async fn deszyfruj_xor(
     drop(plik_out);
     let _ = tx
         .send(
-            LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDeszyfracja {
+            LogTxBinUnpak::Deszyfracja {
                 current: przeczytano_razem as u32 + 2,
                 max: Some(calkowity_rozmiar as u32 + 3),
             },
@@ -90,7 +90,7 @@ pub async fn deszyfruj_xor(
     tokio::fs::remove_file(ścieżka_in.clone()).await?;
     let _ = tx
         .send(
-            LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDeszyfracja {
+            LogTxBinUnpak::Deszyfracja {
                 current: przeczytano_razem as u32 + 3,
                 max: Some(calkowity_rozmiar as u32 + 3),
             },

@@ -4,7 +4,7 @@ use binarka::pakowanie_plikow::ogarnianie_eksportu;
 use chrono::Local;
 use enumy::enums_structs_io::LogPakowanie;
 use enumy::inne_ui::{ActProces, BtnState};
-use enumy::statusy::LogTxDoKompresjiPliku;
+use enumy::statusy::LogTxBinPak;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
@@ -46,12 +46,12 @@ impl Program {
             BinPakMsg::Uruchom => {
 
                 self.status_pakowanie_log = LogPakowanie::default();
-                self.temat.temp.aktywny_proces = Some(ActProces::BinPak);
+                self.temat.temp.act_proc = Some(ActProces::BinPak);
                 let _ = self.update(Message::ChckStatus);
 
                 let zestaw = self.dane_bin_pak.clone();
                 dbg!(&zestaw);
-                let (tx, rx) = mpsc::channel::<LogTxDoKompresjiPliku>(100);
+                let (tx, rx) = mpsc::channel::<LogTxBinPak>(100);
                 
                 let handle = tokio::runtime::Handle::current();
 
@@ -74,30 +74,30 @@ impl Program {
 
                 match progres {
                     
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówZnalezionePliki { pliki } => {
+                    LogTxBinPak::StatusZnaleziono { pliki } => {
                         
                         self.status_pakowanie_log.zbieranie_plików = pliki;
                         
                     }
 
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówPakowanie { aktualny, suma } => {
+                    LogTxBinPak::SPakowanie { aktualny, suma } => {
 
                         self.status_pakowanie_log.pakowanie = (aktualny, suma)
                     }
 
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesKompresji {  aktualny, suma} => {
+                    LogTxBinPak::Kompresja {  aktualny, suma} => {
 
                         self.status_pakowanie_log.kompresja = (aktualny, suma);
 
                     }
 
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania {  aktualny, suma } => {
+                    LogTxBinPak::Szyfrowanie {  aktualny, suma } => {
                         self.status_pakowanie_log.szyfrowanie = (aktualny, suma);
                     }
 
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówZakonczono { czas } => {
+                    LogTxBinPak::Finito { czas } => {
 
-                        self.temat.temp.aktywny_proces = None;
+                        self.temat.temp.act_proc = None;
 
 
                         self.log_prawe_okno.push(format!(
@@ -110,9 +110,9 @@ impl Program {
 
                     }
 
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówBłąd(err) => {
+                    LogTxBinPak::Błąd(err) => {
                         
-                        self.temat.temp.aktywny_proces = None;
+                        self.temat.temp.act_proc = None;
                         self.log_prawe_okno.push(format!(
                             "!!! {}: {} !!!",
                             "log_status_critical_error",

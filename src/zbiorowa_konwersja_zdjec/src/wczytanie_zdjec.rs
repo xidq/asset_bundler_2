@@ -8,14 +8,14 @@ use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 
 
 
 pub async fn aktualizuj_postep(
     obecna_op: &Arc<Mutex<u32>>,
     metryka: u32,
-    nadawca: &mut Sender<LogTxDoBathKonwersjaZdjęć>,
+    nadawca: &mut Sender<LogTxKonw>,
 ) {
     async move {
         let mut oopr = obecna_op.lock().await;
@@ -25,7 +25,7 @@ pub async fn aktualizuj_postep(
         
         let _ = nadawca
             .send(
-                LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćRozpoczęto(
+                LogTxKonw::StatusBathKonwersjaZdjęćRozpoczęto(
                     obecnie,
                     Some(metryka),
                 ),

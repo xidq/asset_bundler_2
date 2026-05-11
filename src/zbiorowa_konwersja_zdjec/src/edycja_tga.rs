@@ -1,6 +1,6 @@
 use crate::wczytanie_zdjec::aktualizuj_postep;
 use enumy::opcje::OptInterpolacja;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc::Sender;
 use image::{imageops::FilterType, DynamicImage, GenericImageView};
 use std::fs::{create_dir_all, File};
@@ -23,7 +23,7 @@ pub async fn edycja_tga(
     zaszumianie_zmienna: Option<u8>,
     metryka_operacji: u32,
     obecna_operacja: Arc<Mutex<u32>>,
-    mut tx: Sender<LogTxDoBathKonwersjaZdjęć>,
+    mut tx: Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
     // 1. Wybór filtra interpolacji
     let filtr = match OptInterpolacja {

@@ -8,7 +8,7 @@ use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, B
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
 use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag, RozszerzeniaPojedyncze};
-use enumy::statusy::{LogTxDoPakowanieDds, LogTxDoRozpakowanieDds};
+use enumy::statusy::{LogTxDdsPak, LogTxDdsUnpak};
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
@@ -78,7 +78,7 @@ impl Program {
 
             DdsMsg::PakowanieStart => {
                 let dane_do_pakowania_dds = self.dane_dds_pak.clone();
-                self.temat.temp.aktywny_proces = Some(ActProces::DdsPak);
+                self.temat.temp.act_proc = Some(ActProces::DdsPak);
                 dbg!(&dane_do_pakowania_dds);
                 // self.status_zmiany_fot_log = Default::default();
                 // println!(
@@ -88,7 +88,7 @@ impl Program {
 
 
 
-                let (tx, rx) = mpsc::channel::<LogTxDoPakowanieDds>(100);
+                let (tx, rx) = mpsc::channel::<LogTxDdsPak>(100);
 
                 // Pobieramy uchwyt do działającego runtime'u Tokio
                 let handle = tokio::runtime::Handle::current();
@@ -113,25 +113,25 @@ impl Program {
             },
             DdsMsg::PakowaniePostęp(progress) => {
                 match progress {
-                    LogTxDoPakowanieDds::StatusPakowanieDdsStart => {
+                    LogTxDdsPak::StatusPakowanieDdsStart => {
                         // self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
                     }
-                    LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(procent) => {
+                    LogTxDdsPak::StatusPakowanieDdsWtrakcie(procent) => {
                         self.status_dds_pakowanie.w_trakcie = procent;
                     }
 
 
-                    LogTxDoPakowanieDds::StatusPakowanieDdsKoniec(czas) => {
+                    LogTxDdsPak::StatusPakowanieDdsKoniec(czas) => {
                         // self.status_zmiany_fot_log.msg_end =
                         //     format!("Zakończono w czasie: {}", czas);
                         self.status_dds_pakowanie.koniec = czas;
-                        self.temat.temp.aktywny_proces = None;
+                        self.temat.temp.act_proc = None;
                     }
-                    LogTxDoPakowanieDds::StatusPakowanieDdsBłąd(err) => {
+                    LogTxDdsPak::StatusPakowanieDdsBłąd(err) => {
                         self.status_dds_pakowanie.err = err;
                         // self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
                         // self.checker_bool_status_zbiorowe_przetwarzanie_zdjęć = false;
-                        self.temat.temp.aktywny_proces = None;
+                        self.temat.temp.act_proc = None;
                     }
                 }
             }
@@ -250,7 +250,7 @@ impl Program {
             }
             DdsMsg::RozpakStart => {
                 let dane_do_rozpakowania_dds = self.dane_dds_rozpak.clone();
-                self.temat.temp.aktywny_proces = Some(ActProces::DdsUnpak);
+                self.temat.temp.act_proc = Some(ActProces::DdsUnpak);
                 dbg!(&dane_do_rozpakowania_dds);
                 // self.status_zmiany_fot_log = Default::default();
                 // println!(
@@ -260,7 +260,7 @@ impl Program {
 
 
 
-                let (tx, rx) = mpsc::channel::<LogTxDoRozpakowanieDds>(100);
+                let (tx, rx) = mpsc::channel::<LogTxDdsUnpak>(100);
 
                 // Pobieramy uchwyt do działającego runtime'u Tokio
                 let handle = tokio::runtime::Handle::current();
@@ -282,13 +282,13 @@ impl Program {
             }
             DdsMsg::RozpakPostęp(progress) => {
                 match progress {
-                    LogTxDoRozpakowanieDds::StatusRozpakowanieDdsStart => {}
-                    LogTxDoRozpakowanieDds::StatusRozpakowanieDdsWtrakcie(_) => {}
-                    LogTxDoRozpakowanieDds::StatusRozpakowanieDdsKoniec(_) => {
-                        self.temat.temp.aktywny_proces = None;
+                    LogTxDdsUnpak::StatusRozpakowanieDdsStart => {}
+                    LogTxDdsUnpak::StatusRozpakowanieDdsWtrakcie(_) => {}
+                    LogTxDdsUnpak::StatusRozpakowanieDdsKoniec(_) => {
+                        self.temat.temp.act_proc = None;
                     }
-                    LogTxDoRozpakowanieDds::StatusRozpakowanieDdsBłąd(_) => {
-                        self.temat.temp.aktywny_proces = None;
+                    LogTxDdsUnpak::StatusRozpakowanieDdsBłąd(_) => {
+                        self.temat.temp.act_proc = None;
 
                     }
                 }

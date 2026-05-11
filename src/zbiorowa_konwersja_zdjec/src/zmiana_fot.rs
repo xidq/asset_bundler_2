@@ -7,7 +7,7 @@ use crate::edycja_webp::edycja_webp;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::rozszerzenia::rozszerzenia::ImgExt;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 use futures::SinkExt;
 use futures::channel::mpsc;
 use futures::executor::block_on;
@@ -26,7 +26,7 @@ use crate::pomocnicze::sprawdz_czy_wsio_ok;
 
 pub async fn ogarnianie_foto(
     zestaw_danych: DaneKonw,
-    mut tx: mpsc::Sender<LogTxDoBathKonwersjaZdjęć>,
+    mut tx: mpsc::Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
     let start_czas = Instant::now();
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
@@ -116,7 +116,7 @@ pub async fn ogarnianie_foto(
                         let powod_bledu = e.to_string();
 
                         // let _ = tx_dla_rayona.clone().send(LogTxDoBathKonwersjaZdjęć::PominiętePliki { sciezka: nazwa_pliku, powod: powod_bledu });
-                        let wynik_wysylki = tx_dla_rayona.clone().try_send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćPominiętePliki {
+                        let wynik_wysylki = tx_dla_rayona.clone().try_send(LogTxKonw::StatusBathKonwersjaZdjęćPominiętePliki {
                             sciezka: nazwa_pliku.clone(),
                             powod: powod_bledu
                         });
@@ -293,7 +293,7 @@ pub async fn ogarnianie_foto(
             // Możesz użyć prostego formatowania:
             let czas_napis = format!("{:.2?}", trwanie);
             let _ = tx
-                .send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćKoniec(czas_napis))
+                .send(LogTxKonw::StatusBathKonwersjaZdjęćKoniec(czas_napis))
                 .await;
             Ok(())
         }
@@ -301,7 +301,7 @@ pub async fn ogarnianie_foto(
             // Jeśli cokolwiek powyżej sypnie błędem (przez znak zapytania),
             // wysyłamy opis błędu do UI zamiast po prostu "padać".
             let _ = tx
-                .send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(e.to_string()))
+                .send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(e.to_string()))
                 .await;
             Err(e)
         }
@@ -310,7 +310,7 @@ pub async fn ogarnianie_foto(
 
 fn wez_sprawdz_sciezki(
     sciezka: PathBuf,
-    tx: &mut mpsc::Sender<LogTxDoBathKonwersjaZdjęć>,
+    tx: &mut mpsc::Sender<LogTxKonw>,
 ) -> Vec<(PathBuf, String, String)> {
     let opt_rozszerzenia_plików_zdjęciowych: [&str; 16] =
         FILTERFOTO.map(|item| item.strip_prefix("ff.").unwrap_or(item));
@@ -346,7 +346,7 @@ fn wez_sprawdz_sciezki(
                     // NALICZANIE
                     przetworzone_pliki += 1;
                     let _ = tx.try_send(
-                        LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(
+                        LogTxKonw::StatusBathKonwersjaZdjęćFiltrowaniePlików(
                             Some(przetworzone_pliki),
                         ),
                     );
@@ -362,7 +362,7 @@ fn wez_sprawdz_sciezki(
 
 fn zgarnij_dane_z_pliku(
     ścieżka: PathBuf,
-    tx: &mut mpsc::Sender<LogTxDoBathKonwersjaZdjęć>,
+    tx: &mut mpsc::Sender<LogTxKonw>,
 ) -> Vec<(PathBuf, String, String)> {
     // println!("jestem w zgarnij dane z pliku!!!!!");
     let mut przetworzone_pliki: u32 = 0;
@@ -399,7 +399,7 @@ fn zgarnij_dane_z_pliku(
                     .to_string();
                 przetworzone_pliki += 1;
                 let _ = tx.try_send(
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(
+                    LogTxKonw::StatusBathKonwersjaZdjęćFiltrowaniePlików(
                         Some(przetworzone_pliki),
                     ),
                 );
@@ -436,7 +436,7 @@ fn zgarnij_dane_z_pliku(
 
 fn czy_sciezka_jest_git(
     pelna: PathBuf,
-    tx: &mut mpsc::Sender<LogTxDoBathKonwersjaZdjęć>,
+    tx: &mut mpsc::Sender<LogTxKonw>,
 ) -> Option<PathBuf> {
     let s = pelna.to_string_lossy();
     // let zakazane_znaki = ['／', '\0', '｢', '｣', '\\', '*', '?', '"', '<', '>', '|'];
@@ -454,7 +454,7 @@ fn czy_sciezka_jest_git(
     for komponent in pelna.components() {
         if komponent.as_os_str().as_encoded_bytes().len() > 250 {
             let _ = tx.try_send(
-                LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćPominiętePliki {
+                LogTxKonw::StatusBathKonwersjaZdjęćPominiętePliki {
                     sciezka: s.to_string(),
                     powod: format!(
                         "Człon ścieżki przekracza limit 250 bajtów, jest {} bajtów",

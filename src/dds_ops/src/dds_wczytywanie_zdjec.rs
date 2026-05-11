@@ -1,7 +1,7 @@
 use crate::dds_export::save_rgba_image_with_mipmaps;
 use enumy::dane_do_przetwarzania::DaneDdsPak;
 use enumy::rozszerzenia::kompresje::ForDdsKompresja;
-use enumy::statusy::LogTxDoPakowanieDds;
+use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc;
 use futures::SinkExt;
 use image::GenericImageView;
@@ -14,10 +14,10 @@ use walkdir::WalkDir;
 
 pub async fn dds_ogarnij_ze_zdjec_do_paczki(
     dane: DaneDdsPak,
-    mut tx: mpsc::Sender<LogTxDoPakowanieDds>,
+    mut tx: mpsc::Sender<LogTxDdsPak>,
 ) -> Result<(), std::io::Error> {
     let start_czas = Instant::now();
-    let _ = tx.send(LogTxDoPakowanieDds::StatusPakowanieDdsStart).await;
+    let _ = tx.send(LogTxDdsPak::StatusPakowanieDdsStart).await;
     let kompresja = match &dane.kompresja {
         ForDdsKompresja::Fast => {dds::CompressionQuality::Fast}
         ForDdsKompresja::Normal => {dds::CompressionQuality::Normal}
@@ -204,13 +204,13 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
             let trwanie = start_czas.elapsed();
             let czas_napis = format!("{:.2?}", trwanie);
             let _ = tx
-                .send(LogTxDoPakowanieDds::StatusPakowanieDdsKoniec(czas_napis))
+                .send(LogTxDdsPak::StatusPakowanieDdsKoniec(czas_napis))
                 .await;
             Ok(())
         }
         Err(e) => {
             let _ = tx
-                .send(LogTxDoPakowanieDds::StatusPakowanieDdsBłąd(e.to_string()))
+                .send(LogTxDdsPak::StatusPakowanieDdsBłąd(e.to_string()))
                 .await;
             Err(e)
         }

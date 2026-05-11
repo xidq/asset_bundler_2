@@ -19,7 +19,7 @@ pub fn binarka_view<'a>(
     jezyk:&'a WybórJęzyka,
     temat: &'a UstawieniaThemeWsio
 ) -> Element<'a, Message> {
-    let prawa = match temat.temp.aktywne_okno{
+    let prawa = match temat.temp.act_window {
         UiPods::BinPak => {binarka_pak(dane_p, log_p, &temat.kolory.binarka, jezyk, temat)}
         UiPods::BinUnpak => {binarka_rozpakowanie(dane_d, log_d, &temat.kolory.binarka, jezyk, temat)}
         _ => Column::new()

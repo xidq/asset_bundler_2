@@ -11,7 +11,7 @@ pub fn strona_wyboru<'a>(jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsi
         .push(przycisk_podmenu(UiPods::DdsPak, jezyk, temat))
         .push(przycisk_podmenu(UiPods::DdsUnpak, jezyk, temat))
         .push(
-        if matches!(temat.temp.aktywne_okno, UiPods::DdsUnpak | UiPods::DdsExt) {
+        if matches!(temat.temp.act_window, UiPods::DdsUnpak | UiPods::DdsExt) {
                 przycisk_podmenu(UiPods::DdsExt, jezyk, temat)
             } else {
                 space().height(50.).into()

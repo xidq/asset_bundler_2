@@ -5,7 +5,7 @@ use std::time::Instant;
 
 use enumy::dane_do_przetwarzania::DaneBinUnpak;
 use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
-use enumy::statusy::LogTxDoDekompresjiPliku;
+use enumy::statusy::LogTxBinUnpak;
 // pub(crate) use crate::io::import_for_compression::{KolejnośćDziałań, Progress};
 use kompresja::dekompresjazstd::dekompresujsuj;
 use szyfrowanie::xor_de::deszyfruj_xor;
@@ -14,7 +14,7 @@ use tokio::io::AsyncReadExt;
 async fn sprawdzanie_istnienia_pliku(
     ścieżka_pliku: PathBuf,
     ścieżka_docelowa: PathBuf,
-    mut tx: mpsc::Sender<LogTxDoDekompresjiPliku>,
+    mut tx: mpsc::Sender<LogTxBinUnpak>,
 ) -> Result<(), tokio::io::Error> {
 
 
@@ -22,7 +22,7 @@ async fn sprawdzanie_istnienia_pliku(
     if !ścieżka_pliku.exists() || !ścieżka_pliku.is_file() {
         let błąd = format!("Nie znaleziono pliku: {:?}", ścieżka_pliku);
         let _ = tx
-            .send(LogTxDoDekompresjiPliku::StatusDekompresjaPlikówBłąd(
+            .send(LogTxBinUnpak::Błąd(
                 błąd.clone(),
             ))
             .await;
@@ -67,7 +67,7 @@ async fn sprawdzanie_istnienia_pliku(
             ostatni_stan = Instant::now();
             let _ = tx
                 .send(
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZbieraniePlików {
+                    LogTxBinUnpak::Zbieranie {
                         current: skopiowano as u32,
                         max: Some(total_size as u32 + 1),
                     },
@@ -77,7 +77,7 @@ async fn sprawdzanie_istnienia_pliku(
     }
 
     let _ = tx
-        .send(LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZbieraniePlików { current: skopiowano as u32 + 1, max: Some(total_size as u32  + 1) })
+        .send(LogTxBinUnpak::Zbieranie { current: skopiowano as u32 + 1, max: Some(total_size as u32  + 1) })
         .await;
 
 
@@ -89,11 +89,11 @@ async fn sprawdzanie_istnienia_pliku(
 pub async fn wypakuj_pliki(
     ścieżka: PathBuf,
     nazwa_pliku: String,
-    mut tx: mpsc::Sender<LogTxDoDekompresjiPliku>,
+    mut tx: mpsc::Sender<LogTxBinUnpak>,
 ) -> Result<(), tokio::io::Error> {
     let _ = tx
         .send(
-            LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
+            LogTxBinUnpak::Rozpakowywanie {
                 current: 0,
                 max: None,
             },
@@ -158,7 +158,7 @@ pub async fn wypakuj_pliki(
             ostatni_stan = Instant::now();
             let _ = tx
                 .send(
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
+                    LogTxBinUnpak::Rozpakowywanie {
                         current: liczydło ,
                         max: Some(suma_plikow   + 2 ),
                     },
@@ -168,7 +168,7 @@ pub async fn wypakuj_pliki(
     }
     let _ = tx
         .send(
-            LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
+            LogTxBinUnpak::Rozpakowywanie {
                 current: liczydło +1,
                 max: Some(suma_plikow  + 2),
             },
@@ -181,7 +181,7 @@ pub async fn wypakuj_pliki(
 
     let _ = tx
         .send(
-            LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
+            LogTxBinUnpak::Rozpakowywanie {
                 current: liczydło +2 ,
                 max: Some(suma_plikow + 2),
             },
@@ -192,7 +192,7 @@ pub async fn wypakuj_pliki(
 
 pub async fn ogarnianie_dekompresji(
     dane: DaneBinUnpak,
-    mut tx: mpsc::Sender<LogTxDoDekompresjiPliku>,
+    mut tx: mpsc::Sender<LogTxBinUnpak>,
 ) -> Result<(), tokio::io::Error> {
     let start_czas = Instant::now();
     let nazwa_pliku = dane
@@ -230,7 +230,7 @@ pub async fn ogarnianie_dekompresji(
 
             let _ = tx
                 .send(
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZakończenie {
+                    LogTxBinUnpak::Finito {
                         czas: przelicz_czas(start_czas),
                     },
                 )
@@ -241,7 +241,7 @@ pub async fn ogarnianie_dekompresji(
             // Jeśli cokolwiek powyżej sypnie błędem (przez znak zapytania),
             // wysyłamy opis błędu do UI zamiast po prostu "padać".
             let _ = tx
-                .send(LogTxDoDekompresjiPliku::StatusDekompresjaPlikówBłąd(
+                .send(LogTxBinUnpak::Błąd(
                     e.to_string(),
                 ))
                 .await;

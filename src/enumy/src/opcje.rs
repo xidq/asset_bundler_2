@@ -47,7 +47,5 @@ pub enum OptUIWariantPodstrony {
     KonwersjaFoto,
     DaneDoŁączeniaZdjęć,
     ObslugaDds,
-    // Ustawienia,
-    // Logi,
-    Dev,
+    Ustawienia,
 }

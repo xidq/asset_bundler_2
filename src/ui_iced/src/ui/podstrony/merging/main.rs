@@ -27,7 +27,7 @@ pub fn merge_view<'a>(
 
 
 
-    let prawa = match temat.temp.aktywne_okno{
+    let prawa = match temat.temp.act_window {
         UiPods::Merge => {sciezki(dane,&temat.kolory.laczenie,jezyk,temat).spacing(15).padding(15)}
         UiPods::MergeExt => {rozszerzenia(dane,&temat.kolory.laczenie,jezyk,temat).padding(15)}
         _ => {Column::new()}

@@ -2,7 +2,7 @@ use crate::zapisy::edycja_ff::dds_ex_ff;
 use crate::zapisy::edycja_jpg::dds_ex_jpg;
 use dds::{ColorFormat, DataLayout, Decoder, ImageViewMut};
 use enumy::rozszerzenia::rozszerzenia::ImgExt;
-use enumy::statusy::LogTxDoRozpakowanieDds;
+use enumy::statusy::LogTxDdsUnpak;
 use futures::TryFutureExt;
 use futures::channel::mpsc::Sender;
 use image::{DynamicImage, ImageFormat};
@@ -13,7 +13,7 @@ use enumy::dane_do_przetwarzania::DaneDdsUnpak;
 
 pub async fn export_dds_array_to_jpg(
     dane: DaneDdsUnpak,
-    mut tx: Sender<LogTxDoRozpakowanieDds>,
+    mut tx: Sender<LogTxDdsUnpak>,
 ) -> Result<(), std::io::Error> {
     dbg!(dane.ścieżka_wejściowa.display());
     dbg!(dane.ścieżka_wyjściowa.display());
@@ -50,7 +50,7 @@ pub async fn export_dds_array_to_jpg(
     };
     let metryka_operacji = array_len * 2; //zebrać
 
-    let _ = tx.try_send(LogTxDoRozpakowanieDds::StatusRozpakowanieDdsStart);
+    let _ = tx.try_send(LogTxDdsUnpak::StatusRozpakowanieDdsStart);
 
     for i in 0..array_len {
         // Przygotowujemy bufor na RGBA8 (4 bajty na piksel)
@@ -135,12 +135,12 @@ pub async fn export_dds_array_to_jpg(
 
         // Raportowanie postępu
         let percent = (((i + 1) as f32 / array_len as f32) * 100.).round() as u8;
-        let _ = tx.try_send(LogTxDoRozpakowanieDds::StatusRozpakowanieDdsWtrakcie(
+        let _ = tx.try_send(LogTxDdsUnpak::StatusRozpakowanieDdsWtrakcie(
             percent,
         ));
     }
 
-    let _ = tx.try_send(LogTxDoRozpakowanieDds::StatusRozpakowanieDdsKoniec(
+    let _ = tx.try_send(LogTxDdsUnpak::StatusRozpakowanieDdsKoniec(
         format!("Wyeksportowano {} plików", array_len),
     ));
     Ok(())

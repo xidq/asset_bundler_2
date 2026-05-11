@@ -1,52 +1,52 @@
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-pub enum LogTxDoKompresjiPliku {
-    StatusKompresjaPlikówZnalezionePliki {
+pub enum LogTxBinPak {
+    StatusZnaleziono {
         pliki: u32
     },
-    StatusKompresjaPlikówPakowanie {
+    SPakowanie {
         aktualny: u32,
         suma: Option<u32>,
     },
-    StatusKompresjaPlikówProcesKompresji {
+    Kompresja {
         aktualny: u32,
         suma: Option<u32>,
     },
-    StatusKompresjaPlikówProcesSzyfrowania {
+    Szyfrowanie {
         aktualny: u32,
         suma: Option<u32>,
     },
-    StatusKompresjaPlikówBłąd(String),
-    StatusKompresjaPlikówZakonczono {
+    Błąd(String),
+    Finito {
         czas: String,
     },
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-pub enum LogTxDoDekompresjiPliku {
-    StatusDekompresjaPlikówZbieraniePlików {
+pub enum LogTxBinUnpak {
+    Zbieranie {
         current: u32,
         max: Option<u32>,
     },
-    StatusDekompresjaPlikówDeszyfracja {
+    Deszyfracja {
         current: u32,
         max: Option<u32>,
     },
-    StatusDekompresjaPlikówDekompresja {
+    Dekompresja {
         pamięć: u64,
     },
-    StatusDekompresjaPlikówRozpakowywanie {
+    Rozpakowywanie {
         current: u32,
         max: Option<u32>,
     },
-    StatusDekompresjaPlikówBłąd(String),
-    StatusDekompresjaPlikówZakończenie {
+    Błąd(String),
+    Finito {
         czas: String,
     },
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-pub enum LogTxDoBathKonwersjaZdjęć {
+pub enum LogTxKonw {
     StatusBathKonwersjaZdjęćStart,
     StatusBathKonwersjaZdjęćChecking(String),
     StatusBathKonwersjaZdjęćRozpoczęto(u32, Option<u32>),
@@ -57,7 +57,7 @@ pub enum LogTxDoBathKonwersjaZdjęć {
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-pub enum LogTxDoPakowanieDds {
+pub enum LogTxDdsPak {
     StatusPakowanieDdsStart,
     StatusPakowanieDdsWtrakcie(u8),
     StatusPakowanieDdsKoniec(String),
@@ -65,7 +65,7 @@ pub enum LogTxDoPakowanieDds {
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
-pub enum LogTxDoRozpakowanieDds {
+pub enum LogTxDdsUnpak {
     StatusRozpakowanieDdsStart,
     StatusRozpakowanieDdsWtrakcie(u8),
     StatusRozpakowanieDdsKoniec(String),

@@ -3,7 +3,7 @@ use std::io::Write;
 use std::path::PathBuf;
 // use iced::futures::channel::mpsc;
 use enumy::opcje::OptKompresjaPlikówPoziomKompresjiZstd;
-use enumy::statusy::LogTxDoKompresjiPliku;
+use enumy::statusy::LogTxBinPak;
 use iced::futures::SinkExt;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
@@ -13,7 +13,7 @@ pub async fn kompresujsuj(
     ścieżka_pliku: PathBuf,
     nazwa_pliku: String,
     poziom_kompresji: OptKompresjaPlikówPoziomKompresjiZstd,
-    mut tx: mpsc::Sender<LogTxDoKompresjiPliku>, // Dodajemy kanał tutaj
+    mut tx: mpsc::Sender<LogTxBinPak>, // Dodajemy kanał tutaj
 ) -> Result<(), tokio::io::Error> {
 
 
@@ -60,7 +60,7 @@ pub async fn kompresujsuj(
 
         let _ = tx
             .send(
-                LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesKompresji {
+                LogTxBinPak::Kompresja {
                     aktualny: przeczytano_razem as u32,
                     suma: Some(calkowity_rozmiar as u32),
                 },
@@ -72,7 +72,7 @@ pub async fn kompresujsuj(
 
     if let Err(e) = encoder.finish() {
         let _ = tx
-            .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówBłąd(e.to_string()))
+            .send(LogTxBinPak::Błąd(e.to_string()))
             .await;
         return Err(e);
     }
@@ -82,7 +82,7 @@ pub async fn kompresujsuj(
     if let Err(e) = tokio::fs::remove_file(sciezka_temp).await
     {
         let _ = tx
-            .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówBłąd(e.to_string()))
+            .send(LogTxBinPak::Błąd(e.to_string()))
             .await;
         return Err(e);
     };

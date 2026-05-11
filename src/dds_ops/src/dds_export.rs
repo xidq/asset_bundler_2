@@ -2,7 +2,7 @@ use crate::dds_halper::oblicz_ilosc_mipmap;
 use dds::header::{Dx10Header, DxgiFormat, Header};
 use dds::*;
 use enumy::rozszerzenia::kompresje::ForDds;
-use enumy::statusy::LogTxDoPakowanieDds;
+use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc::Sender;
 use std::fs::File;
 use std::thread::sleep;
@@ -18,7 +18,7 @@ pub fn save_rgba_image_with_mipmaps(
     mut przerób: &mut f32,
     max_plikow:usize,
     mut percent:&mut u8,
-    mut tx: Sender<LogTxDoPakowanieDds>,
+    mut tx: Sender<LogTxDdsPak>,
 ) -> Result<(), EncodingError> {
     dbg!("jestem w save_rgba_image_with_mipmaps");
 
@@ -27,7 +27,7 @@ pub fn save_rgba_image_with_mipmaps(
         dbg!(&przerób);
         if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
             *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
-            let _ = tx.try_send(LogTxDoPakowanieDds::StatusPakowanieDdsWtrakcie(*percent));
+            let _ = tx.try_send(LogTxDdsPak::StatusPakowanieDdsWtrakcie(*percent));
         }
     };
 

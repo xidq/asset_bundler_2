@@ -6,19 +6,19 @@ use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::rozszerzenia::bdepth::{BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use enumy::rozszerzenia::rozszerzenia::ImgExt;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 
 
 
 pub async fn sprawdz_czy_wsio_ok(
     pumpum: DaneKonw,
-    mut tx: Sender<LogTxDoBathKonwersjaZdjęć>
+    mut tx: Sender<LogTxKonw>
 ) -> Result<DaneKonw, std::io::Error>{
 
     let mut wyslij_update_status = {
         async |msg: String|tx
         .send(
-            LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćChecking(
+            LogTxKonw::StatusBathKonwersjaZdjęćChecking(
                 msg
             ),
         )
@@ -71,7 +71,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
                     let _ =wyslij_update_status("Sprawdzanie danych Jpg: Err".to_string()).await.ok();
-                    let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(
+                    let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(
                         "JPG: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
                     )).await;
 
@@ -110,7 +110,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
                     let _ = wyslij_update_status("Sprawdzanie danych Png: Err".to_string()).await.ok();
-                    let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(
+                    let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(
                         "Png: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
                     )).await;
 
@@ -134,7 +134,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
                     let _ = wyslij_update_status("Sprawdzanie danych Webp: Err".to_string()).await.ok();
-                    let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(
+                    let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(
                         "Webp: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
                     )).await;
 
@@ -158,7 +158,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
                     let _ = wyslij_update_status("Sprawdzanie danych Tga: Err".to_string()).await.ok();
-                    let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(
+                    let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(
                         "Tga: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
                     )).await;
 
@@ -182,7 +182,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if !bul {
                     let _ = wyslij_update_status("Sprawdzanie danych Ff: Err".to_string()).await.ok();
-                    let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(
+                    let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(
                         "Ff: Wykryto nieobsługiwaną kompresję".to_string()
                     )).await;
 
@@ -213,7 +213,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
                     let _ = wyslij_update_status("Sprawdzanie danych Qoi: Err".to_string()).await.ok();
-                    let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(
+                    let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(
                         "Qoi: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
                     )).await;
 
@@ -233,7 +233,7 @@ pub async fn sprawdz_czy_wsio_ok(
     if !dane.opcje_rozdzielczości.iter().any(|_| true) {
         // To samo co: if dane.opcje_rozdzielczości.is_empty()
         let msg = "Nie wybrano żadnej rozdzielczości wyjściowej!";
-        let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(msg.to_string())).await;
+        let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(msg.to_string())).await;
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, msg));
     }
     let czy_mamy_rozdzielczosc = dane.opcje_rozdzielczości.iter().any(|r| {
@@ -257,7 +257,7 @@ pub async fn sprawdz_czy_wsio_ok(
     if !czy_mamy_rozdzielczosc {
         let _ = wyslij_update_status("Sprawdzanie rozdzielczości: Err".to_string()).await.ok();
         let msg = "Błędna lub brak rozdzielczości";
-        let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(msg.to_string())).await;
+        let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(msg.to_string())).await;
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, msg));
     }
     
@@ -278,7 +278,7 @@ pub async fn sprawdz_czy_wsio_ok(
     if !bbbbb {
         let _ = wyslij_update_status("Sprawdzanie interpolacji: Err".to_string()).await.ok();
         let msg = "Błędna lub brak interpolacji";
-        let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(msg.to_string())).await;
+        let _ = tx.send(LogTxKonw::StatusBathKonwersjaZdjęćBłąd(msg.to_string())).await;
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, msg));
     }
     let _ = wyslij_update_status("Sprawdzanie interpolacji: Git!".to_string()).await.ok();

@@ -345,7 +345,7 @@ impl Program {
             MergeMsg::Uruchom => {
 
                 let dane_do_obrobki = self.dane_merge.clone();
-                self.temat.temp.aktywny_proces = Some(ActProces::Merge);
+                self.temat.temp.act_proc = Some(ActProces::Merge);
                 let _ = self.update(Message::ChckStatus);
 
                 let (tx, rx) = mpsc::channel::<LogTxDoŁączeniaZdjęć>(100);
@@ -371,12 +371,12 @@ impl Program {
             MergeMsg::PostepLaczeniaFot(progress) => match progress {
                 LogTxDoŁączeniaZdjęć::Start => {}
                 LogTxDoŁączeniaZdjęć::Koniec => {
-                    self.temat.temp.aktywny_proces = None;
+                    self.temat.temp.act_proc = None;
                     let _ = self.update(Message::ChckStatus);
 
                 }
                 LogTxDoŁączeniaZdjęć::Błąd(_) => {
-                    self.temat.temp.aktywny_proces = None;
+                    self.temat.temp.act_proc = None;
                     let _ = self.update(Message::ChckStatus);
 
                 }

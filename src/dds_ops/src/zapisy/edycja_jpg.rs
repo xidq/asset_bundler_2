@@ -1,6 +1,6 @@
 use crate::zapisy::inne_dds::{aktualizuj_postep_dds, dds_usun_kanal_alpha};
 
-use enumy::statusy::LogTxDoRozpakowanieDds;
+use enumy::statusy::LogTxDdsUnpak;
 use futures::channel::mpsc::Sender;
 use image::{DynamicImage, ImageEncoder};
 use std::fs::{File, create_dir_all};
@@ -15,7 +15,7 @@ pub async fn dds_ex_jpg(
     metryka_operacji: u32,
     obecna_operacja: &mut u32, // Zmień na &mut u32
     procent_progress: &mut u8,
-    mut tx: Sender<LogTxDoRozpakowanieDds>,
+    mut tx: Sender<LogTxDdsUnpak>,
 ) -> Result<(), tokio::io::Error> {
     let (docelowy_wymiar, nazwa_wariantu) = (0, "");
 

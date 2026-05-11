@@ -224,8 +224,8 @@ impl Program {
                         debug_menu: false,
                     },
                     temp: Temp { 
-                        aktywny_proces: None,
-                        aktywne_okno: UiPods::BinPak,
+                        act_proc: None,
+                        act_window: UiPods::BinPak,
                         start_btn_status: StartBtnStatus{
                             bin_pak: BtnState::LackData,
                             bin_unpak: BtnState::LackData,
@@ -893,7 +893,7 @@ impl Program {
                 }
             }
 
-            Message::ZmienWariant(w) => { self.temat.temp.aktywne_okno = w; }
+            Message::ZmienWariant(w) => { self.temat.temp.act_window = w; }
 
 
             Message::DoNothingxD(xx) => self.do_nothing = xx,
@@ -932,7 +932,7 @@ impl Program {
                     self.dane_bin_pak.ścieżka_out.exists() &&
                     !self.dane_bin_pak.nazwa.is_empty();
 
-                self.temat.temp.start_btn_status.bin_pak = match (check_bin_kompresja, self.temat.temp.aktywny_proces.clone()) {
+                self.temat.temp.start_btn_status.bin_pak = match (check_bin_kompresja, self.temat.temp.act_proc.clone()) {
                     (true, None)  => BtnState::Active,
                     (false, None) => BtnState::LackData,
                     (_, Some(ActProces::BinUnpak)) => BtnState::Processing,
@@ -943,7 +943,7 @@ impl Program {
                 let check_bin_dekompresja = self.dane_bin_unpak.ścieżka_pliku.is_file() &&
                     self.dane_bin_unpak.ścieżka_docelowa.exists();
 
-                self.temat.temp.start_btn_status.bin_unpak = match (check_bin_dekompresja, self.temat.temp.aktywny_proces.clone()) {
+                self.temat.temp.start_btn_status.bin_unpak = match (check_bin_dekompresja, self.temat.temp.act_proc.clone()) {
                     (true, None)  => BtnState::Active,
                     (false, None) => BtnState::LackData,
                     (_, Some(ActProces::BinPak)) => BtnState::Processing,
@@ -960,7 +960,7 @@ impl Program {
                     self.dane_konw.rozszerzenia.len() != 0 &&
                     konwersja_bdepth_check;
 
-                self.temat.temp.start_btn_status.konwersja = match (check_konwersja, self.temat.temp.aktywny_proces.clone()) {
+                self.temat.temp.start_btn_status.konwersja = match (check_konwersja, self.temat.temp.act_proc.clone()) {
                     (true, None)  => BtnState::Active,
                     (false, None) => BtnState::LackData,
                     (_, Some(ActProces::Konw)) => BtnState::Processing,
@@ -978,7 +978,7 @@ impl Program {
                         !self.dane_merge.nazwa.is_empty() &&
                         self.dane_merge.sciezka_out.exists();
 
-                self.temat.temp.start_btn_status.laczenie = match (check_laczenie, self.temat.temp.aktywny_proces.clone()) {
+                self.temat.temp.start_btn_status.laczenie = match (check_laczenie, self.temat.temp.act_proc.clone()) {
                     (true, None)  => BtnState::Active,
                     (false, None) => BtnState::LackData,
                     (_, Some(ActProces::Merge)) => BtnState::Processing,
@@ -991,7 +991,7 @@ impl Program {
                         self.dane_dds_pak.ścieżka_wyjściowa.exists() &&
                         !self.dane_dds_pak.nazwa.is_empty();
 
-                self.temat.temp.start_btn_status.dds_pak = match ( check_dds_pakowanie, self.temat.temp.aktywny_proces.clone()) {
+                self.temat.temp.start_btn_status.dds_pak = match ( check_dds_pakowanie, self.temat.temp.act_proc.clone()) {
                     (true, None)  => BtnState::Active,
                     (false, None) => BtnState::LackData,
                     (_, Some(ActProces::DdsPak)) => BtnState::Processing,
@@ -1004,7 +1004,7 @@ impl Program {
                     self.dane_dds_rozpak.ścieżka_wejściowa.is_file() &&
                         self.dane_dds_rozpak.ścieżka_wyjściowa.exists() ;
 
-                self.temat.temp.start_btn_status.dds_unpak = match ( check_dds_rozpakowanie, self.temat.temp.aktywny_proces.clone()) {
+                self.temat.temp.start_btn_status.dds_unpak = match ( check_dds_rozpakowanie, self.temat.temp.act_proc.clone()) {
                     (true, None)  => BtnState::Active,
                     (false, None) => BtnState::LackData,
                     (_, Some(ActProces::DdsUnpak)) => BtnState::Processing,
@@ -1084,7 +1084,7 @@ impl Program {
         });
 
         // WYWOŁANIE WYDZIELONYCH MODUŁÓW
-        let content_lewy = match self.temat.temp.aktywne_okno {
+        let content_lewy = match self.temat.temp.act_window {
             UiPods::BinPak | UiPods::BinUnpak =>
                 binarka_view(
                     &self.dane_bin_pak,

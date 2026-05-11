@@ -216,9 +216,9 @@ pub fn przycisk_glowne_menu<'a>(przycisk: PrzyciskiGlowneMenu, jezyk: &'a Wybór
     let (status, msg, kolor, hint, label) = match przycisk{
         PrzyciskiGlowneMenu::Binarka => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::BinPak) | Some(ActProces::BinUnpak)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::BinPak) | Some(ActProces::BinUnpak)) {
                     &BtnState::Processing
-                } else if matches!(temat.temp.aktywne_okno, UiPods::BinPak | UiPods::BinUnpak) {
+                } else if matches!(temat.temp.act_window, UiPods::BinPak | UiPods::BinUnpak) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -231,9 +231,9 @@ pub fn przycisk_glowne_menu<'a>(przycisk: PrzyciskiGlowneMenu, jezyk: &'a Wybór
             ),
         PrzyciskiGlowneMenu::Konwersja => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::Konw)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::Konw)) {
                     &BtnState::Processing
-                } else if matches!(temat.temp.aktywne_okno, UiPods::KonwPath | UiPods::KonwRes | UiPods::KonwExt | UiPods::KonwEtc) {
+                } else if matches!(temat.temp.act_window, UiPods::KonwPath | UiPods::KonwRes | UiPods::KonwExt | UiPods::KonwEtc) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -246,9 +246,9 @@ pub fn przycisk_glowne_menu<'a>(przycisk: PrzyciskiGlowneMenu, jezyk: &'a Wybór
             ),
         PrzyciskiGlowneMenu::Łączenie => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::Merge)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::Merge)) {
                     &BtnState::Processing
-                } else if matches!(temat.temp.aktywne_okno, UiPods::Merge | UiPods::MergeExt) {
+                } else if matches!(temat.temp.act_window, UiPods::Merge | UiPods::MergeExt) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -261,9 +261,9 @@ pub fn przycisk_glowne_menu<'a>(przycisk: PrzyciskiGlowneMenu, jezyk: &'a Wybór
             ),
         PrzyciskiGlowneMenu::Dds => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::DdsPak) | Some(ActProces::DdsUnpak)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::DdsPak) | Some(ActProces::DdsUnpak)) {
                     &BtnState::Processing
-                } else if matches!(temat.temp.aktywne_okno, UiPods::DdsUnpak | UiPods::DdsPak | UiPods::DdsExt) {
+                } else if matches!(temat.temp.act_window, UiPods::DdsUnpak | UiPods::DdsPak | UiPods::DdsExt) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -276,7 +276,7 @@ pub fn przycisk_glowne_menu<'a>(przycisk: PrzyciskiGlowneMenu, jezyk: &'a Wybór
             ),
         PrzyciskiGlowneMenu::Ustawienia => (
             {
-                if matches!(temat.temp.aktywne_okno, UiPods::Ustawienia) {
+                if matches!(temat.temp.act_window, UiPods::Ustawienia) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -310,9 +310,9 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
     let (status, msg, kolor, hint, label) = match przycisk{
         UiPods::BinPak => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::BinPak)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::BinPak)) {
                         &BtnState::Processing
-                    } else if matches!(temat.temp.aktywne_okno, UiPods::BinPak) {
+                    } else if matches!(temat.temp.act_window, UiPods::BinPak) {
                         &BtnState::Active
                     } else {
                         &BtnState::Disabled
@@ -325,9 +325,9 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             ),
         UiPods::BinUnpak => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::BinUnpak)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::BinUnpak)) {
                         &BtnState::Processing
-                    } else if matches!(temat.temp.aktywne_okno, UiPods::BinUnpak) {
+                    } else if matches!(temat.temp.act_window, UiPods::BinUnpak) {
                         &BtnState::Active
                     } else {
                         &BtnState::Disabled
@@ -340,9 +340,9 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             ),
         UiPods::KonwPath => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::Konw)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::Konw)) {
                         &BtnState::Processing
-                    } else if matches!(temat.temp.aktywne_okno, UiPods::KonwPath) {
+                    } else if matches!(temat.temp.act_window, UiPods::KonwPath) {
                         &BtnState::Active
                     } else {
                         &BtnState::Disabled
@@ -355,7 +355,7 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             ),
         UiPods::KonwExt => (
             {
-                if matches!(temat.temp.aktywne_okno, UiPods::KonwExt) {
+                if matches!(temat.temp.act_window, UiPods::KonwExt) {
                         &BtnState::Active
                     } else {
                         &BtnState::Disabled
@@ -368,7 +368,7 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             ),
         UiPods::KonwRes => (
             {
-                if matches!(temat.temp.aktywne_okno, UiPods::KonwRes) {
+                if matches!(temat.temp.act_window, UiPods::KonwRes) {
                         &BtnState::Active
                     } else {
                         &BtnState::Disabled
@@ -381,7 +381,7 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             ),
         UiPods::KonwEtc => (
             {
-                if matches!(temat.temp.aktywne_okno, UiPods::KonwEtc) {
+                if matches!(temat.temp.act_window, UiPods::KonwEtc) {
                         &BtnState::Active
                     } else {
                         &BtnState::Disabled
@@ -394,9 +394,9 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             ),
         UiPods::DdsPak => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::DdsPak)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::DdsPak)) {
                         &BtnState::Processing
-                    } else if matches!(temat.temp.aktywne_okno, UiPods::DdsPak) {
+                    } else if matches!(temat.temp.act_window, UiPods::DdsPak) {
                         &BtnState::Active
                     } else {
                         &BtnState::Disabled
@@ -409,9 +409,9 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             ),
         UiPods::DdsUnpak => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::DdsUnpak)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::DdsUnpak)) {
                         &BtnState::Processing
-                    } else if matches!(temat.temp.aktywne_okno, UiPods::DdsUnpak) {
+                    } else if matches!(temat.temp.act_window, UiPods::DdsUnpak) {
                         &BtnState::Active
                     } else {
                         &BtnState::Disabled
@@ -424,7 +424,7 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             ),
         UiPods::DdsExt => (
             {
-                if matches!(temat.temp.aktywne_okno, UiPods::DdsExt) {
+                if matches!(temat.temp.act_window, UiPods::DdsExt) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -437,9 +437,9 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
         ),
         UiPods::Merge => (
             {
-                if matches!(temat.temp.aktywny_proces, Some(ActProces::Merge)) {
+                if matches!(temat.temp.act_proc, Some(ActProces::Merge)) {
                     &BtnState::Processing
-                } else if matches!(temat.temp.aktywne_okno, UiPods::Merge) {
+                } else if matches!(temat.temp.act_window, UiPods::Merge) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -452,7 +452,7 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
         ),
         UiPods::MergeExt => (
             {
-                if matches!(temat.temp.aktywne_okno, UiPods::MergeExt) {
+                if matches!(temat.temp.act_window, UiPods::MergeExt) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled

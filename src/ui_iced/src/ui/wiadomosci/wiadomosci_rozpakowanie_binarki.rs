@@ -3,7 +3,7 @@ use crate::ui::program::Program;
 use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
 use binarka::rozpakowywanie_plikow::ogarnianie_dekompresji;
 use enumy::inne_ui::{ActProces, BtnState, UiPods};
-use enumy::statusy::LogTxDoDekompresjiPliku;
+use enumy::statusy::LogTxBinUnpak;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
@@ -33,13 +33,13 @@ impl Program {
             }
             BinUnpakMsg::Uruchom => {
                 self.status_rozpakowywania_log = Default::default();
-                self.temat.temp.aktywny_proces = Some(ActProces::BinUnpak);
+                self.temat.temp.act_proc = Some(ActProces::BinUnpak);
                 let _ = self.update(Message::ChckStatus);
 
                 // self.temat.btn_state.insert(UiPodstrony::BinRozpakowanie.get_id_child(), BtnState::Processing);
                 let zestaw = self.dane_bin_unpak.clone();
 
-                let (tx, rx) = mpsc::channel::<LogTxDoDekompresjiPliku>(100);
+                let (tx, rx) = mpsc::channel::<LogTxBinUnpak>(100);
                 
                 let handle = tokio::runtime::Handle::current();
 
@@ -63,19 +63,19 @@ impl Program {
             BinUnpakMsg::LogProcesu(progres) => {
                 match progres {
                     
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZbieraniePlików { current, max } => {
+                    LogTxBinUnpak::Zbieranie { current, max } => {
 
                         self.status_rozpakowywania_log.kontrola_pliku = (current, max);
                         
                     }
 
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDeszyfracja { current, max } => {
+                    LogTxBinUnpak::Deszyfracja { current, max } => {
                        
                         self.status_rozpakowywania_log.deszyfrowanie = (current, max);
                         
                     }
 
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDekompresja {
+                    LogTxBinUnpak::Dekompresja {
 
                         pamięć
                         
@@ -85,7 +85,7 @@ impl Program {
                         
                     }
 
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
+                    LogTxBinUnpak::Rozpakowywanie {
 
                         current, 
                         max,
@@ -95,22 +95,22 @@ impl Program {
                         self.status_rozpakowywania_log.rozpakowanie = (current, max);
                     }
 
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZakończenie { czas } => {
+                    LogTxBinUnpak::Finito { czas } => {
 
                         self.status_rozpakowywania_log.czas = czas;
                         let _ = self.update(Message::UpdateProcesUiBtnPost);
-                        self.temat.temp.aktywny_proces = None;
+                        self.temat.temp.act_proc = None;
                         let _ = self.update(Message::ChckStatus);
 
 
                     }
 
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówBłąd(err) => {
+                    LogTxBinUnpak::Błąd(err) => {
 
                         self.status_rozpakowywania_log.błąd = err;
 
                         let _ = self.update(Message::UpdateProcesUiBtnPost);
-                        self.temat.temp.aktywny_proces = None;
+                        self.temat.temp.act_proc = None;
                         let _ = self.update(Message::ChckStatus);
 
                     }

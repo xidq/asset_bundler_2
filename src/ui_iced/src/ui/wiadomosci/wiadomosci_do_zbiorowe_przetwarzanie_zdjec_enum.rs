@@ -4,7 +4,7 @@ use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
 use enumy::rozszerzenia::bdepth_impl::BitDepth;
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::rozszerzenia::ImgExtTag;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 
 #[derive(Debug,Clone)]
 pub enum KonwMsg {
@@ -31,7 +31,7 @@ pub enum KonwMsg {
     PathOutPathInBool(bool),
     Noising(u8),
     Uruchom,
-    Log(LogTxDoBathKonwersjaZdjęć),
+    Log(LogTxKonw),
     PathInFile,
     Bdepth(ImgExtTag, Arc<dyn BitDepth>),
     Nic,

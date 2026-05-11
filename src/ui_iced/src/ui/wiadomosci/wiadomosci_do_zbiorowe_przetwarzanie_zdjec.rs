@@ -3,7 +3,7 @@ use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::Konw
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::{ActProces, BtnState};
 use enumy::opcje::OptInterpolacja;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
@@ -466,7 +466,7 @@ impl Program {
             }
             KonwMsg::Uruchom => {
                 let dane_do_obrobki = self.dane_konw.clone();
-                self.temat.temp.aktywny_proces = Some(ActProces::Konw);
+                self.temat.temp.act_proc = Some(ActProces::Konw);
                 let _ = self.update(Message::ChckStatus);
 
                 self.status_zmiany_fot_log = Default::default();
@@ -479,7 +479,7 @@ impl Program {
                     "wysyłanko tego struct(rozszerzenia_plików_zdjęciowych): \n {}",
                     &dane_do_obrobki.rozszerzenia
                 );
-                let (tx, rx) = mpsc::channel::<LogTxDoBathKonwersjaZdjęć>(100);
+                let (tx, rx) = mpsc::channel::<LogTxKonw>(100);
 
                 // Pobieramy uchwyt do działającego runtime'u Tokio
                 let handle = tokio::runtime::Handle::current();
@@ -501,25 +501,25 @@ impl Program {
             }
             KonwMsg::Log(progress) => {
                 match progress {
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćStart => {
+                    LogTxKonw::StatusBathKonwersjaZdjęćStart => {
                         self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
                     }
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćChecking(gsd) => {
+                    LogTxKonw::StatusBathKonwersjaZdjęćChecking(gsd) => {
                         self.status_zmiany_fot_log.msg_walidacja = gsd;
                     }
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćRozpoczęto(
+                    LogTxKonw::StatusBathKonwersjaZdjęćRozpoczęto(
                         wartość,
                         suma,
                     ) => {
                         // println!("Update dostał procent: {}", procent); // <-- DEBUG
                         self.status_zmiany_fot_log.plik_procent = (wartość,suma);
                     }
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(xoxo) => {
+                    LogTxKonw::StatusBathKonwersjaZdjęćFiltrowaniePlików(xoxo) => {
 
                         self.status_zmiany_fot_log.plik_początek = xoxo;
 
                     }
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćPominiętePliki {
+                    LogTxKonw::StatusBathKonwersjaZdjęćPominiętePliki {
                         sciezka,
                         powod,
                     } => {
@@ -528,16 +528,16 @@ impl Program {
                             sciezka, powod
                         ));
                     }
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćKoniec(czas) => {
+                    LogTxKonw::StatusBathKonwersjaZdjęćKoniec(czas) => {
                         self.status_zmiany_fot_log.msg_end =
                             format!("Zakończono w czasie: {}", czas);
-                        self.temat.temp.aktywny_proces = None;
+                        self.temat.temp.act_proc = None;
 
                         let _ = self.update(Message::ChckStatus);
                     }
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(err) => {
+                    LogTxKonw::StatusBathKonwersjaZdjęćBłąd(err) => {
                         self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
-                        self.temat.temp.aktywny_proces = None;
+                        self.temat.temp.act_proc = None;
 
                         let _ = self.update(Message::ChckStatus);
                     }

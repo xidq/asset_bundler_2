@@ -26,8 +26,8 @@ pub struct UstawieniaThemeWsio{
     pub btn_state:HashMap<&'static str,BtnState>,
 }
 pub struct Temp{
-    pub aktywny_proces: Option<ActProces>,
-    pub aktywne_okno: UiPods,
+    pub act_proc: Option<ActProces>,
+    pub act_window: UiPods,
     pub start_btn_status: StartBtnStatus,
 }
 #[derive(Clone, Debug, EnumMessage, PartialEq)]
@@ -178,11 +178,16 @@ pub enum ButtonType{
     DdsPathInFolders,
     #[strum(message = "mgt_output_folder")]
     DdsPathOut,
+    #[strum(message = "mgt_input_file")]
     DdsRozPathIn,
+    #[strum(message = "mgt_output_folder")]
     DdsRozPathOut,
     DdsRozszerzenia,
+    #[strum(message = "hint_conversion_avif_lossless")]
     DdsJpgProg,
+    #[strum(message = "hint_conversion_webp_losless")]
     DdsWebpLoss,
+    #[strum(message = "hint_conversion_avif_lossless")]
     DdsAvifLoss,
 }
 pub struct StartBtnStatus{
@@ -250,8 +255,5 @@ pub enum BtnState{
     Active,
     Disabled,
     Processing,
-    LackData,
-    U8(u8),
-    U32(u32),
-    F32(f32),
+    LackData
 }

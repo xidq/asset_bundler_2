@@ -4,15 +4,15 @@ use iced::futures::SinkExt;
 use tokio::fs::File;
 use tokio::time::Instant;
 use zstd::*;
-use enumy::statusy::LogTxDoDekompresjiPliku;
+use enumy::statusy::LogTxBinUnpak;
 
 pub async fn dekompresujsuj(
     ścieżka_pliku: PathBuf,
     nazwa_pliku: String,
-    mut tx: mpsc::Sender<LogTxDoDekompresjiPliku>,
+    mut tx: mpsc::Sender<LogTxBinUnpak>,
 ) -> Result<(), tokio::io::Error> {
     let _ = tx
-        .send(LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDekompresja { pamięć: 0 })
+        .send(LogTxBinUnpak::Dekompresja { pamięć: 0 })
         .await;
     println!("Rozpoczęcie fn dekompresji");
 
@@ -63,7 +63,7 @@ pub async fn dekompresujsuj(
             czasss = Instant::now();
             let _ = tx
                 .send(
-                    LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDekompresja {
+                    LogTxBinUnpak::Dekompresja {
                         pamięć: przeczytano_skompresowanych,
                     },
                 )
@@ -72,7 +72,7 @@ pub async fn dekompresujsuj(
     }
 
     let _ = tx
-        .send(LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDekompresja { pamięć: przeczytano_skompresowanych })
+        .send(LogTxBinUnpak::Dekompresja { pamięć: przeczytano_skompresowanych })
         .await;
 
     // 5. Sprzątanie

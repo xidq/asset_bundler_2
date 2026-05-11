@@ -20,7 +20,7 @@ pub fn konwersja_view<'a>(
     temat: &'a UstawieniaThemeWsio,
 ) -> Element<'a, Message> {
 
-    let prawe = match  temat.temp.aktywne_okno{
+    let prawe = match  temat.temp.act_window {
         UiPods::KonwPath => {sciezki(dane, log, &temat.kolory.konwersja, jezyk, temat) }
         UiPods::KonwExt => {rozszerzenia(dane, &temat.kolory.konwersja, jezyk, temat)}
         UiPods::KonwRes => {rozdzielczosci(dane, &temat.kolory.konwersja, jezyk, temat)}

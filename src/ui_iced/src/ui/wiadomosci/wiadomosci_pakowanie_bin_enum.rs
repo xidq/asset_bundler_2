@@ -1,5 +1,5 @@
 use enumy::opcje::{OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
-use enumy::statusy::LogTxDoKompresjiPliku;
+use enumy::statusy::LogTxBinPak;
 
 #[derive(Debug, Clone)]
 pub enum BinPakMsg {
@@ -9,5 +9,5 @@ pub enum BinPakMsg {
     Filtr(OptKompresjaPlikówFiltracjaPlików),
     Uruchom,
     Nic,
-    LogProcesu(LogTxDoKompresjiPliku),
+    LogProcesu(LogTxBinPak),
 }

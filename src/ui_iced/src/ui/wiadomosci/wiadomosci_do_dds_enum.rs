@@ -1,7 +1,7 @@
 use enumy::rozszerzenia::bdepth_impl::BitDepth;
 use enumy::rozszerzenia::kompresje::{ForDds, ForDdsKompresja, ForFfKompresja};
 use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
-use enumy::statusy::{LogTxDoPakowanieDds, LogTxDoRozpakowanieDds};
+use enumy::statusy::{LogTxDdsPak, LogTxDdsUnpak};
 use std::sync::Arc;
 
 #[derive(Debug, Clone)]
@@ -15,7 +15,7 @@ pub enum DdsMsg {
     PakowanieKompresja(ForDdsKompresja),
     PakowanieNazwa(String),
     PakowanieStart,
-    PakowaniePostęp(LogTxDoPakowanieDds),
+    PakowaniePostęp(LogTxDdsPak),
     RozpakInPath(String),
     RozpakInPathBtn,
     RozpakOutPath(String),
@@ -29,7 +29,7 @@ pub enum DdsMsg {
 
     Rozszerzenia(ImgExtTag),
     RozpakStart,
-    RozpakPostęp(LogTxDoRozpakowanieDds),
+    RozpakPostęp(LogTxDdsUnpak),
     JpgProg,
     WebpLoss,
     AvifLoss,

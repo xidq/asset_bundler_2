@@ -9,7 +9,7 @@ use tokio::sync::Mutex;
 use enumy::opcje::OptInterpolacja;
 use enumy::rozszerzenia::bdepth::BdepthPng;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 use crate::dds_halper::{usun_kanal_alpha, zaszumianie};
 use crate::zapisy::inne_dds::aktualizuj_postep_dds;
 
@@ -29,7 +29,7 @@ pub async fn edycja_png(
     metryka_operacji:u32,
     obecna_operacja: Arc<Mutex<u32>>,
     procent_progress: Arc<Mutex<u8>>,
-    mut tx: Sender<LogTxDoBathKonwersjaZdjęć>
+    mut tx: Sender<LogTxKonw>
 ) -> Result<(), tokio::io::Error> {
 
     // 1. Wybór filtra interpolacji

@@ -1,6 +1,6 @@
 use crate::wczytanie_zdjec::aktualizuj_postep;
 use enumy::opcje::OptInterpolacja;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
 use image::DynamicImage;
@@ -23,7 +23,7 @@ pub async fn edycja_jpg(
     do_zaszumienia: Option<u8>,
     metryka_operacji: u32,
     obecna_operacja: Arc<Mutex<u32>>,
-    mut tx: Sender<LogTxDoBathKonwersjaZdjęć>,
+    mut tx: Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
 
     let filtr = match opt_interpolacja {

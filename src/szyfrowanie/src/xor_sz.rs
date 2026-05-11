@@ -1,4 +1,4 @@
-use enumy::statusy::LogTxDoKompresjiPliku;
+use enumy::statusy::LogTxBinPak;
 use iced::futures::SinkExt;
 use iced::futures::channel::mpsc;
 use pass::BAŁDZOTAJNEHASŁO;
@@ -10,7 +10,7 @@ use tokio::io::{AsyncReadExt, AsyncWriteExt};
 pub async fn szyfruj_xor(
     ścieżka: PathBuf,
     nazwa: String,
-    mut tx: mpsc::Sender<LogTxDoKompresjiPliku>,
+    mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<(), tokio::io::Error> {
 
 
@@ -53,7 +53,7 @@ pub async fn szyfruj_xor(
 
         let _ = tx
             .send(
-                LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania {
+                LogTxBinPak::Szyfrowanie {
                     aktualny: przeczytano_razem as u32,
                     suma: Some(calkowity_rozmiar as u32 +2),
                 },
@@ -63,7 +63,7 @@ pub async fn szyfruj_xor(
     }
 
     let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania { 
+        .send(LogTxBinPak::Szyfrowanie { 
             aktualny: przeczytano_razem as u32 +1,
             suma: Some(calkowity_rozmiar as u32 +2)
         })
@@ -75,7 +75,7 @@ pub async fn szyfruj_xor(
     // 5. Usuwanie pliku .jrz (pośredniego)
     tokio::fs::remove_file(sciezka_in).await?;
     let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania {
+        .send(LogTxBinPak::Szyfrowanie {
             aktualny: przeczytano_razem as u32 +2,
             suma: Some(calkowity_rozmiar as u32 +2)
         })

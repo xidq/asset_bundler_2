@@ -12,7 +12,7 @@ use crate::ui::wiadomosci::message_ui::Message;
 use crate::widget::oddzielacze::oddzielacz_pionowy;
 
 pub fn dds_view<'a>(dane_p: &'a DaneDdsPak, dane_d: &'a DaneDdsUnpak, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
-    let prawy = match temat.temp.aktywne_okno{
+    let prawy = match temat.temp.act_window {
         UiPods::DdsPak => {pakowanie(dane_p, &temat.kolory.dds, jezyk, temat)}
         UiPods::DdsUnpak => {rozpakowywanie(dane_d, &temat.kolory.dds, jezyk, temat).padding(15).spacing(15)}
         UiPods::DdsExt => {rozszerzenia(dane_d, &temat.kolory.dds, jezyk, temat)}
