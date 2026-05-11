@@ -2,13 +2,6 @@ use iced::Color;
 use std::collections::HashMap;
 use strum::{EnumIter, EnumMessage};
 
-#[derive(Clone, Debug)]
-pub enum WybraneOknoEdycjiZdjęć {
-    Ścieżki,
-    OptRozszerzeniaPlikówZdjęciowych,
-    MenuOptRozdzielczościObrazów,
-    MenuReszta,
-}
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter, Eq)]
 pub enum UiPods {
     BinPak,
@@ -18,11 +11,11 @@ pub enum UiPods {
     KonwRes,
     KonwEtc,
     Merge,
+    MergeExt,
     DdsPak,
     DdsUnpak,
     DdsExt,
     Ustawienia,
-    MergeExt,
 }
 pub struct UstawieniaThemeWsio{
     pub kolory:ObecnyColorTheme,
@@ -69,8 +62,11 @@ pub enum TextInputType{
     DdsPathOut,
     #[strum(message = "mgt_file_name")]
     DdsNazwa,
+    #[strum(message = "mgt_input_file")]
     DdsRozPathIn,
+    #[strum(message = "mgt_output_folder")]
     DdsRozPathOut,
+    #[strum(message = "mgt_file_name")]
     DdsRozNazwa,
 }
 #[derive(Clone, Debug, PartialEq)]

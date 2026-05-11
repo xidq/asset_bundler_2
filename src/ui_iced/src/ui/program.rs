@@ -1099,7 +1099,6 @@ impl Program {
                     &self.dane_konw,
                     &self.status_zmiany_fot_log,
                     aktualny_jezyk,
-                    // &self.zdjecia_edycja_co_jest_na_out,
                     &self.temat
                 )
             }
@@ -1135,24 +1134,21 @@ impl Program {
         .height(Length::Fill)
         .style(move |_theme: &Theme| {
             container::Style {
-                // Tło: r: 0.11, g: 0.11, b: 0.1, alpha: 1.0 (zakładam pełne krycie)
                 background: Some(Color::from_rgb(0.07, 0.07, 0.06).into()),
 
                 // Cień o tym samym kolorze
                 shadow: Shadow {
                     color: Color::from_rgb(0.1, 0.15, 0.2),
-                    offset: Vector::new(0.0, 0.0), // Przesunięcie cienia w dół
-                    blur_radius: 0.0,              // Rozmycie cienia
+                    offset: Vector::new(0.0, 0.0), 
+                    blur_radius: 0.0,              
                 },
 
                 border: Border {
-                    // radius: 8.0.into(), // Zaokrąglone rogi, żeby cień ładniej wyglądał
                     ..Border::default()
                 },
                 ..container::Style::default()
             }
         }), nakladka_szum];
-        // self.log_prawe_okno.push(format!("{}!!!!!\n {}: {}\n  {}: {}\n   {}, \n    {}: {}\n---------------------------------------",aktualny_jezyk.t("log_status_welcome_msg_welcome"),aktualny_jezyk.t("log_status_welcome_msg_today"),Local::now().format("%d.%m.%Y"),aktualny_jezyk.t("log_status_welcome_msg_today"), Local::now().format("%H:%M:%S"),aktualny_jezyk.t("log_status_welcome_msg_sys_rdy"),aktualny_jezyk.t("log_status_welcome_msg_lang_detected"),self.startowy_jezyk));
 
         // --- PRAWA STRONA (Logi zostawiamy tutaj, bo są proste) ---
         let logi_column = column(
@@ -1232,18 +1228,15 @@ impl Program {
         .height(Length::Fill)
         .style(move |_theme: &Theme| {
             container::Style {
-                // Tło: r: 0.1, g: 0.15, b: 0.2, alpha: 1.0 (zakładam pełne krycie)
                 background: Some(Color::from_rgb(0.1, 0.11, 0.13).into()),
 
-                // Cień o tym samym kolorze
                 shadow: Shadow {
                     color: Color::from_rgb(0.1, 0.11, 0.11),
-                    offset: Vector::new(0.0, 0.0), // Przesunięcie cienia w dół
-                    blur_radius: 10.0,             // Rozmycie cienia
+                    offset: Vector::new(0.0, 0.0),
+                    blur_radius: 10.0,            
                 },
 
                 border: Border {
-                    // radius: 8.0.into(), // Zaokrąglone rogi, żeby cień ładniej wyglądał
                     ..Border::default()
                 },
                 ..container::Style::default()

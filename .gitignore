@@ -7,3 +7,7 @@ src/pass
 /Cargo.lock
 /.idea
 /export/
+AppDir
+tests
+/src/Test/
+/src/ui_iced/src/ui/podmenu_old/

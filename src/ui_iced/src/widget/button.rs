@@ -248,7 +248,7 @@ pub fn przycisk_glowne_menu<'a>(przycisk: PrzyciskiGlowneMenu, jezyk: &'a Wybór
             {
                 if matches!(temat.temp.aktywny_proces, Some(ActProces::Merge)) {
                     &BtnState::Processing
-                } else if matches!(temat.temp.aktywne_okno, UiPods::Merge) {
+                } else if matches!(temat.temp.aktywne_okno, UiPods::Merge | UiPods::MergeExt) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -263,7 +263,7 @@ pub fn przycisk_glowne_menu<'a>(przycisk: PrzyciskiGlowneMenu, jezyk: &'a Wybór
             {
                 if matches!(temat.temp.aktywny_proces, Some(ActProces::DdsPak) | Some(ActProces::DdsUnpak)) {
                     &BtnState::Processing
-                } else if matches!(temat.temp.aktywne_okno, UiPods::DdsUnpak | UiPods::DdsPak) {
+                } else if matches!(temat.temp.aktywne_okno, UiPods::DdsUnpak | UiPods::DdsPak | UiPods::DdsExt) {
                     &BtnState::Active
                 } else {
                     &BtnState::Disabled
@@ -447,8 +447,8 @@ pub fn przycisk_podmenu<'a>(przycisk: UiPods, jezyk: &'a WybórJęzyka, temat: &
             },
             UiPods::Merge,
             &temat.kolory.laczenie,
-            "hint_ui_dds_unpack",
-            "ui_dds_unpack"
+            "hint_ui_merge",
+            "ui_merge"
         ),
         UiPods::MergeExt => (
             {

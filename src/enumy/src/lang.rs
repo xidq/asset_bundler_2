@@ -202,6 +202,7 @@ impl WybórJęzyka {
                 "ui_dds_pack" => "Pakowanie",
                 "ui_dds_unpack" => "Rozpakowywanie",
                 "ui_gen_extensions" => "Rozszerzenia",
+                "ui_merge" => "Łączenie",
 
 
                 "proces_binary_pack_collecting_pending" => "Zebrano",
@@ -276,6 +277,10 @@ impl WybórJęzyka {
                 "hint_conversion_process_btn" => "Przycisk do uruchomienia rozpakowywania plików",
                 "hint_conversion_process_btn_pending" => "Kieruj się wskazówkami na przycisku, acz ogólnie to przycisk do uruchomienia rozpakowywania plików",
                 "hint_conversion_avif_lossless" => "Przełącznik zapisu bezstratnego",
+                "hint_ui_dds_pack" => "Pakowanie do pliku .dds",
+                "hint_ui_dds_unpack" => "Rozpakowanie pliku dds",
+                "hint_ui_merge" => "Łączenie plików w jeden",
+
 
                 "log_status_welcome_msg_welcome_morning" => "Dobrej nocy", //powitanie w nocy 00 do 6 rano
                 "log_status_welcome_msg_welcome_evening" => "Dobry wieczór",
@@ -285,6 +290,9 @@ impl WybórJęzyka {
                 "log_status_welcome_msg_sys_rdy" => "System w gotowości",
                 "log_status_welcome_msg_lang_detected" => "Wykryto język",
                 "log_help_menu" => "'Ctrl + H' aby widzieć podpowiedzi",
+
+                "console_menu_status" => "Status:",
+                "console_menu_reset" => "Resetuj",
 
 
                 _ => "Brak tłumaczenia",
@@ -422,6 +430,7 @@ impl WybórJęzyka {
                 "hint_conversion_process_btn" => "Button to start image conversion",
                 "hint_conversion_process_btn_pending" => "Follow the button cues, but generally it's the start button",
                 "hint_conversion_avif_lossless" => "Toggle lossless encoding",
+
 
                 "log_status_welcome_msg_welcome_morning" => "Good night", // 00:00 to 06:00
                 "log_status_welcome_msg_welcome_evening" => "Good evening",
