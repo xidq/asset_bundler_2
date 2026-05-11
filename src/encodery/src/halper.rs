@@ -16,8 +16,7 @@ pub fn zaszumianie(noising: u8, mut bufor: DynamicImage) -> DynamicImage {
         _ => 255.0,
     };
 
-    // 2. Obliczamy zakres szumu na podstawie % (noising)
-    // Jeśli noising = 100, to max_delta = max_val
+
     let max_delta = (max_val * (noising as f64 / 100.0));
 
     match bufor {

@@ -1,31 +1,31 @@
 use crate::wczytanie_zdjec::aktualizuj_postep;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptInterpolacja, OptRozdzielczościObrazów};
+use enumy::opcje::OptInterpolacja;
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
-use futures::SinkExt;
 use futures::channel::mpsc;
 use image::DynamicImage;
 use image::imageops::FilterType;
-use std::fs::{File, create_dir_all};
+use std::fs::create_dir_all;
 use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use encodery::halper::{usun_kanal_alpha, zaszumianie};
+use enumy::rozszerzenia::bdepth::BdepthWebp;
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 
 pub async fn edycja_webp(
     mut bufor: DynamicImage,
-    rozdzielczości: &Vec<OptRozdzielczościObrazów>,
+    rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca: &String,
     OptInterpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
     jakość: &u8,
     czy_lossless: bool,
-    bit_depth: &Vec<OptFormatyKoloruObrazOgólny>,
+    bit_depth: &Vec<BdepthWebp>,
     alfa_rgb: &(u16, u16, u16),
     do_zaszumienia: Option<u8>,
     metryka_operacji: u32,
     obecna_operacja: Arc<Mutex<u32>>,
-    procent_progress: Arc<Mutex<u8>>,
     mut tx: mpsc::Sender<LogTxDoBathKonwersjaZdjęć>,
 ) -> Result<(), tokio::io::Error> {
     // println!(" [edycja_jpg] ścieżka dopełniająaca: {:?}\nścieżka wyjściowa: {:?}", ścieżka_dopełniająca,ścieżka_wyjściowa);
@@ -49,19 +49,19 @@ pub async fn edycja_webp(
     // 3. Iteracja przez wszystkie żądane rozdzielczości
     for wariant in rozdzielczości {
         let (docelowy_wymiar, nazwa_wariantu) = match wariant {
-            OptRozdzielczościObrazów::R16 => (16, "_16"),
-            OptRozdzielczościObrazów::R32 => (32, "_32"),
-            OptRozdzielczościObrazów::R64 => (64, "_64"),
-            OptRozdzielczościObrazów::R128 => (128, "_128"),
-            OptRozdzielczościObrazów::R256 => (256, "_256"),
-            OptRozdzielczościObrazów::R512 => (512, "_512"),
-            OptRozdzielczościObrazów::R1k => (1024, "_1024"),
-            OptRozdzielczościObrazów::R2k => (2048, "_2k"),
-            OptRozdzielczościObrazów::R4k => (4096, "_4k"),
-            OptRozdzielczościObrazów::R6k => (6144, "_6k"),
-            OptRozdzielczościObrazów::R8k => (8192, "_8k"),
-            OptRozdzielczościObrazów::R16k => (16384, "_16k"),
-            OptRozdzielczościObrazów::Oryginalna => (0, ""), // 0 jako flag dla oryginału
+            Rozdzielczości::R16 => (16, "_16"),
+            Rozdzielczości::R32 => (32, "_32"),
+            Rozdzielczości::R64 => (64, "_64"),
+            Rozdzielczości::R128 => (128, "_128"),
+            Rozdzielczości::R256 => (256, "_256"),
+            Rozdzielczości::R512 => (512, "_512"),
+            Rozdzielczości::R1k => (1024, "_1024"),
+            Rozdzielczości::R2k => (2048, "_2k"),
+            Rozdzielczości::R4k => (4096, "_4k"),
+            Rozdzielczości::R6k => (6144, "_6k"),
+            Rozdzielczości::R8k => (8192, "_8k"),
+            Rozdzielczości::R16k => (16384, "_16k"),
+            Rozdzielczości::Oryginalna => (0, ""), // 0 jako flag dla oryginału
         };
         // *obecna_operacja +=1;
 
@@ -80,14 +80,14 @@ pub async fn edycja_webp(
             // drop(procenciki);
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )
             .await;
 
             let (final_img, nazwa_bd) = match wybór {
-                OptFormatyKoloruObrazOgólny::B8a => (
+                BdepthWebp::Rgb8Alpha => (
                     {
                         if docelowy_wymiar == 0 {
                             DynamicImage::ImageRgba8(
@@ -106,7 +106,7 @@ pub async fn edycja_webp(
                     },
                     "_8ba",
                 ),
-                OptFormatyKoloruObrazOgólny::B8 => (
+                BdepthWebp::Rgb8 => (
                     {
                         if docelowy_wymiar == 0 {
                             DynamicImage::ImageRgb8(
@@ -132,7 +132,7 @@ pub async fn edycja_webp(
             };
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )
@@ -169,7 +169,7 @@ pub async fn edycja_webp(
             std::fs::write(&ścieżka_pliku, &*webp_data)?;
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )

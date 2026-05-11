@@ -1,9 +1,16 @@
-use crate::opcje::{OptFormatDds, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use std::any::Any;
+use std::cmp::PartialEq;
+use crate::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
 use std::path::PathBuf;
+use crate::inne_ui::BtnState;
+use crate::rozszerzenia::bdepth::TrybLączenia;
+use crate::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
+use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use crate::rozszerzenia::rozszerzenia::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
 
 #[allow(dead_code)]
-#[derive(Clone)]
-pub struct DaneDoKompresjaPlików {
+#[derive(Clone, Debug, PartialEq)]
+pub struct DaneBinPak {
     pub ścieżka_in: PathBuf,
     pub ścieżka_out: PathBuf,
     pub kompresja: OptKompresjaPlikówPoziomKompresjiZstd,
@@ -11,51 +18,123 @@ pub struct DaneDoKompresjaPlików {
     pub foldery: bool,
     pub filtracja: OptKompresjaPlikówFiltracjaPlików,
 }
+// impl ElementyDane for DaneDoKompresjaPlików{}
+// impl ElementyDane for DaneDoDekompresjaPlików{}
+// impl ElementyDane for DaneDoBathKonwersjaZdjec{}
+// impl ElementyDane for DaneDoŁączeniaZdjęć{}
+// impl ElementyDane for DaneDoPakowaniaDds{}
+// impl ElementyDane for DaneDoRozpakowaniaDds{}
+
 #[allow(dead_code)]
-#[derive(Clone, Debug)]
-pub struct DaneDoDekompresjaPlików {
+#[derive(Clone, Debug, PartialEq)]
+pub struct DaneBinUnpak {
     pub ścieżka_pliku: PathBuf,
     pub ścieżka_docelowa: PathBuf,
 }
 #[allow(dead_code)]
-#[derive(Clone, Debug)]
-pub struct DaneDoBathKonwersjaZdjec {
+#[derive(Clone, Debug, PartialEq)]
+pub struct DaneKonw {
     pub ścieżka_wejściowa: PathBuf,
     pub ścieżka_wyjściowa: PathBuf,
-    pub opcje_rozdzielczości: Vec<OptRozdzielczościObrazów>,
+    pub opcje_rozdzielczości: Vec<Rozdzielczości>,
     pub noising: Option<u8>,
-    pub rozszerzenia_plików_zdjęciowych: Vec<OptRozszerzeniaPlikówZdjęciowych>,
-    pub tag:Vec<OptRozszerzeniaPlikówZdjęciowychZnacznik>,
+    pub rozszerzenia: Vec<ImgExt>,
+    pub tag:Vec<ImgExtTag>,
     pub inter: OptInterpolacja,
     pub alfa_rgb: (u16, u16, u16),
 }
+impl Default for DaneKonw {
+    fn default() -> Self {
+        DaneKonw {
+            ścieżka_wejściowa: PathBuf::new(),
+            ścieżka_wyjściowa: PathBuf::new(),
+            opcje_rozdzielczości: Vec::from([Rozdzielczości::R2k]),
+            noising: None,
+            rozszerzenia: Vec::from([ Default::default() ]),
+            tag: Vec::from([ ImgExtTag::Jpg ]),
+            inter: OptInterpolacja::Nearest,
+            alfa_rgb: (0, 0, 0),
+        }
+    }
+}
 #[allow(dead_code)]
-#[derive(Clone, Debug)]
-pub struct DaneDoŁączeniaZdjęć {
+#[derive(Clone, Debug, PartialEq)]
+pub struct DaneMerge {
     pub sciezka_r: Option<PathBuf>,
     pub sciezka_g: Option<PathBuf>,
     pub sciezka_b: Option<PathBuf>,
     pub sciezka_a: Option<PathBuf>,
     pub sciezka_out: PathBuf,
-    pub out_format: OptRozszerzeniaPlikówZdjęciowychPojedyncze,
-    pub tag:OptRozszerzeniaPlikówZdjęciowychZnacznik,
+    pub rozszerzenie: RozszerzeniaPojedyncze,
+    pub tag: ImgExtTag,
     pub nazwa: String,
 }
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
-pub struct DaneDoPakowaniaDds {
+#[derive(Debug, Clone, PartialEq)]
+pub struct DaneDdsPak {
     pub ścieżka_wejściowa:  Option<Vec<PathBuf>>,
     pub ścieżka_wyjściowa: PathBuf,
     pub nazwa: String,
-    pub format: OptFormatDds,
-    pub kompresja: OptKompresjaDds,
+    pub format: ForDds,
+    pub kompresja: ForDdsKompresja,
 }
 #[allow(dead_code)]
-#[derive(Debug, Clone)]
-pub struct DaneDoRozpakowaniaDds {
+#[derive(Debug, Clone, PartialEq)]
+pub struct DaneDdsUnpak {
     pub ścieżka_wejściowa: PathBuf,
     pub ścieżka_wyjściowa: PathBuf,
     pub nazwa: String,
-    pub rozszerzenie: OptRozszerzeniaPlikówZdjęciowych,
-    pub tag:OptRozszerzeniaPlikówZdjęciowychZnacznik,
+    pub rozszerzenie: ImgExt,
+    pub tag: ImgExtTag,
 }
+
+pub trait DaneDoObrbki{
+    fn jako_any(&self) -> &dyn Any;
+    fn jest_rowny(&self, inny: &dyn Any) -> bool;
+
+    fn tag_master(&self) -> Vec<ImgExtTag>;
+
+
+
+}
+
+
+impl DaneDoObrbki for DaneKonw {
+    fn jako_any(&self) -> &dyn Any { self }
+    fn jest_rowny(&self, inny: &dyn Any) -> bool {
+        if let Some(v) = inny.downcast_ref::<Self>() {
+            return v == self;
+        }
+        false
+    }
+    fn tag_master(&self) -> Vec<ImgExtTag> { self.tag.clone() }
+
+
+}
+impl DaneDoObrbki for DaneMerge {
+    fn jako_any(&self) -> &dyn Any { self }
+    fn jest_rowny(&self, inny: &dyn Any) -> bool {
+        if let Some(v) = inny.downcast_ref::<Self>() {
+            return v == self;
+        }
+        false
+    }
+    fn tag_master(&self) -> Vec<ImgExtTag> {
+        Vec::from([self.tag.clone()])
+    }
+
+}
+impl DaneDoObrbki for DaneDdsUnpak {
+    fn jako_any(&self) -> &dyn Any { self }
+    fn jest_rowny(&self, inny: &dyn Any) -> bool {
+        if let Some(v) = inny.downcast_ref::<Self>() {
+            return v == self;
+        }
+        false
+    }
+    fn tag_master(&self) -> Vec<ImgExtTag> {
+        Vec::from([self.tag.clone()])
+    }
+}
+
+

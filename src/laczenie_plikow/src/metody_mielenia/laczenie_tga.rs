@@ -1,4 +1,4 @@
-use enumy::opcje::OptFormatyKoloruObrazuTga;
+use enumy::rozszerzenia::bdepth::BdepthTga;
 use futures::SinkExt;
 use futures::channel::mpsc;
 use futures::channel::mpsc::Sender;
@@ -14,14 +14,14 @@ pub async fn laczenie_tga(
     ścieżka_wyjściowa: &Path,
     nazwa_pliku: &str,
     alfa_rgb: &(u16, u16, u16),
-    bit_depth: &OptFormatyKoloruObrazuTga,
+    bit_depth: &BdepthTga,
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
     let depth = bit_depth;
 
     // --- OBSŁUGA BIT DEPTH I FORMATU ---
     let (final_img, nazwa_bd, color_type, szer, wys) = match depth {
-        OptFormatyKoloruObrazuTga::HighColor16 => {
+        BdepthTga::HighColor16 => {
             let img_r = bufor.remove(0);
             let img_g = bufor.remove(0);
             let img_b = bufor.remove(0);
@@ -54,7 +54,7 @@ pub async fn laczenie_tga(
             )
         }
 
-        OptFormatyKoloruObrazuTga::TrueColorA32 => {
+        BdepthTga::TrueColorA32 => {
             let img_r = bufor.remove(0);
             let img_g = bufor.remove(0);
             let img_b = bufor.remove(0);

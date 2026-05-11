@@ -1,485 +1,483 @@
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 use enumy::enums_structs_io::FILTERFOTO;
-use enumy::inne_ui::ActProces;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::inne_ui::{ActProces, BtnState};
+use enumy::opcje::OptInterpolacja;
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
+use std::slice::Iter;
+use strum::IntoEnumIterator;
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
 use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
+use crate::ui::wiadomosci::message_ui::Message;
+
+fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
+    if let Some(pos) = vec.iter().position(|x| x == element) {
+        vec.remove(pos);
+    } else {
+        vec.push(element.clone());
+    }
+}
 
 impl Program {
-    pub fn update_message_zbiorowe_przetwarzanie_zdjec(&mut self, msg: ZbiorowePrzetwarzanieZdjęćMessage) -> Task<ZbiorowePrzetwarzanieZdjęćMessage> {
+    pub fn update_message_zbiorowe_przetwarzanie_zdjec(&mut self, msg: KonwMsg) -> Task<KonwMsg> {
         match msg {
-            ZbiorowePrzetwarzanieZdjęćMessage::PathInFile => {
+            KonwMsg::PathInFile => {
                 if let Some(path) = rfd::FileDialog::new()
                     .add_filter("Obrazy", &FILTERFOTO)
                     .pick_file()
                 {
-                    // 1. Zawsze aktualizujemy ścieżkę wejściową
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa = path.clone();
+                    self.dane_konw.ścieżka_wejściowa = path.clone();
 
-                    // 2. Jeśli flaga auto-wyjścia jest włączona, ustawiamy ścieżkę wyjściową
                     if self.zdjecia_edycja_co_jest_na_out {
                         if path.is_file() {
-                            // Jeśli to plik, wyjście ustawiamy na folder, w którym on jest
                             if let Some(rodzic) = path.parent() {
-                                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = rodzic.to_path_buf();
+                                self.dane_konw.ścieżka_wyjściowa = rodzic.to_path_buf();
                             } else {
-                                // Jeśli nie ma rodzica (np. root), ustawiamy samą ścieżkę
-                                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = path;
+                                self.dane_konw.ścieżka_wyjściowa = path;
                             }
                         } else {
-                            // Jeśli to już folder, po prostu kopiujemy
-                            self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = path;
+                            self.dane_konw.ścieżka_wyjściowa = path;
                         }
                     }
                 }
+
+                let _ = self.update(Message::ChckStatus);
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::PathInFolder => {
+            KonwMsg::PathInFolder => {
                 if let Some(path) = rfd::FileDialog::new()
                     .pick_folder()
                 {
-                    // 1. Zawsze aktualizujemy ścieżkę wejściową
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa = path.clone();
+                    self.dane_konw.ścieżka_wejściowa = path.clone();
 
-                    // 2. Jeśli flaga auto-wyjścia jest włączona, ustawiamy ścieżkę wyjściową
                     if self.zdjecia_edycja_co_jest_na_out {
                         if path.is_file() {
-                            // Jeśli to plik, wyjście ustawiamy na folder, w którym on jest
                             if let Some(rodzic) = path.parent() {
-                                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = rodzic.to_path_buf();
+                                self.dane_konw.ścieżka_wyjściowa = rodzic.to_path_buf();
                             } else {
-                                // Jeśli nie ma rodzica (np. root), ustawiamy samą ścieżkę
-                                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = path;
+                                self.dane_konw.ścieżka_wyjściowa = path;
                             }
                         } else {
-                            // Jeśli to już folder, po prostu kopiujemy
-                            self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = path;
+                            self.dane_konw.ścieżka_wyjściowa = path;
                         }
                     }
-                }
+
                 }
 
-            ZbiorowePrzetwarzanieZdjęćMessage::PathInText(s) => {
-                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa = PathBuf::from(s);
+                let _ = self.update(Message::ChckStatus);
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::PathsReset => {
-                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa = PathBuf::new();
+
+            KonwMsg::PathInText(s) => {
+                self.dane_konw.ścieżka_wejściowa = PathBuf::from(s);
+                let _ = self.update(Message::ChckStatus);
+
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::PathOutPathInBool(zdjecia_edycja_co_jest_na_out) => {
+            KonwMsg::PathsReset => {
+                self.dane_konw.ścieżka_wejściowa = PathBuf::new();
+                let _ = self.update(Message::ChckStatus);
+
+            }
+            KonwMsg::PathOutPathInBool(zdjecia_edycja_co_jest_na_out) => {
                 self.zdjecia_edycja_co_jest_na_out = zdjecia_edycja_co_jest_na_out;
-                let xoxo = if self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa.is_file() {
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                let xoxo = if self.dane_konw.ścieżka_wejściowa.is_file() {
+                    self.dane_konw
                         .ścieżka_wejściowa
                         .parent()
                         .map(|p| p.to_path_buf())
-                        .unwrap_or_else(|| self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa.clone())
+                        .unwrap_or_else(|| self.dane_konw.ścieżka_wejściowa.clone())
                 } else {
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wejściowa.clone()
+                    self.dane_konw.ścieżka_wejściowa.clone()
                 };
-                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = xoxo
+                self.dane_konw.ścieżka_wyjściowa = xoxo
+
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::PathOutFolder => {
+            KonwMsg::PathOutFolder => {
                 if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = path;
+                    self.dane_konw.ścieżka_wyjściowa = path;
                 }
+
+                let _ = self.update(Message::ChckStatus);
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::PathOutText(s) => {
-                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.ścieżka_wyjściowa = PathBuf::from(s)
+            KonwMsg::PathOutText(s) => {
+                self.dane_konw.ścieżka_wyjściowa = PathBuf::from(s)
             }
 
-            ZbiorowePrzetwarzanieZdjęćMessage::WypełnienieAlpha(indeks, wartosc) => {
+            KonwMsg::WypełnienieAlpha(indeks, wartosc) => {
                 match indeks {
-                    0 => self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.alfa_rgb.0 = wartosc, // Zmieniamy R
-                    1 => self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.alfa_rgb.1 = wartosc, // Zmieniamy G
-                    2 => self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.alfa_rgb.2 = wartosc, // Zmieniamy B
+                    0 => self.dane_konw.alfa_rgb.0 = wartosc, // Zmieniamy R
+                    1 => self.dane_konw.alfa_rgb.1 = wartosc, // Zmieniamy G
+                    2 => self.dane_konw.alfa_rgb.2 = wartosc, // Zmieniamy B
                     _ => {}
                 }
-
             }
 
-            ZbiorowePrzetwarzanieZdjęćMessage::JpgJakość(procent) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::JpgJakość(procent) => {
+                if let Some(ImgExt::Jpg { jakosc, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
                 {
                     *jakosc = procent; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::JpgProg => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { progresywny, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::JpgProg=> {
+                if let Some(ImgExt::Jpg { progresywny, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut()
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
                 {
-                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
                     *progresywny = !*progresywny;
                 }
 
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::JpgSampling(xx) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg {sampling, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::JpgSampling(xx) => {
+                if let Some(ImgExt::Jpg { sampling, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut()
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
                 {
                     // 2. lossless jest tutaj mutowalną referencją (&mut bool)
                     *sampling = xx;
                 }
-
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::JpgQua(xx) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { quant, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::JpgQua(xx) => {
+                if let Some(ImgExt::Jpg { quant, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut()
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
                 {
                     // 2. lossless jest tutaj mutowalną referencją (&mut bool)
                     *quant = xx;
                 }
-
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::JpgScan(skany) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Jpg { scans, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::JpgScan(skany) => {
+                if let Some(ImgExt::Jpg { scans, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Jpg { .. }))
+                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
                 {
                     *scans = skany; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::PngKompresja(var) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Png { kompresja, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::PngKompresja(var) => {
+                if let Some(ImgExt::Png { kompresja, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Png { .. }))
+                    .find(|f| matches!(f, ImgExt::Png { .. }))
                 {
                     *kompresja = var; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::Interpolacja(xx) => {
-                
+            KonwMsg::Interpolacja(xx) => {
                 let yy = match xx.as_str() {
                     "OptInterpolacja_nearest" => OptInterpolacja::Nearest,
                     "OptInterpolacja_triangle" => OptInterpolacja::Triangle,
                     "OptInterpolacja_catmull" => OptInterpolacja::CatmullRom,
                     "OptInterpolacja_gaussian" => OptInterpolacja::Gaussian,
                     "OptInterpolacja_lanczos" => OptInterpolacja::Lanczos3,
-                    _ => {OptInterpolacja::Lanczos3}
+                    _ => { OptInterpolacja::Lanczos3 }
                 };
-                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.inter = yy;
+                self.dane_konw.inter = yy;
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::WebpJakość(procent) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::WebpJakość(procent) => {
+                if let Some(ImgExt::Webp { jakosc, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Webp { .. }))
+                    .find(|f| matches!(f, ImgExt::Webp { .. }))
                 {
                     *jakosc = procent; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::WebpLossless => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Webp { lossless, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::WebpLossless => {
+                if let Some(ImgExt::Webp { lossless, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut()
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Webp { .. }))
+                    .find(|f| matches!(f, ImgExt::Webp { .. }))
                 {
-                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
                     *lossless = !*lossless;
                 }
-
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::TgaBdepth(fdvcx) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
-                    .iter_mut()
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Tga { .. }))
-                {
-                    // 2. Szukamy, czy ten konkretny bit_depth już jest w wektorze TGA
-                    let pozycja = bit_depth.iter().position(|x| *x == fdvcx);
-
-                    match pozycja {
-                        // Jeśli jest – usuwamy go (odznaczamy)
-                        Some(index) => {
-                            bit_depth.remove(index);
-                        }
-                        // Jeśli go nie ma – dodajemy go (zaznaczamy)
-                        None => {
-                            bit_depth.push(fdvcx);
-                        }
-                    }
-                }
-            }
-            ZbiorowePrzetwarzanieZdjęćMessage::FfKompresja(metoda) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            
+            KonwMsg::FfKompresja(metoda) => {
+                if let Some(ImgExt::Ff { metoda_kompresji }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Ff { .. }))
+                    .find(|f| matches!(f, ImgExt::Ff { .. }))
                 {
                     *metoda_kompresji = metoda;
                 }
+
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::FfKompresjaVal(var) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::FfKompresjaVal(var) => {
+                if let Some(ImgExt::Ff { metoda_kompresji }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Ff { .. }))
+                    .find(|f| matches!(f, ImgExt::Ff { .. }))
                 {
                     match metoda_kompresji {
-                        OptMetodaKompresjiZdjecia::Zstd(v) |
-                        OptMetodaKompresjiZdjecia::Bzip2(v) |
-                        OptMetodaKompresjiZdjecia::Xz(v) => *v = var,
+                        ForFfKompresja::Zstd(v) |
+                        ForFfKompresja::Bzip2(v) |
+                        ForFfKompresja::Xz(v) => *v = var,
 
-                        OptMetodaKompresjiZdjecia::Brak => {}
+                        ForFfKompresja::Brak => {}
                     }
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::QoiBdepth(bdepth) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            
+            KonwMsg::AvifSpeed(das) => {
+                if let Some(ImgExt::Avif { speed, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Qoi { .. }))
-                {
-                    let pozycja = bit_depth.iter().position(|x| *x == bdepth);
-
-                    match pozycja {
-                        // Jeśli jest – usuwamy go (odznaczamy)
-                        Some(index) => {
-                            bit_depth.remove(index);
-                        }
-                        // Jeśli go nie ma – dodajemy go (zaznaczamy)
-                        None => {
-                            bit_depth.push(bdepth);
-                        }
-                    }
-                }
-            }
-            ZbiorowePrzetwarzanieZdjęćMessage::AvifBdepth(fdvcx) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { bit_depth, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
-                    .iter_mut()
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
-                {
-                    // 2. Szukamy, czy ten konkretny bit_depth już jest w wektorze TGA
-                    let pozycja = bit_depth.iter().position(|x| *x == fdvcx);
-
-                    match pozycja {
-                        // Jeśli jest – usuwamy go (odznaczamy)
-                        Some(index) => {
-                            bit_depth.remove(index);
-                        }
-                        // Jeśli go nie ma – dodajemy go (zaznaczamy)
-                        None => {
-                            bit_depth.push(fdvcx);
-                        }
-                    }
-                }
-            }
-            ZbiorowePrzetwarzanieZdjęćMessage::AvifSpeed(das) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { speed, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                    .find(|f| matches!(f, ImgExt::Avif { .. }))
                 {
                     *speed = das; // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::AvifLossyToggle => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::AvifLossyToggle => {
+                if let Some(ImgExt::Avif { lossy, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut()
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                    .find(|f| matches!(f, ImgExt::Avif { .. }))
                 {
-                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
 
                     if lossy.is_some(){
                         *lossy = None;
                     }else{
                         *lossy = Some(90);
                     }
+
                 }
 
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::AvifLossy(das) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { lossy, .. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::AvifLossy(das) => {
+                if let Some(ImgExt::Avif { lossy, .. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                    .find(|f| matches!(f, ImgExt::Avif { .. }))
                 {
                     *lossy = Some(das); // Jeśli znaleziono, aktualizujemy wartość
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::AvifKompresja(metoda) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { metoda_kompresji,.. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::AvifKompresja(metoda) => {
+                if let Some(ImgExt::Avif { metoda_kompresji,.. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                    .find(|f| matches!(f, ImgExt::Avif { .. }))
                 {
                     *metoda_kompresji = metoda;
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::AvifChroma(chromchrom) => {
-                if let Some(OptRozszerzeniaPlikówZdjęciowych::Avif { chroma,.. }) = self
-                    .dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
+            KonwMsg::AvifChroma(chromchrom) => {
+                if let Some(ImgExt::Avif { chroma,.. }) = self
+                    .dane_konw
+                    .rozszerzenia
                     .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, OptRozszerzeniaPlikówZdjęciowych::Avif { .. }))
+                    .find(|f| matches!(f, ImgExt::Avif { .. }))
                 {
                     *chroma = chromchrom;
                 }
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::Noising(procent) => {
-                self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.noising =
+            KonwMsg::Noising(procent) => {
+                self.dane_konw.noising =
                     if procent == 0u8 { None } else { Some(procent) };
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::Rozdzielczość(khekhe) => {
-                // 1. Szukamy pozycji konkretnej rozdzielczości w wektorze
-                let pozycja = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+            KonwMsg::Rozdzielczość(khekhe) => {
+                let pozycja = self.dane_konw
                     .opcje_rozdzielczości
                     .iter()
                     .position(|x| *x == khekhe);
 
                 match pozycja {
-                    // 2. Jeśli jest – usuwamy (odznaczamy przycisk)
                     Some(index) => {
-                        self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.opcje_rozdzielczości.remove(index);
+                        self.dane_konw.opcje_rozdzielczości.remove(index);
                     }
-                    // 3. Jeśli nie ma – dodajemy (zaznaczamy przycisk)
                     None => {
-                        self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.opcje_rozdzielczości.push(khekhe);
+                        self.dane_konw.opcje_rozdzielczości.push(khekhe);
+
                     }
                 }
-            }
 
-            ZbiorowePrzetwarzanieZdjęćMessage::Bdepth(rozs, kolor) => {
-                // 1. Szukamy pozycji rozszerzenia w wektorze tagów
-                if let Some(index) = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                let _ = self.update(Message::ChckStatus);
+
+            }
+            
+            KonwMsg::Bdepth(rozs, kolor_arc) => {
+                // 1. Szukamy indeksu na podstawie znacznika
+                if let Some(index) = self.dane_konw
                     .tag
                     .iter()
                     .position(|t| *t == rozs)
                 {
-                    // 2. Pobieramy mutowalną referencję do danych tego formatu (korzystając z tego samego indeksu)
-                    if let Some(format_danych) = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                        .rozszerzenia_plików_zdjęciowych
+                    // 2. Pobieramy mutowalną referencję do formatu
+                    if let Some(format_danych) = self.dane_konw
+                        .rozszerzenia
                         .get_mut(index)
                     {
-                        // 3. Wyciągamy wektor bit_depth z odpowiedniego wariantu
-                        let bit_depth_vec = match format_danych {
-                            OptRozszerzeniaPlikówZdjęciowych::Jpg { bit_depth, .. } => Some(bit_depth),
-                            OptRozszerzeniaPlikówZdjęciowych::Png { bit_depth, .. } => Some(bit_depth),
-                            OptRozszerzeniaPlikówZdjęciowych::Webp { bit_depth, .. } => Some(bit_depth),
-                            _ => None, // TGA i QOI ignorujemy, bo mają inne enumy kolorów
-                        };
+                        // 3. Używamy jako_any(), aby móc porównać dyn z konkretnym typem w Vec
+                        let kolor_any = kolor_arc.jako_any();
+                        
 
-                        // 4. Jeśli wariant ma bit_depth, robimy Toggle
-                        if let Some(vec) = bit_depth_vec {
-                            if let Some(pos) = vec.iter().position(|x| *x == kolor) {
-                                vec.remove(pos); // Jeśli kolor już był -> usuń go
-                            } else {
-                                vec.push(kolor); // Jeśli go nie było -> dodaj go
+                        match format_danych {
+                            // Grupa JPG, PNG, WebP (jeśli używają tego samego typu enumu)
+                            ImgExt::Jpg { bit_depth, .. } => {
+                                if let Some(k) = kolor_any.downcast_ref::<BdepthJpg>() {
+                                    toggle_w_vec(bit_depth, k);
+
+
+                                    for xx in BdepthJpg::iter(){
+
+                                        if !bit_depth.contains(&xx) {
+                                            self.temat.btn_state.remove(xx.bath_konwersja_id());
+                                        } else {
+                                            self.temat.btn_state.insert(xx.bath_konwersja_id(), BtnState::Active);
+                                        }
+
+                                    }
+
+
+                                }
                             }
+                            ImgExt::Png { bit_depth, .. } => {
+                                if let Some(k) = kolor_any.downcast_ref::<BdepthPng>() {
+                                    toggle_w_vec(bit_depth, k);
+
+                                }
+                            }
+                            ImgExt::Webp { bit_depth, .. } => {
+                                // Próbujemy rzutować Arc na konkretny typ siedzący w tym Vec
+                                if let Some(k) = kolor_any.downcast_ref::<BdepthWebp>() {
+                                    toggle_w_vec(bit_depth, k);
+
+                                }
+                            }
+                            ImgExt::Qoi { bit_depth, .. } => {
+                                if let Some(k) = kolor_any.downcast_ref::<BdepthQoi>() {
+                                    toggle_w_vec(bit_depth, k);
+
+                                }
+                            }
+                            ImgExt::Avif { bit_depth, .. } => {
+                                if let Some(k) = kolor_any.downcast_ref::<BdepthAvif>() {
+                                    toggle_w_vec(bit_depth, k);
+
+                                }
+                            }
+                            ImgExt::Tga { bit_depth, .. } => {
+                                if let Some(k) = kolor_any.downcast_ref::<BdepthTga>() {
+                                    toggle_w_vec(bit_depth, k);
+
+                                }
+                            }
+                            _ => {}
                         }
                     }
                 }
+                let _ = self.update(Message::ChckStatus);
+
             }
 
 
-            ZbiorowePrzetwarzanieZdjęćMessage::Rozszerzenia(gwiazdek) => {
-                let pozycja_tag = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+            KonwMsg::Rozszerzenia(gwiazdek) => {
+                let pozycja_tag = self.dane_konw
                     .tag
                     .iter()
                     .position(|t| *t == gwiazdek);
-                let pozycja = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
-                    .rozszerzenia_plików_zdjęciowych
-                    .iter()
-                    .position(|f| matches! ((f, &gwiazdek),
-                        (OptRozszerzeniaPlikówZdjęciowych::Jpg {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg) |
-                        (OptRozszerzeniaPlikówZdjęciowych::Png {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Png) |
-                        (OptRozszerzeniaPlikówZdjęciowych::Webp {..}, OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp) |
-                        (OptRozszerzeniaPlikówZdjęciowych::Tga { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga) |
-                        (OptRozszerzeniaPlikówZdjęciowych::Ff { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff) |
-                        (OptRozszerzeniaPlikówZdjęciowych::Qoi { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi) |
-                        (OptRozszerzeniaPlikówZdjęciowych::Avif { .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif)
-                    ));
+                let pozycja = self.dane_konw.rozszerzenia.iter().position(|f| {
+                    match (f, &gwiazdek) {
+                        (ImgExt::Jpg {..}, ImgExtTag::Jpg) => true,
+                        (ImgExt::Png {..}, ImgExtTag::Png) => true,
+                        (ImgExt::Webp {..}, ImgExtTag::Webp) => true,
+                        (ImgExt::Tga {..}, ImgExtTag::Tga) => true,
+                        (ImgExt::Ff {..}, ImgExtTag::Ff) => true,
+                        (ImgExt::Qoi {..}, ImgExtTag::Qoi) => true,
+                        (ImgExt::Avif {..}, ImgExtTag::Avif) => true,
+                        _ => false,
+                    }
+                });
                 if let Some(idx) = pozycja_tag {
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.tag.remove(idx);
+                    self.dane_konw.tag.remove(idx);
+                    self.temat.btn_state.insert(gwiazdek.bath_konwersja_id(), BtnState::Active);
                 }
 
                 if let Some(index) = pozycja {
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.rozszerzenia_plików_zdjęciowych.remove(index);
+                    self.dane_konw.rozszerzenia.remove(index);
                 } else {
                     let (nowy_format, nowy_tag) = match gwiazdek {
-                        OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg => (OptRozszerzeniaPlikówZdjęciowych::Jpg {
+                        ImgExtTag::Jpg => (ImgExt::Jpg {
                             jakosc: 90,
                             progresywny: false,
-                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
-                            sampling: JpgSamplingFac::R420,
-                            quant: JpgQuant::Default,
+                            bit_depth: Vec::from([BdepthJpg::Rgb8]),
+                            sampling: ForJpgSamplingFac::R420,
+                            quant: ForJpgQuant::Default,
                             scans: 4,
-                        }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg),
-                        OptRozszerzeniaPlikówZdjęciowychZnacznik::Png => (OptRozszerzeniaPlikówZdjęciowych::Png {
+                        }, ImgExtTag::Jpg),
+                        ImgExtTag::Png => (ImgExt::Png {
                             kompresja: 3,
-                            bit_depth: vec![OptFormatyKoloruObrazOgólny::B8],
-                        },OptRozszerzeniaPlikówZdjęciowychZnacznik::Png),
+                            bit_depth: Vec::from([BdepthPng::Rgb8]),
+                        }, ImgExtTag::Png),
 
-                        OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp => (OptRozszerzeniaPlikówZdjęciowych::Webp{
+                        ImgExtTag::Webp => (ImgExt::Webp{
                             jakosc: 90,
                             lossless: false,
-                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
-                        }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp),
-                        OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga => (OptRozszerzeniaPlikówZdjęciowych::Tga{
-                            bit_depth: Vec::from([OptFormatyKoloruObrazuTga::TrueColor24])
-                        }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Tga),
-                        OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff => (OptRozszerzeniaPlikówZdjęciowych::Ff{
-                            metoda_kompresji: OptMetodaKompresjiZdjecia::Brak
-                        }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Ff),
-                        OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi => (OptRozszerzeniaPlikówZdjęciowych::Qoi{
-                            bit_depth: Vec::from([OptFormatyKoloruObrazuQoi::Color24])
-                        }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Qoi),
-                        OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif => (OptRozszerzeniaPlikówZdjęciowych::Avif {
-                            chroma: AvifChroma::C420,
+                            bit_depth: Vec::from([BdepthWebp::Rgb8]),
+                        }, ImgExtTag::Webp),
+                        ImgExtTag::Tga => (ImgExt::Tga{
+                            bit_depth: Vec::from([BdepthTga::TrueColor24])
+                        }, ImgExtTag::Tga),
+                        ImgExtTag::Ff => (ImgExt::Ff{
+                            metoda_kompresji: ForFfKompresja::Brak
+                        }, ImgExtTag::Ff),
+                        ImgExtTag::Qoi => (ImgExt::Qoi{
+                            bit_depth: Vec::from([BdepthQoi::Color24])
+                        }, ImgExtTag::Qoi),
+                        ImgExtTag::Avif => (ImgExt::Avif {
+                            chroma: ForAvifChroma::C420,
                             speed: 3,
-                            metoda_kompresji: AvifMetodaKompresji::Av1,
+                            metoda_kompresji: ForAvifKompresja::Av1,
                             lossy: Some(90),
-                            bit_depth: Vec::from([OptFormatyKoloruObrazuAvif::B10])
-                        }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Avif)
+                            bit_depth: Vec::from([BdepthAvif::Rgb10])
+                        }, ImgExtTag::Avif)
                     };
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.rozszerzenia_plików_zdjęciowych.push(nowy_format);
-                    self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.tag.push(nowy_tag);
+
+                    self.dane_konw.rozszerzenia.push(nowy_format);
+                    self.dane_konw.tag.push(nowy_tag.clone());
+
                 }
+                let _ = self.update(Message::ChckStatus);
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::Uruchom => {
-                let dane_do_obrobki = self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć.clone();
-                self.temat.temp.aktywny_proces = ActProces::KonwersjaZdjęć;
+            KonwMsg::Uruchom => {
+                let dane_do_obrobki = self.dane_konw.clone();
+                self.temat.temp.aktywny_proces = Some(ActProces::Konw);
+                let _ = self.update(Message::ChckStatus);
+
                 self.status_zmiany_fot_log = Default::default();
                 dbg!(
                     "ścieżka przekazywana to: {:?}",
-                    &self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć
+                    &self.dane_konw
                 );
 
                 dbg!(
                     "wysyłanko tego struct(rozszerzenia_plików_zdjęciowych): \n {}",
-                    &dane_do_obrobki.rozszerzenia_plików_zdjęciowych
+                    &dane_do_obrobki.rozszerzenia
                 );
                 let (tx, rx) = mpsc::channel::<LogTxDoBathKonwersjaZdjęć>(100);
 
@@ -494,14 +492,14 @@ impl Program {
                             })
                             .await
                     },
-                    |_| ZbiorowePrzetwarzanieZdjęćMessage::Nic,
+                    |_| KonwMsg::Nic,
                 );
 
-                let nasluchiwanie = Task::run(rx, ZbiorowePrzetwarzanieZdjęćMessage::Log);
+                let nasluchiwanie = Task::run(rx, KonwMsg::Log);
 
                 return Task::batch(Vec::from([operacja, nasluchiwanie]));
             }
-            ZbiorowePrzetwarzanieZdjęćMessage::Log(progress) => {
+            KonwMsg::Log(progress) => {
                 match progress {
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćStart => {
                         self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
@@ -510,20 +508,16 @@ impl Program {
                         self.status_zmiany_fot_log.msg_walidacja = gsd;
                     }
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćRozpoczęto(
-                        _,
-                        procent,
+                        wartość,
+                        suma,
                     ) => {
                         // println!("Update dostał procent: {}", procent); // <-- DEBUG
-                        self.status_zmiany_fot_log.plik_procent = procent;
-                        self.status_zmiany_fot_log.msg_proces = format!("{}", procent);
+                        self.status_zmiany_fot_log.plik_procent = (wartość,suma);
                     }
-                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(
-                        xoxo,
-                    ) => {
-                        if xoxo > 0 {
-                            self.status_zmiany_fot_log.plik_początek =
-                                format!("Zebrano {} plików", xoxo);
-                        }
+                    LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(xoxo) => {
+
+                        self.status_zmiany_fot_log.plik_początek = xoxo;
+
                     }
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćPominiętePliki {
                         sciezka,
@@ -537,14 +531,21 @@ impl Program {
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćKoniec(czas) => {
                         self.status_zmiany_fot_log.msg_end =
                             format!("Zakończono w czasie: {}", czas);
-                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
+                        self.temat.temp.aktywny_proces = None;
+
+                        let _ = self.update(Message::ChckStatus);
                     }
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(err) => {
                         self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
-                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
+                        self.temat.temp.aktywny_proces = None;
+
+                        let _ = self.update(Message::ChckStatus);
                     }
                 }
             }
+
+
+
 
             _ => {}
         }

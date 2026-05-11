@@ -1,4 +1,4 @@
-use enumy::dane_do_przetwarzania::DaneDoKompresjaPlików;
+use enumy::dane_do_przetwarzania::DaneBinPak;
 use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
 use enumy::opcje::OptKompresjaPlikówFiltracjaPlików;
 use enumy::statusy::LogTxDoKompresjiPliku;
@@ -142,9 +142,10 @@ async fn tworzenie_binarki(
 }
 
 pub async fn ogarnianie_eksportu(
-    zestaw_danych: DaneDoKompresjaPlików,
+    zestaw_danych: DaneBinPak,
     mut tx: mpsc::Sender<LogTxDoKompresjiPliku>,
 ) -> Result<(), tokio::io::Error> {
+    println!("zaczynam pakować");
     let start_czas = Instant::now();
 
     let wynik = async {

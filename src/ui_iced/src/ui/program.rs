@@ -1,34 +1,37 @@
-use crate::ui::program_pomniejsze::style_fn::btn::styl_przycisków;
 use iced::{
     font, widget::{button, column, container, row, scrollable, text, Space}, Event,
     Task,
 };
+use std::collections::HashMap;
 
-use crate::ui::program_pomniejsze::kolory::{KOLOR_BRILIANT_CRIMSON, KOLOR_COTTON_CANDY, KOLOR_CRIMSON_GLORY, KOLOR_CZCIONKI_SREDNI, KOLOR_LIGHT_PINK, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
-use chrono::{Local, Timelike};
-use std::path::PathBuf;
-
-use crate::ui::program_pomniejsze::ui_dds::{view_dds, StronyDds};
-use crate::ui::program_pomniejsze::ui_zdjecia_edycja::WybraneOknoEdycjiZdjęć;
+// use crate::ui::podmenu_old::ui_dds::{view_dds, StronyDds};
 use crate::ui::wiadomosci::message_ui::Message;
+use chrono::{Local, Timelike};
 use enumy::czcionki::{FONT_DEFAULT, FONT_JAPANESE, FONT_KOREAN, FONT_THAI};
-use enumy::dane_do_przetwarzania::{DaneDoBathKonwersjaZdjec, DaneDoDekompresjaPlików, DaneDoKompresjaPlików, DaneDoPakowaniaDds, DaneDoRozpakowaniaDds, DaneDoŁączeniaZdjęć};
-use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds, FILTERFOTO};
+use enumy::dane_do_przetwarzania::{DaneKonw, DaneBinUnpak, DaneBinPak, DaneDdsPak, DaneDdsUnpak, DaneMerge};
+use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds};
 pub(crate) use enumy::enums_structs_io::{LogPakowanie, LogPrzetwarzanieFot, LogRozpakowywanie};
-use enumy::inne_ui::{ActProces, ObecnyColorCzcionkiPrzezroczystosci, ObecnyColorTheme, ObecnyColorThemePrzezroczystosci, UiPodstrony, Temp, Ustawienia, UstawieniaThemeWsio, WybranyFormatZdjecia};
-use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatDds, OptFormatyKoloruObrazOgólny, OptInterpolacja, OptKompresjaDds, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychPojedyncze, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::inne_ui::{ActProces, BtnState, ButtonType, DropdownType, ObecnyColorCzcionkiPrzezroczystosci, ObecnyColorTheme, ObecnyColorThemePrzezroczystosci, PrzyciskiGlowneMenu, SliderType, StartBtnStatus, Temp, TextInputType, UiPods, Ustawienia, UstawieniaThemeWsio};
+use enumy::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
+use enumy::rozszerzenia::bdepth::BdepthJpg;
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForFfKompresja};
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use enumy::rozszerzenia::rozszerzenia::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
 pub(crate) use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
 use iced::widget::{image, stack, Column, Row};
 use iced::{Border, Color, Element, Length};
 use iced_core::{Shadow, Theme, Vector};
+use std::path::PathBuf;
+use strum::IntoEnumIterator;
 
 
 #[allow(dead_code)]
 pub struct Program {
-    pub(crate) dane_temp_do_łączenia_zdjęć: DaneDoŁączeniaZdjęć,
-    pub(crate) dane_temp_do_kompresji_plików: DaneDoKompresjaPlików,
-    pub(crate) dane_temp_do_dekompresji_plików: DaneDoDekompresjaPlików,
-    ui_ustawienia: UstawieniaMenu,
+    pub(crate) dane_merge: DaneMerge,
+    pub(crate) dane_bin_pak: DaneBinPak,
+    pub(crate) dane_bin_unpak: DaneBinUnpak,
+    pub(crate) ui_ustawienia: UstawieniaMenu,
     // UI state
     pub(crate) log_prawe_okno: Vec<String>,
     pub(crate) status_pakowanie_log: LogPakowanie,
@@ -36,58 +39,37 @@ pub struct Program {
     pub(crate) status_zmiany_fot_log: LogPrzetwarzanieFot,
     pub(crate) status_dds_pakowanie: LogPakowaniaDds,
     pub(crate) status_dds_rozpakowywanie: LogRozpakowywanieDds,
-    
+
     ui_main_wariant_dev: bool,
-    pub(crate) ui_dds_podmenu: StronyDds,
+    // pub(crate) ui_dds_podmenu: StronyDds,
     zdjecia_edycja_co_jest_wybrane: (bool, bool),
     pub(crate) zdjecia_edycja_co_jest_na_out: bool,
-    pub(crate) dane_temp_do_zbiorowe_przetwarzanie_zdjęć: DaneDoBathKonwersjaZdjec,
+    pub(crate) dane_konw: DaneKonw,
     do_nothing: bool,
     startowy_jezyk: String,
-    pub(crate) dane_temp_do_pakowania_dds: DaneDoPakowaniaDds,
-    pub(crate) dane_temp_do_rozpakowywania_dds: DaneDoRozpakowaniaDds,
-    pub(crate) dane_temp_do_rozpakowania_dds_formaty_zdjec: WybranyFormatZdjecia,
+    pub(crate) dane_dds_pak: DaneDdsPak,
+    pub(crate) dane_dds_rozpak: DaneDdsUnpak,
     uchwyt_szumu: image::Handle,
 
     pub temat:UstawieniaThemeWsio,
 
 }
-use crate::ui::program_pomniejsze::style_fn::hint_master::hint_btn;
 
-// pub fn generuj_szum_pro() -> image::Handle {
-//     let width = 1024;
-//     let height = 1024;
-//
-//     // 1. Pobieramy ziarno całkowicie bez użycia 'thread_rng' i słowa 'gen'
-//     // rand::random() to najprostszy sposób na u32 w nowym randzie
-//     let ziarno_dla_szumu: u32 = rand::random();
-//
-//     // 2. Inicjalizacja Fbm (Fractal Brownian Motion)
-//     let fbm = Fbm::<Perlin>::new(ziarno_dla_szumu);
-//
-//     let mut pixels = Vec::with_capacity(width * height * 4);
-//     let skala_zoom = 0.08;
-//
-//     for y in 0..height {
-//         for x in 0..width {
-//             // noise::NoiseFn wykorzystuje metodę .get() - to jest bezpieczne
-//             let wartosc_szumu = fbm.get([x as f64 * skala_zoom, y as f64 * skala_zoom]);
-//
-//             // Mapujemy [-1.0, 1.0] na zakres [0, 255]
-//             let n = (((wartosc_szumu + 1.0) / 2.0) * 255.0).clamp(0.0, 255.0) as u8;
-//
-//             pixels.push(n); // R
-//             pixels.push(n); // G
-//             pixels.push(n); // B
-//
-//             // Bardzo niski alpha (przezroczystość), żeby tylko "rozbić" banding
-//             pixels.push(5);
-//         }
-//     }
-//
-//     // Handle::from_rgba w nowym Iced jest standardem
-//     image::Handle::from_rgba(width as u32, height as u32, pixels)
-// }
+use crate::ui::podstrony::binarka::main::binarka_view;
+use crate::ui::podstrony::dds::main::dds_view;
+use crate::ui::podstrony::konwersja::main::konwersja_view;
+use crate::ui::podstrony::merging::main::merge_view;
+use crate::ui::podstrony::settings::main::ustawienia_view;
+use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
+use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
+use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::BinPakMsg;
+use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
+use crate::widget::button::przycisk_glowne_menu;
+use crate::widget::colors_n_stuff::{KOLOR_BRILIANT_CRIMSON, KOLOR_COTTON_CANDY, KOLOR_CRIMSON_GLORY, KOLOR_CZCIONKI_SREDNI, KOLOR_LIGHT_PINK, KOLOR_PEACH_PUFF, KOLOR_SPANISH_ORANGE, KOLOR_TŁA};
+use crate::widget::styles::styl_przycisków;
+
+
 pub fn generuj_ziarno() -> image::Handle {
     let width = 512;
     let height = 512;
@@ -96,22 +78,12 @@ pub fn generuj_ziarno() -> image::Handle {
 
     let mnożnik = (u16::MAX as f64 / u8::MAX as f64).round()  ;
     for _ in 0..(width * height) {
-        // let baza: u16 = rand::random();
-        // let r_rand: u16 = rand::random();
-        // let g_rand: u16 = rand::random();
-        // let b_rand: u16 = rand::random();
-        //
-        // // Twoja logika: (Random_kanału + Baza/2) / 2
-        // // Przesunięcie o 8 bitów w prawo (>> 8) to najszybsze dzielenie przez 256
-        // let r = ((r_rand / 2 + baza / 4) >> 7) as u8;
-        // let g = ((g_rand / 2 + baza / 4) >> 7) as u8;
-        // let b = ((b_rand / 2 + baza / 4) >> 7) as u8;
 
         let ziarno: u16 = rand::random();
-        let r: u8 = ((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(0., u8::MAX as f64)  as u8 ;
+        let r: u8 = ((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(1., u8::MAX as f64)  as u8 ;
         let g: u8 = ((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(0., u8::MAX as f64)  as u8 ;
         let b: u8 = ((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(0., u8::MAX as f64)  as u8 ;
-        let a: u8 = (((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(1., u8::MAX as f64) / 15. ).round()  as u8 ;
+        let a: u8 = (((rand::random::<u16>() as f64 + (ziarno as f64 / 2.)) / (2. * mnożnik)).round().clamp(1., u8::MAX as f64) / 10. ).round()  as u8 ;
 
 
         pixels.push(r);
@@ -139,24 +111,24 @@ impl Program {
                 ui_ustawienia: UstawieniaMenu::UstawieniaJęzyka {
                     jezyk: startowy_jezyk,
                 },
-                dane_temp_do_łączenia_zdjęć: DaneDoŁączeniaZdjęć {
+                dane_merge: DaneMerge {
                     sciezka_r: None,
                     sciezka_g: None,
                     sciezka_b: None,
                     sciezka_a: None,
                     sciezka_out: PathBuf::new(),
-                    out_format: OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg {
+                    rozszerzenie: RozszerzeniaPojedyncze::Jpg {
                         jakosc: 90,
-                        bit_depth: OptFormatyKoloruObrazOgólny::B8,
-                        sampling: JpgSamplingFac::R444,
+                        bit_depth: BdepthJpg::Rgb8,
+                        sampling: ForJpgSamplingFac::R444,
                         progresywny: false,
-                        quant: JpgQuant::Default,
+                        quant: ForJpgQuant::Default,
                         scans:4,
                     },
-                    tag: OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,
+                    tag: ImgExtTag::Jpg,
                     nazwa: String::new(),
                 },
-                dane_temp_do_kompresji_plików: DaneDoKompresjaPlików {
+                dane_bin_pak: DaneBinPak {
                     ścieżka_in: PathBuf::new(),
                     ścieżka_out: PathBuf::new(),
                     kompresja: OptKompresjaPlikówPoziomKompresjiZstd::Standard,
@@ -164,7 +136,7 @@ impl Program {
                     foldery: true,
                     filtracja: OptKompresjaPlikówFiltracjaPlików::Wszystkie,
                 },
-                dane_temp_do_dekompresji_plików: DaneDoDekompresjaPlików {
+                dane_bin_unpak: DaneBinUnpak {
                     ścieżka_pliku: PathBuf::new(),
                     ścieżka_docelowa: PathBuf::new(),
                 },
@@ -174,55 +146,50 @@ impl Program {
                 status_zmiany_fot_log: Default::default(),
                 status_dds_pakowanie:  Default::default(),
                 status_dds_rozpakowywanie: Default::default(),
-                ui_dds_podmenu: StronyDds::ZplikuDoDds,
                 zdjecia_edycja_co_jest_wybrane: (false, false),
                 zdjecia_edycja_co_jest_na_out: false,
 
-                dane_temp_do_zbiorowe_przetwarzanie_zdjęć: DaneDoBathKonwersjaZdjec {
-                    ścieżka_wejściowa: PathBuf::new(),
-                    ścieżka_wyjściowa: PathBuf::new(),
-                    opcje_rozdzielczości: Vec::from([OptRozdzielczościObrazów::R2k]),
-                    // dane_exif: DaneExif,
+                dane_konw:  DaneKonw {
+                    ścieżka_wejściowa: Default::default(),
+                    ścieżka_wyjściowa: Default::default(),
+                    opcje_rozdzielczości: Vec::from([Rozdzielczości::R2k]),
                     noising: None,
-                    rozszerzenia_plików_zdjęciowych: Vec::from([
-                        OptRozszerzeniaPlikówZdjęciowych::Jpg {
-                            jakosc: 90,
-                            progresywny: false,
-                            bit_depth: Vec::from([OptFormatyKoloruObrazOgólny::B8]),
-                            sampling: JpgSamplingFac::R420,
-                            quant: JpgQuant::Default,
-                            scans: 4,
-                        }
-                    ]),
-                    tag: Vec::from([OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg]),
-                    inter: OptInterpolacja::Lanczos3,
+                    rozszerzenia:  Vec::from([ImgExt::Jpg {
+                        jakosc: 90,
+                        progresywny: false,
+                        bit_depth: Vec::from([BdepthJpg::Rgb8]),
+                        sampling: Default::default(),
+                        quant: Default::default(),
+                        scans: 4,
+                    }]),
+                    tag: Vec::from([ImgExtTag::Jpg]),
+                    inter: OptInterpolacja::Nearest,
                     alfa_rgb: (0, 0, 0),
-                },
+                } ,
                 do_nothing: false,
                 startowy_jezyk: locale.clone(),
-                
-                dane_temp_do_pakowania_dds: DaneDoPakowaniaDds {
+
+                dane_dds_pak: DaneDdsPak {
                     ścieżka_wejściowa: None,
                     ścieżka_wyjściowa: PathBuf::new(),
                     nazwa: String::new(),
-                    format: OptFormatDds::DxgiFormatBc7Unorm,
-                    kompresja: OptKompresjaDds::Normal,
+                    format: ForDds::DxgiFormatBc7Unorm,
+                    kompresja: ForDdsKompresja::Normal,
                 },
-                dane_temp_do_rozpakowywania_dds: DaneDoRozpakowaniaDds {
+                dane_dds_rozpak: DaneDdsUnpak {
                     ścieżka_wejściowa: PathBuf::new(),
                     ścieżka_wyjściowa: PathBuf::new(),
                     nazwa: String::new(),
-                    rozszerzenie: OptRozszerzeniaPlikówZdjęciowych::Jpg {
+                    rozszerzenie: ImgExt::Jpg {
                         jakosc: 90,
                         progresywny: false,
-                        bit_depth: vec![OptFormatyKoloruObrazOgólny::B8],
-                        sampling: JpgSamplingFac::R420,
-                        quant: JpgQuant::Default,
+                        bit_depth: vec![BdepthJpg::Rgb8],
+                        sampling: ForJpgSamplingFac::R420,
+                        quant: ForJpgQuant::Default,
                         scans: 4,
                     },
-                    tag: OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg,
+                    tag: ImgExtTag::Jpg,
                 },
-                dane_temp_do_rozpakowania_dds_formaty_zdjec: WybranyFormatZdjecia::Jpg,
                 uchwyt_szumu: generuj_ziarno(),
                 temat: UstawieniaThemeWsio {
                     kolory: ObecnyColorTheme {
@@ -240,6 +207,7 @@ impl Program {
                         low: 0.2,
                         min: 0.0,
                         kolor: Color::WHITE,
+                        err_font: Color::from_rgba(1.,0.5,0.5,0.8),
                         bground: KOLOR_TŁA,
                         bground_lewy: Color::from_rgb(0.1, 0.11, 0.13),
                     },
@@ -252,12 +220,23 @@ impl Program {
                         kolor: Color::WHITE,
                     },
                     ustawienia: Ustawienia { 
-                        halp_menu: false 
+                        halp_menu: false,
+                        debug_menu: false,
                     },
                     temp: Temp { 
-                        aktywny_proces: ActProces::Żodyn, 
-                        aktywne_okno: UiPodstrony::BinPakowanie
+                        aktywny_proces: None,
+                        aktywne_okno: UiPods::BinPak,
+                        start_btn_status: StartBtnStatus{
+                            bin_pak: BtnState::LackData,
+                            bin_unpak: BtnState::LackData,
+                            konwersja: BtnState::LackData,
+                            dds_pak: BtnState::LackData,
+                            dds_unpak: BtnState::LackData,
+                            laczenie: BtnState::LackData,
+                        },
                     },
+                    btn_state: HashMap::new()
+                    /*BUTTON_IDS.iter().map(|&id| (id, BtnState::Active)).collect() */,
                 },
             },
             Task::batch(Vec::from([
@@ -282,7 +261,7 @@ impl Program {
         match message {
             Message::InitLogStartowy => {
                 let powitanie = format!(
-                    "{}!!!!!\n {}: {}\n  {}: {}\n   {}, \n    {}: {}\n---------------------------------------",
+                    "{}!!!!!\n {}: {}\n  {}: {}\n   {}, \n    {}: {}\n{}\n---------------------------------------",
                     aktualny_jezyk.t(if Local::now().hour() < 6 {
                         "log_status_welcome_msg_welcome_morning"
                     } else if Local::now().hour() > 19 {
@@ -296,79 +275,754 @@ impl Program {
                     Local::now().format("%H:%M:%S"),
                     aktualny_jezyk.t("log_status_welcome_msg_sys_rdy"),
                     aktualny_jezyk.t("log_status_welcome_msg_lang_detected"),
-                    self.startowy_jezyk
+                    self.startowy_jezyk,
+                    aktualny_jezyk.t("log_help_menu")
                 );
                 self.log_prawe_okno.push(powitanie);
 
             }
-
+            
             Message::UsuńLogi => self.log_prawe_okno = Vec::new(),
             Message::DevZmienJezyk(nowy) => {
                 self.ui_ustawienia = UstawieniaMenu::UstawieniaJęzyka { jezyk: nowy };
             }
 
-            Message::ZmienWariant(w) => {
-                self.temat.temp.aktywne_okno = w;
+            Message::TextInputHandling(string, typ) => {
+                match typ{
+                    TextInputType::BinKompPathIn => {
+                        self.dane_bin_pak.ścieżka_in = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::BinKompPathOut => {
+                        self.dane_bin_pak.ścieżka_out = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::BinKompNazwa => {
+                        self.dane_bin_pak.nazwa = string;
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::BinDekompPathIn => {
+                        self.dane_bin_unpak.ścieżka_pliku = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::BinDekompPathOut => {
+                        self.dane_bin_unpak.ścieżka_docelowa = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::KonwPathIn => {
+                        self.dane_konw.ścieżka_wejściowa = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::KonwPathOut => {
+                        self.dane_konw.ścieżka_wyjściowa = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::MergPathInR => {
+                        self.dane_merge.sciezka_r =
+                        if string.len() > 0 {
+                             Some(PathBuf::from(string))
+                        } else { None };
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::MergPathInG => {
+                        self.dane_merge.sciezka_g =
+                        if string.len() > 0 {
+                             Some(PathBuf::from(string))
+                        } else { None };
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::MergPathInB => {
+                        self.dane_merge.sciezka_b =
+                            if string.len() > 0 {
+                                Some(PathBuf::from(string))
+                            } else { None };
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::MergPathInA => {
+                        self.dane_merge.sciezka_a =
+                        if string.len() > 0 {
+                             Some(PathBuf::from(string))
+                        } else { None };
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::MergePathOut => {
+                        self.dane_merge.sciezka_out = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::MergeNazwa => {
+                        self.dane_merge.nazwa = string;
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::DdsPathOut => {
+                        self.dane_dds_pak.ścieżka_wyjściowa = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::DdsNazwa => {
+                        self.dane_dds_pak.nazwa = string;
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::DdsRozPathIn => {
+                        self.dane_dds_rozpak.ścieżka_wejściowa = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::DdsRozPathOut => {
+                        self.dane_dds_rozpak.ścieżka_wyjściowa = PathBuf::from(string);
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                    TextInputType::DdsRozNazwa => {
+                        self.dane_dds_rozpak.nazwa = string;
+                        let _ = self.update(Message::ChckStatus);
+                    }
+                }
             }
+            
+            Message::Dropdown(wybrane, proces) => {
+
+                    match proces {
+                        DropdownType::KonwersjaInterpolacja => {
+                            if let Some(v) = wybrane.downcast_ref::<OptInterpolacja>() {
+                                self.dane_konw.inter = *v;
+                            }
+                        }
+                        DropdownType::BinFilter => {
+                            if let Some(v) = wybrane.downcast_ref::<OptKompresjaPlikówFiltracjaPlików>() {
+                                self.dane_bin_pak.filtracja = v.clone();
+                            }
+                        }
+                        DropdownType::BinKompresja => {
+                            if let Some(v) = wybrane.downcast_ref::<OptKompresjaPlikówPoziomKompresjiZstd>() {
+                                self.dane_bin_pak.kompresja = v.clone();
+                            }
+                        }
+                        DropdownType::KonwersjaJpgQuant => {
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>() {
+                                if let Some(ImgExt::Jpg { quant, .. }) = self.dane_konw
+                                    .rozszerzenia
+                                    .iter_mut()
+                                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                                {
+                                    *quant = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::KonwersjaJpgSample => {
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>() {
+                                if let Some(ImgExt::Jpg { sampling, .. }) = self.dane_konw
+                                    .rozszerzenia
+                                    .iter_mut()
+                                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                                {
+                                    *sampling = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::KonwersjaKompresjaFf => {
+                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>() {
+                                if let Some(ImgExt::Ff { metoda_kompresji, .. }) = self.dane_konw
+                                    .rozszerzenia
+                                    .iter_mut()
+                                    .find(|f| matches!(f, ImgExt::Ff { .. }))
+                                {
+                                    *metoda_kompresji = v.clone().ustaw_domyslny_poziom();
+                                }
+                            }
+                        }
+                        DropdownType::KonwersjaAvifKompresja => {
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>() {
+                                if let Some(ImgExt::Avif { metoda_kompresji, .. }) = self.dane_konw
+                                    .rozszerzenia
+                                    .iter_mut()
+                                    .find(|f| matches!(f, ImgExt::Avif { .. }))
+                                {
+                                    *metoda_kompresji = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::KonwersjaAvifChroma => {
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>() {
+                                if let Some(ImgExt::Avif { chroma, .. }) = self.dane_konw
+                                    .rozszerzenia
+                                    .iter_mut()
+                                    .find(|f| matches!(f, ImgExt::Avif { .. }))
+                                {
+                                    *chroma = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::MergeJpgSample => {
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>() {
+                                if let RozszerzeniaPojedyncze::Jpg { ref mut sampling, .. } = self.dane_merge.rozszerzenie
+                                {
+                                    *sampling = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::MergeJpgQuant => {
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>() {
+                                if let RozszerzeniaPojedyncze::Jpg { ref mut quant, .. } = self.dane_merge.rozszerzenie
+                                {
+                                    *quant = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::MergeAvifChroma => {
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>() {
+                                if let RozszerzeniaPojedyncze::Avif { ref mut chroma, .. } = self.dane_merge.rozszerzenie
+                                {
+                                    *chroma = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::MergeAvifKompresja => {
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>() {
+                                if let RozszerzeniaPojedyncze::Avif { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
+                                {
+                                    *metoda_kompresji = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::MergeKompresjaFf => {
+                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>() {
+                                if let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
+                                {
+                                    *metoda_kompresji = v.clone().ustaw_domyslny_poziom();
+                                }
+                            }
+                        }
+                        DropdownType::DdsPakComp => {
+                            if let Some(v) = wybrane.downcast_ref::<ForDdsKompresja>() {
+                                self.dane_dds_pak.kompresja= v.clone();
+                            }
+                        }
+                        DropdownType::DdsPakFormat => {
+                            if let Some(v) = wybrane.downcast_ref::<ForDds>() {
+                                self.dane_dds_pak.format= v.clone();
+                            }
+                        }
+                        DropdownType::DdsKompresjaFf => {
+                            if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>() {
+                                if let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie
+                                {
+                                    *metoda_kompresji = v.clone().ustaw_domyslny_poziom();
+                                }
+                            }
+                        }
+                        DropdownType::DdsAvifKompresja => {
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>() {
+                                if let ImgExt::Avif { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie
+                                {
+                                    *metoda_kompresji = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::DdsAvifChroma => {
+                            if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>() {
+                                if let ImgExt::Avif { ref mut chroma, .. } = self.dane_dds_rozpak.rozszerzenie
+                                {
+                                    *chroma = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::DdsJpgQuant => {
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>() {
+                                if let ImgExt::Jpg { ref mut quant, .. } = self.dane_dds_rozpak.rozszerzenie
+                                {
+                                    *quant = v.clone();
+                                }
+                            }
+                        }
+                        DropdownType::DdsJpgSample => {
+                            if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>() {
+                                if let ImgExt::Jpg { ref mut sampling, .. } = self.dane_dds_rozpak.rozszerzenie
+                                {
+                                    *sampling = v.clone();
+                                }
+                            }
+                        }
+                    }
+
+            }
+            
+            Message::Przyciski(typ) => {
+                return match typ {
+                    ButtonType::BinKompPathIn => {
+                        self.update_message_pakowanie_binarki(BinPakMsg::InputPath)
+                            .map(Message::PakowanieBinarki)
+                    }
+                    ButtonType::BinKompPathOut => {
+                        self.update_message_pakowanie_binarki(BinPakMsg::OutputPath)
+                            .map(Message::PakowanieBinarki)
+                    }
+                    ButtonType::BinDekompPathIn => {
+                        self.update_message_rozpakowanie_binarki(BinUnpakMsg::InputFile)
+                            .map(Message::RozpakowanieBinarki)
+                    }
+                    ButtonType::BinDekompPathOut => {
+                        self.update_message_rozpakowanie_binarki(BinUnpakMsg::OutputPath)
+                            .map(Message::RozpakowanieBinarki)
+                    }
+                    ButtonType::KonwPathInFile => {
+                        self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::PathInFile)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć)
+                    }
+                    ButtonType::KonwPathInFolder => {
+                        self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::PathInFolder)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć)
+                    }
+                    ButtonType::KonwPathOut => {
+                        self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::PathOutFolder)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć)
+                    }
+                    ButtonType::KonwRozszerzenia => {
+                        self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::Nic)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć)
+                    }
+                    ButtonType::KonwJpgProg => {
+                        self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::JpgProg)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć)
+                    }
+                    ButtonType::KonwAvifLoss => {
+                        self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::AvifLossyToggle)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć)
+                    }
+                    ButtonType::KonwWebpLoss => {
+                        self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::WebpLossless)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć)
+                    }
+                    ButtonType::MergPathInR => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::WybierzPlikInFotoLaczenieR)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::MergPathInG => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::WybierzPlikInFotoLaczenieG)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::MergPathInB => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::WybierzPlikInFotoLaczenieB)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::MergPathInA => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::WybierzPlikInFotoLaczenieA)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::MergeRozszerzenia => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::Nic)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::MergeJpgProg => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::JpgProg)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::MergeAvifLoss => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::AvifLossyToggle)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::MergePathOut => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::WybierzFolderOutFotoLaczenie)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::MergeWebpLoss => {
+                        self.update_message_łączenie_zdjęć(MergeMsg::ZdjeciaLaczenieZmianalosslessWebp)
+                            .map(Message::ŁączenieZdjęć)
+                    }
+                    ButtonType::DdsPathInFiles => {
+                        self.update_message_dds(DdsMsg::PakowaniePathInFiles)
+                            .map(Message::Dds)
+                    }
+                    ButtonType::DdsPathInFolders => {
+                        self.update_message_dds(DdsMsg::PakowaniePathInFolders)
+                            .map(Message::Dds)
+                    }
+                    ButtonType::DdsPathOut => {
+                        self.update_message_dds(DdsMsg::PakowaniePathOutBtn)
+                            .map(Message::Dds)
+                    }
+                    ButtonType::DdsRozPathIn => {
+                        self.update_message_dds(DdsMsg::RozpakInPathBtn)
+                            .map(Message::Dds)
+                    }
+                    ButtonType::DdsRozPathOut => {
+                        self.update_message_dds(DdsMsg::RozpakOutPathBtn)
+                            .map(Message::Dds)
+                    }
+                    ButtonType::DdsRozszerzenia => {
+                        self.update_message_dds(DdsMsg::Nic)
+                            .map(Message::Dds)
+                    }
+                    ButtonType::DdsJpgProg => {
+                        self.update_message_dds(DdsMsg::JpgProg)
+                            .map(Message::Dds)
+                    }
+                    ButtonType::DdsWebpLoss => {
+                        self.update_message_dds(DdsMsg::WebpLoss)
+                            .map(Message::Dds)
+                    }
+                    ButtonType::DdsAvifLoss => {
+                        self.update_message_dds(DdsMsg::AvifLoss)
+                            .map(Message::Dds)
+                    }
+                }
+            }
+
+            Message::Slidery(typ,wartość ) => {
+                match typ{
+                    SliderType::KonwJpgQuality => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                        {
+                            if let ImgExt::Jpg { jakosc, .. } = format {
+                                *jakosc = wartość as u8;
+                            }
+                        }
+                    }
+                    SliderType::KonwersjaJpgScans => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                        {
+                            if let ImgExt::Jpg { scans, .. } = format {
+                                *scans = wartość as u8;
+                            }
+                        }
+                    }
+                    SliderType::KonwersjaAvifSpeed => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Avif { .. }))
+                        {
+                            if let ImgExt::Avif { speed, .. } = format {
+                                *speed = wartość;
+                            }
+                        }
+                    
+                    }
+                    SliderType::KonwersjaAvifQuality => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Avif { .. }))
+                        {
+                            if let ImgExt::Avif { lossy, .. } = format {
+                                *lossy = Some(wartość as u8);
+                            }
+                        }
+                    }
+                    SliderType::KonwersjaPngKompresja => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Png { .. }))
+                        {
+                            if let ImgExt::Png { kompresja, .. } = format {
+                                *kompresja = wartość as u8;
+                            }
+                        }
+                    }
+                    SliderType::KonwersjaWebpJakosc => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Webp { .. }))
+                        {
+                            if let ImgExt::Webp { jakosc, .. } = format {
+                                *jakosc = wartość as u8;
+                            }
+                        }
+                    }
+                    SliderType::KonwersjaFfZstd => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Ff { .. }))
+                        {
+                            if let ImgExt::Ff { metoda_kompresji, .. } = format {
+                                *metoda_kompresji = ForFfKompresja::Zstd(wartość as u8);
+                            }
+                        }
+                    }
+                    SliderType::KonwersjaFfBzip2 => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Ff { .. }))
+                        {
+                            if let ImgExt::Ff { metoda_kompresji, .. } = format {
+                                *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
+                            }
+                        }
+                    }
+                    SliderType::KonwersjaFfXz => {
+                        if let Some(format) = self.dane_konw
+                            .rozszerzenia
+                            .iter_mut()
+                            .find(|f| matches!(f, ImgExt::Ff { .. }))
+                        {
+                            if let ImgExt::Ff { metoda_kompresji, .. } = format {
+                                *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
+                            }
+                        }
+                    }
+                    SliderType::KonwersjaNoising => {
+                        if wartość == 0 {
+                            self.dane_konw.noising = None;
+                        } else {
+                            self.dane_konw.noising = Some(wartość as u8);
+                        }
+                    }
+                    SliderType::MergeJpgQuality => {
+                        if let RozszerzeniaPojedyncze::Jpg { ref mut jakosc, .. } = self.dane_merge.rozszerzenie {
+                            *jakosc = wartość as u8;
+                        }
+                    }
+                    SliderType::MergeJpgScans => {
+                        if let RozszerzeniaPojedyncze::Jpg { ref mut scans, .. } = self.dane_merge.rozszerzenie {
+                            *scans = wartość as u8;
+                        }
+                    }
+                    SliderType::MergeAvifSpeed => {
+                        if let RozszerzeniaPojedyncze::Avif { ref mut speed, .. } = self.dane_merge.rozszerzenie {
+                            *speed = wartość ;
+                        }
+                    }
+                    SliderType::MergeAvifQuality => {
+                        if let RozszerzeniaPojedyncze::Avif { ref mut lossy, .. } = self.dane_merge.rozszerzenie {
+                            *lossy = Some(wartość as u8) ;
+                        }
+                    }
+                    SliderType::MergePngKompresja => {
+                        if let RozszerzeniaPojedyncze::Png { ref mut kompresja, .. } = self.dane_merge.rozszerzenie {
+                            *kompresja = wartość as u8 ;
+                        }
+                    }
+                    SliderType::MergeWebpJakosc => {
+                            if let RozszerzeniaPojedyncze::Webp { ref mut jakosc, .. } = self.dane_merge.rozszerzenie {
+                                *jakosc = wartość as u8 ;
+                            }
+                    }
+                    SliderType::MergeFfZstd => {
+                        if let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
+                            *metoda_kompresji = ForFfKompresja::Zstd(wartość as u8);
+                        }
+                    }
+                    SliderType::MergeFfBzip2 => {
+                        if let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
+                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
+                        }
+                    }
+                    SliderType::MergeFfXz => {
+                        if let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
+                            *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
+                        }
+                    }
+                    SliderType::DdsJpgScans => {
+                        if let ImgExt::Jpg { ref mut scans, .. } = self.dane_dds_rozpak.rozszerzenie {
+                            *scans = wartość as u8;
+                        }
+                    }
+                    SliderType::DdsJpgQuality => {
+                        if let ImgExt::Jpg { ref mut jakosc, .. } = self.dane_dds_rozpak.rozszerzenie {
+                            *jakosc = wartość as u8;
+                        }
+                    }
+                    SliderType::DdsWebpJakosc => {
+                        if let ImgExt::Webp { ref mut jakosc, .. } = self.dane_dds_rozpak.rozszerzenie {
+                            *jakosc = wartość as u8;
+                        }
+                    }
+                    SliderType::DdsFfBzip2 => {
+                        if let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie {
+                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
+                        }
+                    }
+                    SliderType::DdsFfZstd => {
+                        if let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie {
+                            *metoda_kompresji = ForFfKompresja::Zstd(wartość as u8);
+                        }
+                    }
+                    SliderType::DdsFfXz => {
+                        if let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie {
+                            *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
+                        }
+                    }
+                    SliderType::DdsAvifSpeed => {
+                        if let ImgExt::Avif { ref mut speed, .. } = self.dane_dds_rozpak.rozszerzenie {
+                            *speed = wartość;
+                        }
+                    }
+                    SliderType::DdsAvifQuality => {
+                        if let ImgExt::Avif { ref mut lossy, .. } = self.dane_dds_rozpak.rozszerzenie {
+                            *lossy = match lossy{
+                                Some(_) =>  Some(wartość as u8),
+                                None => None
+                            };
+
+                        }
+                    }
+                    SliderType::DdsPngKompresja => {
+                        if let ImgExt::Png { ref mut kompresja, .. } = self.dane_dds_rozpak.rozszerzenie {
+                                *kompresja = wartość as u8;
+                        }
+                    }
+                }
+            }
+            
+            Message::Startujemy( proces ) => {
+                match proces {
+                    ActProces::BinPak => {
+                        return self.update_message_pakowanie_binarki(BinPakMsg::Uruchom)
+                            .map(Message::PakowanieBinarki);
+                    }
+                    ActProces::BinUnpak => {
+                        return self.update_message_rozpakowanie_binarki(BinUnpakMsg::Uruchom)
+                            .map(Message::RozpakowanieBinarki);
+                    }
+                    ActProces::DdsPak => {}
+                    ActProces::DdsUnpak => {}
+                    ActProces::Merge => {
+                        return self.update_message_łączenie_zdjęć(MergeMsg::Uruchom)
+                            .map(Message::ŁączenieZdjęć);
+                    }
+                    ActProces::Konw => {
+                        return self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::Uruchom)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć);
+                    }
+                }
+            }
+
+            Message::ZmienWariant(w) => { self.temat.temp.aktywne_okno = w; }
 
 
             Message::DoNothingxD(xx) => self.do_nothing = xx,
             Message::DoNothingU8xD(_) => {}
             Message::DoNothingStringxD(_x) => self.do_nothing = false,
-            
-            
+
+
             Message::PakowanieBinarki(msg) => {
-                // let _ =self.update_message_łączenie_zdjęć(msg).map(Message::ŁączenieZdjęć);
                 return self.update_message_pakowanie_binarki(msg)
                     .map(Message::PakowanieBinarki);
             },
             Message::RozpakowanieBinarki(msg) => {
-                // let _ =self.update_message_łączenie_zdjęć(msg).map(Message::ŁączenieZdjęć);
                 return self.update_message_rozpakowanie_binarki(msg)
                     .map(Message::RozpakowanieBinarki);
             },
             Message::ZbiorowePrzetwarzanieZdjęć(msg) => {
-                // let _ =self.update_message_łączenie_zdjęć(msg).map(Message::ŁączenieZdjęć);
                 return self.update_message_zbiorowe_przetwarzanie_zdjec(msg)
                     .map(Message::ZbiorowePrzetwarzanieZdjęć);
             },
-
             Message::ŁączenieZdjęć(msg) => {
-                // let _ =self.update_message_łączenie_zdjęć(msg).map(Message::ŁączenieZdjęć);
                 return self.update_message_łączenie_zdjęć(msg)
-                                .map(Message::ŁączenieZdjęć);
+                    .map(Message::ŁączenieZdjęć);
             },
-            Message::Dds(msg) => {return self.update_message_dds(msg)
-                .map( Message::Dds) 
+            Message::Dds(msg) => {
+                return self.update_message_dds(msg)
+                    .map(Message::Dds);
             },
 
-            
-            
+
+
+
+
+            Message::ChckStatus => {
+                // bin kompresja
+                let check_bin_kompresja = self.dane_bin_pak.ścieżka_in.exists() &&
+                    self.dane_bin_pak.ścieżka_out.exists() &&
+                    !self.dane_bin_pak.nazwa.is_empty();
+
+                self.temat.temp.start_btn_status.bin_pak = match (check_bin_kompresja, self.temat.temp.aktywny_proces.clone()) {
+                    (true, None)  => BtnState::Active,
+                    (false, None) => BtnState::LackData,
+                    (_, Some(ActProces::BinUnpak)) => BtnState::Processing,
+                    (_, Some(_))  => BtnState::Disabled,
+                };
+
+                // bin dekompresja
+                let check_bin_dekompresja = self.dane_bin_unpak.ścieżka_pliku.is_file() &&
+                    self.dane_bin_unpak.ścieżka_docelowa.exists();
+
+                self.temat.temp.start_btn_status.bin_unpak = match (check_bin_dekompresja, self.temat.temp.aktywny_proces.clone()) {
+                    (true, None)  => BtnState::Active,
+                    (false, None) => BtnState::LackData,
+                    (_, Some(ActProces::BinPak)) => BtnState::Processing,
+                    (_, Some(_))  => BtnState::Disabled,
+                };
+
+                // konwersja
+                let konwersja_bdepth_check = self.dane_konw.rozszerzenia
+                    .iter()
+                    .all(|format| format.ma_wybrany_bit_depth());
+                let check_konwersja = self.dane_konw.ścieżka_wejściowa.exists() &&
+                    self.dane_konw.ścieżka_wyjściowa.exists() &&
+                    self.dane_konw.opcje_rozdzielczości.len() != 0 &&
+                    self.dane_konw.rozszerzenia.len() != 0 &&
+                    konwersja_bdepth_check;
+
+                self.temat.temp.start_btn_status.konwersja = match (check_konwersja, self.temat.temp.aktywny_proces.clone()) {
+                    (true, None)  => BtnState::Active,
+                    (false, None) => BtnState::LackData,
+                    (_, Some(ActProces::Konw)) => BtnState::Processing,
+                    (_, Some(_))  => BtnState::Disabled,
+                };
+
+                //łączenie fot
+                let check_laczenie =
+                    (
+                        self.dane_merge.sciezka_r.is_some() ||
+                        self.dane_merge.sciezka_g.is_some() ||
+                        self.dane_merge.sciezka_b.is_some() ||
+                        self.dane_merge.sciezka_a.is_some()
+                    ) &&
+                        !self.dane_merge.nazwa.is_empty() &&
+                        self.dane_merge.sciezka_out.exists();
+
+                self.temat.temp.start_btn_status.laczenie = match (check_laczenie, self.temat.temp.aktywny_proces.clone()) {
+                    (true, None)  => BtnState::Active,
+                    (false, None) => BtnState::LackData,
+                    (_, Some(ActProces::Merge)) => BtnState::Processing,
+                    (_, Some(_))  => BtnState::Disabled,
+                };
+
+                // dds pakowanie
+                let check_dds_pakowanie =
+                    self.dane_dds_pak.ścieżka_wejściowa.as_ref().is_some_and(|xx| xx.len() != 0) &&
+                        self.dane_dds_pak.ścieżka_wyjściowa.exists() &&
+                        !self.dane_dds_pak.nazwa.is_empty();
+
+                self.temat.temp.start_btn_status.dds_pak = match ( check_dds_pakowanie, self.temat.temp.aktywny_proces.clone()) {
+                    (true, None)  => BtnState::Active,
+                    (false, None) => BtnState::LackData,
+                    (_, Some(ActProces::DdsPak)) => BtnState::Processing,
+                    (_, Some(_))  => BtnState::Disabled,
+                };
+
+                //dds rozpakowanie
+
+                let check_dds_rozpakowanie =
+                    self.dane_dds_rozpak.ścieżka_wejściowa.is_file() &&
+                        self.dane_dds_rozpak.ścieżka_wyjściowa.exists() ;
+
+                self.temat.temp.start_btn_status.dds_unpak = match ( check_dds_rozpakowanie, self.temat.temp.aktywny_proces.clone()) {
+                    (true, None)  => BtnState::Active,
+                    (false, None) => BtnState::LackData,
+                    (_, Some(ActProces::DdsUnpak)) => BtnState::Processing,
+                    (_, Some(_))  => BtnState::Disabled,
+                };
+            }
             Message::EventOccurred(Event::Keyboard(iced::keyboard::Event::KeyPressed {
                 key,
                 modifiers,
                 ..
             })) => {
-                // match event {
-                //     // ... Twoja obsługa FileDropped ...
-                //
-                //     Event::Keyboard(iced::keyboard::Event::KeyPressed { key, modifiers, .. }) => {
-                //         // 1. Obsługa Ctrl + E (Przełączanie Dev Mode)
-                //         if modifiers.control() && key == iced::keyboard::Key::Character("e".into()) {
-                //             self.ui_main_wariant_dev = !self.ui_main_wariant_dev;
-                //             // Opcjonalnie dodaj log, żebyś wiedział, że zadziałało
-                //             self.log_prawe_okno.push(format!("Dev Mode: {}", self.ui_main_wariant_dev));
-                //         }
-                //     }
-                //     _ => {}
-                // }
 
-                // 1. Obsługa Ctrl + E (Przełączanie Dev Mode)
+                
                 if modifiers.control() && key == iced::keyboard::Key::Character("e".into()) {
-                    self.ui_main_wariant_dev = !self.ui_main_wariant_dev;
+                    self.temat.ustawienia.debug_menu = !self.temat.ustawienia.debug_menu;
                     // Opcjonalnie dodaj log, żebyś wiedział, że zadziałało
                     self.log_prawe_okno
-                        .push(format!("Dev Mode: {}", self.ui_main_wariant_dev));
+                        .push(format!("Dev Mode: {}", self.temat.ustawienia.debug_menu));
                 }
                 if modifiers.control() && key == iced::keyboard::Key::Character("h".into()) {
                     self.temat.ustawienia.halp_menu = !self.temat.ustawienia.halp_menu;
@@ -383,15 +1037,11 @@ impl Program {
     }
     pub fn subscription(&self) -> iced::Subscription<Message> {
         iced::Subscription::batch(Vec::from([
-            // 1. Nasłuchiwanie na zmianę rozmiaru okna
 
-            // 2. Nasłuchiwanie na ogólne zdarzenia (klawiatura, mysz itp.)
             iced::event::listen().map(Message::EventOccurred),
         ]))
     }
 
-    // 3. POPRAWKA: Sygnatura VIEW (Iced 0.13+ oczekuje TYLKO &self)
-    // Błąd E0593 brał się stąd, że w poprzednim przykładzie sygnatura mogła sugerować trait-object lub stare API
     pub fn view<'a>(&'a self) -> Element<'a, Message> {
         let aktualny_jezyk = match &self.ui_ustawienia {
             UstawieniaMenu::UstawieniaJęzyka { jezyk } => jezyk,
@@ -407,96 +1057,12 @@ impl Program {
         // --- LEWA STRONA ---
         let przyciski_menu = container(
             Row::new()
-                .push(hint_btn(
-                    button(
-                        text(aktualny_jezyk.t("ui_main_btn_binary"))
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .center(),
-                    )
-                    .on_press(Message::ZmienWariant(UiPodstrony::BinPakowanie))
-                    .height(Length::Fill)
-                    .width(Length::FillPortion(5))
-                    .style(styl_przycisków(
-                        matches!(self.temat.temp.aktywny_proces, ActProces::PakowaniePliku | ActProces::RozpakowaniePliku),
-                        matches!(self.temat.temp.aktywne_okno, UiPodstrony::BinPakowanie | UiPodstrony::BinRozpakowanie),
-                        &self.temat.kolory.binarka, &self.temat
-                    )),
-                    aktualny_jezyk.t("hint_ui_main_btn_binary"),
-                    &self.temat
-                ))
-                .push(hint_btn(
-                    button(
-                        text(aktualny_jezyk.t("ui_main_btn_conversion"))
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .center(),
-                    )
-                    .on_press(Message::ZmienWariant(UiPodstrony::KonwersjaFoto))
-                    .height(Length::Fill)
-                    .width(Length::FillPortion(5))
-                    .style(styl_przycisków(
-                        self.temat.temp.aktywny_proces == ActProces::KonwersjaZdjęć,
-                        matches!(self.temat.temp.aktywne_okno, UiPodstrony::KonwersjaFoto | UiPodstrony::KonwersjaFotoRozdzielczości | UiPodstrony::KonwersjaFotoRozszerzenia | UiPodstrony::KonwersjaFotoŚcieżki | UiPodstrony::KonwersjaFotoMenuReszta),
-                        &self.temat.kolory.konwersja, &self.temat
-                    )),
-                    aktualny_jezyk.t("hint_ui_main_btn_conversion"),
-                    &self.temat
-                ))
-                .push(
-                    hint_btn(
-                    button(
-                        text(aktualny_jezyk.t("ui_main_btn_merge"))
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .center(),
-                    )
-                    .on_press(Message::ZmienWariant(UiPodstrony::DaneDoŁączeniaZdjęćo))
-                    .height(Length::Fill)
-                    .width(Length::FillPortion(5))
-                    .style(styl_przycisków(
-                        self.temat.temp.aktywny_proces == ActProces::ŁączenieZdjęć,
-                        self.temat.temp.aktywne_okno == UiPodstrony::DaneDoŁączeniaZdjęćo,
-                        &self.temat.kolory.laczenie,
-                        &self.temat
-                    )),
-                    aktualny_jezyk.t("hint_ui_main_btn_merge"),&self.temat
-                ))
-                .push(hint_btn(
-                    button(
-                        text(aktualny_jezyk.t("ui_main_btn_dds"))
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .center(),
-                    )
-                    .on_press(Message::ZmienWariant(UiPodstrony::ObslugaDds))
-                    .height(Length::Fill)
-                    .width(Length::FillPortion(5))
-                    .style(styl_przycisków(
-                        self.temat.temp.aktywny_proces == ActProces::DdsPakowanie || self.temat.temp.aktywny_proces == ActProces::DdsRozpakowanie,
-                        self.temat.temp.aktywne_okno == UiPodstrony::ObslugaDds,
-                        &self.temat.kolory.dds, &self.temat
-                    )),
-                    aktualny_jezyk.t("hint_ui_main_btn_dds"),&self.temat
-                ))
-                .push(
-                    hint_btn(
-                    button(
-                        text(aktualny_jezyk.t("ui_main_btn_settings"))
-                            .width(Length::Fill)
-                            .height(Length::Fill)
-                            .center(),
-                    )
-                    .on_press(Message::ZmienWariant(UiPodstrony::Dev))
-                    .height(Length::Fill)
-                    .width(Length::FillPortion(5))
-                    .style(styl_przycisków(
-                        false,
-                        self.temat.temp.aktywne_okno == UiPodstrony::Dev,
-                        &self.temat.kolory.ustawienia, &self.temat
-                    )),
-                    aktualny_jezyk.t("hint_ui_main_btn_settings"),&self.temat
-                ))
+                .push(przycisk_glowne_menu(PrzyciskiGlowneMenu::Binarka, aktualny_jezyk, &self.temat))
+                .push(przycisk_glowne_menu(PrzyciskiGlowneMenu::Konwersja, aktualny_jezyk, &self.temat))
+                .push(przycisk_glowne_menu(PrzyciskiGlowneMenu::Łączenie, aktualny_jezyk, &self.temat))
+                .push(przycisk_glowne_menu(PrzyciskiGlowneMenu::Dds, aktualny_jezyk, &self.temat))
+                .push(przycisk_glowne_menu(PrzyciskiGlowneMenu::Ustawienia, aktualny_jezyk, &self.temat))
+
                 .spacing(10),
         )
         .width(Length::Fill)
@@ -519,42 +1085,41 @@ impl Program {
 
         // WYWOŁANIE WYDZIELONYCH MODUŁÓW
         let content_lewy = match self.temat.temp.aktywne_okno {
-            UiPodstrony::BinPakowanie | UiPodstrony::BinRozpakowanie =>
-                crate::ui::program_pomniejsze::ui_binarka::view_binarka(
-                    &self.dane_temp_do_kompresji_plików,
-                    &self.dane_temp_do_dekompresji_plików,
-                    aktualny_jezyk,
+            UiPods::BinPak | UiPods::BinUnpak =>
+                binarka_view(
+                    &self.dane_bin_pak,
+                    &self.dane_bin_unpak,
                     &self.status_pakowanie_log,
                     &self.status_rozpakowywania_log,
+                    aktualny_jezyk,
                     &self.temat
                 ),
-            UiPodstrony::KonwersjaFoto => {
-                crate::ui::program_pomniejsze::ui_zdjecia_edycja::view_foto_change(
-                    &self.dane_temp_do_zbiorowe_przetwarzanie_zdjęć,
-                    aktualny_jezyk,
-                    &self.zdjecia_edycja_co_jest_na_out,
+            UiPods::KonwPath | UiPods::KonwRes | UiPods::KonwEtc | UiPods::KonwExt => {
+                konwersja_view(
+                    &self.dane_konw,
                     &self.status_zmiany_fot_log,
+                    aktualny_jezyk,
+                    // &self.zdjecia_edycja_co_jest_na_out,
                     &self.temat
                 )
             }
-            UiPodstrony::DaneDoŁączeniaZdjęćo => {
-                crate::ui::program_pomniejsze::ui_laczenie_zdjec::view_laczenie(
-                    self.dane_temp_do_łączenia_zdjęć.clone(),
-                    *aktualny_jezyk,
+            UiPods::Merge | UiPods::MergeExt => {
+                merge_view(
+                    &self.dane_merge,
+                    aktualny_jezyk,
                     &self.temat
                 )
             }
-            UiPodstrony::ObslugaDds => view_dds(
-                &self.dane_temp_do_pakowania_dds,
-                &self.dane_temp_do_rozpakowywania_dds,
-                &self.ui_dds_podmenu,
+            UiPods::DdsPak | UiPods::DdsUnpak | UiPods::DdsExt => dds_view(
+                &self.dane_dds_pak,
+                &self.dane_dds_rozpak,
                 aktualny_jezyk,
-                &self.status_dds_pakowanie,
-                &self.status_dds_rozpakowywanie,
                 &self.temat,
+                // &self.status_dds_pakowanie,
+                // &self.status_dds_rozpakowywanie,
             ),
-            /*OptUIWariantPodstrony::Dev */ _ => crate::ui::program_pomniejsze::dev::ui_ustawienia(&self.ui_ustawienia,&self.temat),
-            //_ => column![text("Opcja jest, lecz UI jeszcze nie").size(50)].into(),
+            UiPods::Ustawienia => ustawienia_view(&self.ui_ustawienia, &self.temat),
+            _ => column![text("Opcja jest, lecz UI jeszcze nie").size(50)].into(),
         };
 
         let lewa_kolumna =
@@ -636,12 +1201,13 @@ impl Program {
                             )
                             .height(Length::Fixed(25.))
                             .on_press(Message::UsuńLogi)
-                            .style(styl_przycisków(
-                                false,
-                                false,
-                                &self.temat.obecny_theme.bground_lewy,
-                                &self.temat
-                            )),
+                            .style(
+                                styl_przycisków(
+                                    &BtnState::Disabled,
+                                    &self.temat.obecny_theme.bground_lewy,
+                                    &self.temat
+                                )
+                            ),
                         )
                         .height(Length::Fixed(30.)),
                 )

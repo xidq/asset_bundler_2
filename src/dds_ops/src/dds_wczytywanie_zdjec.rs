@@ -1,6 +1,6 @@
 use crate::dds_export::save_rgba_image_with_mipmaps;
-use enumy::dane_do_przetwarzania::DaneDoPakowaniaDds;
-use enumy::opcje::OptKompresjaDds;
+use enumy::dane_do_przetwarzania::DaneDdsPak;
+use enumy::rozszerzenia::kompresje::ForDdsKompresja;
 use enumy::statusy::LogTxDoPakowanieDds;
 use futures::channel::mpsc;
 use futures::SinkExt;
@@ -13,16 +13,16 @@ use std::time::Instant;
 use walkdir::WalkDir;
 
 pub async fn dds_ogarnij_ze_zdjec_do_paczki(
-    dane: DaneDoPakowaniaDds,
+    dane: DaneDdsPak,
     mut tx: mpsc::Sender<LogTxDoPakowanieDds>,
 ) -> Result<(), std::io::Error> {
     let start_czas = Instant::now();
     let _ = tx.send(LogTxDoPakowanieDds::StatusPakowanieDdsStart).await;
     let kompresja = match &dane.kompresja {
-        OptKompresjaDds::Fast => {dds::CompressionQuality::Fast}
-        OptKompresjaDds::Normal => {dds::CompressionQuality::Normal}
-        OptKompresjaDds::High => {dds::CompressionQuality::High}
-        OptKompresjaDds::Unreasonable => {dds::CompressionQuality::Unreasonable}
+        ForDdsKompresja::Fast => {dds::CompressionQuality::Fast}
+        ForDdsKompresja::Normal => {dds::CompressionQuality::Normal}
+        ForDdsKompresja::High => {dds::CompressionQuality::High}
+        ForDdsKompresja::Unreasonable => {dds::CompressionQuality::Unreasonable}
     };
     let mut przerób: f32 = 0.;
 

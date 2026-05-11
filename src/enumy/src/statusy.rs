@@ -9,10 +9,12 @@ pub enum LogTxDoKompresjiPliku {
         suma: Option<u32>,
     },
     StatusKompresjaPlikówProcesKompresji {
-        procent: Option<u8>,
+        aktualny: u32,
+        suma: Option<u32>,
     },
     StatusKompresjaPlikówProcesSzyfrowania {
-        procent: Option<u8>,
+        aktualny: u32,
+        suma: Option<u32>,
     },
     StatusKompresjaPlikówBłąd(String),
     StatusKompresjaPlikówZakonczono {
@@ -47,8 +49,8 @@ pub enum LogTxDoDekompresjiPliku {
 pub enum LogTxDoBathKonwersjaZdjęć {
     StatusBathKonwersjaZdjęćStart,
     StatusBathKonwersjaZdjęćChecking(String),
-    StatusBathKonwersjaZdjęćRozpoczęto(u32, u8),
-    StatusBathKonwersjaZdjęćFiltrowaniePlików(u32),
+    StatusBathKonwersjaZdjęćRozpoczęto(u32, Option<u32>),
+    StatusBathKonwersjaZdjęćFiltrowaniePlików(Option<u32>),
     StatusBathKonwersjaZdjęćPominiętePliki { sciezka: String, powod: String },
     StatusBathKonwersjaZdjęćKoniec(String),
     StatusBathKonwersjaZdjęćBłąd(String),

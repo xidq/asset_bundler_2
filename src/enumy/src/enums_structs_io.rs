@@ -21,8 +21,8 @@ pub const FILTERFOTO: [&str; 16] = [
 pub struct LogPakowanie {
     pub zbieranie_plików: u32,
     pub pakowanie:(u32,Option<u32>),
-    pub kompresja: Option<u8>,
-    pub szyfrowanie: Option<u8>,
+    pub kompresja: (u32 ,Option<u32>),
+    pub szyfrowanie: (u32 ,Option<u32>),
     pub koniec: String,
     pub błąd: String,
 }
@@ -43,8 +43,8 @@ pub struct LogPrzetwarzanieFot {
     pub msg_walidacja: String,
     pub msg_proces: String,
     pub msg_end: String,
-    pub plik_początek: String,
-    pub plik_procent: u8,
+    pub plik_początek: Option<u32>,
+    pub plik_procent: (u32,Option<u32>),
     pub błąd: String,
 }
 #[allow(dead_code)]

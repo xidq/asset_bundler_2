@@ -1,24 +1,23 @@
 use crate::wczytanie_zdjec::aktualizuj_postep;
 use bzip2::Compression;
 use bzip2::write::BzEncoder;
-use enumy::opcje::{OptInterpolacja, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów};
+use enumy::opcje::OptInterpolacja;
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
-use futures::SinkExt;
-use futures::channel::mpsc;
 use futures::channel::mpsc::Sender;
 use image::DynamicImage;
 use image::imageops::FilterType;
-use std::error::Error;
-use std::fs::{File, create_dir, create_dir_all};
-use std::path::{Path, PathBuf};
+use std::fs::{create_dir_all, File};
+use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use xz2::write::XzEncoder;
 use encodery::halper::{usun_kanal_alpha, zaszumianie};
+use enumy::rozszerzenia::kompresje::ForFfKompresja;
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 
 pub async fn edycja_ff(
     mut bufor: DynamicImage,
-    rozdzielczości: &Vec<OptRozdzielczościObrazów>,
+    rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca: &String,
     OptInterpolacja: &OptInterpolacja,
@@ -27,8 +26,7 @@ pub async fn edycja_ff(
     do_zaszumienia: Option<u8>,
     metryka_operacji: u32,
     obecna_operacja: Arc<Mutex<u32>>,
-    procent_progress: Arc<Mutex<u8>>,
-    wybrana_kompresja: &OptMetodaKompresjiZdjecia,
+    wybrana_kompresja: &ForFfKompresja,
     mut tx: Sender<LogTxDoBathKonwersjaZdjęć>,
 ) -> Result<(), tokio::io::Error> {
     // println!(" [edycja_jpg] ścieżka dopełniająaca: {:?}\nścieżka wyjściowa: {:?}", ścieżka_dopełniająca,ścieżka_wyjściowa);
@@ -52,24 +50,24 @@ pub async fn edycja_ff(
     // 3. Iteracja przez wszystkie żądane rozdzielczości
     for wariant in rozdzielczości {
         let (docelowy_wymiar, nazwa_wariantu) = match wariant {
-            OptRozdzielczościObrazów::R16 => (16, "_16"),
-            OptRozdzielczościObrazów::R32 => (32, "_32"),
-            OptRozdzielczościObrazów::R64 => (64, "_64"),
-            OptRozdzielczościObrazów::R128 => (128, "_128"),
-            OptRozdzielczościObrazów::R256 => (256, "_256"),
-            OptRozdzielczościObrazów::R512 => (512, "_512"),
-            OptRozdzielczościObrazów::R1k => (1024, "_1024"),
-            OptRozdzielczościObrazów::R2k => (2048, "_2k"),
-            OptRozdzielczościObrazów::R4k => (4096, "_4k"),
-            OptRozdzielczościObrazów::R6k => (6144, "_6k"),
-            OptRozdzielczościObrazów::R8k => (8192, "_8k"),
-            OptRozdzielczościObrazów::R16k => (16384, "_16k"),
-            OptRozdzielczościObrazów::Oryginalna => (0, ""), // 0 jako flag dla oryginału
+            Rozdzielczości::R16 => (16, "_16"),
+            Rozdzielczości::R32 => (32, "_32"),
+            Rozdzielczości::R64 => (64, "_64"),
+            Rozdzielczości::R128 => (128, "_128"),
+            Rozdzielczości::R256 => (256, "_256"),
+            Rozdzielczości::R512 => (512, "_512"),
+            Rozdzielczości::R1k => (1024, "_1024"),
+            Rozdzielczości::R2k => (2048, "_2k"),
+            Rozdzielczości::R4k => (4096, "_4k"),
+            Rozdzielczości::R6k => (6144, "_6k"),
+            Rozdzielczości::R8k => (8192, "_8k"),
+            Rozdzielczości::R16k => (16384, "_16k"),
+            Rozdzielczości::Oryginalna => (0, ""), // 0 jako flag dla oryginału
         };
         // *obecna_operacja +=1;
         aktualizuj_postep(
             &obecna_operacja,
-            &procent_progress,
+            
             metryka_operacji,
             &mut tx,
         )
@@ -105,10 +103,10 @@ pub async fn edycja_ff(
         let lambadziara = wybrana_kompresja;
         // for lambadziara in wybrana_kompresja {
         let dodatkowa_nazwa = match lambadziara {
-            OptMetodaKompresjiZdjecia::Zstd(_) => ".zst",
-            OptMetodaKompresjiZdjecia::Bzip2(_) => ".bz2",
-            OptMetodaKompresjiZdjecia::Xz(_) => ".xz",
-            OptMetodaKompresjiZdjecia::Brak => "",
+            ForFfKompresja::Zstd(_) => ".zst",
+            ForFfKompresja::Bzip2(_) => ".bz2",
+            ForFfKompresja::Xz(_) => ".xz",
+            ForFfKompresja::Brak => "",
         };
 
         // println!("{:?}", final_finalv3_temp_final_ostatecznyv5);
@@ -125,13 +123,13 @@ pub async fn edycja_ff(
 
         aktualizuj_postep(
             &obecna_operacja,
-            &procent_progress,
+            
             metryka_operacji,
             &mut tx,
         )
         .await;
         match lambadziara {
-            OptMetodaKompresjiZdjecia::Zstd(x) => {
+            ForFfKompresja::Zstd(x) => {
                 //kompresja 1-22 || 3def
                 let compressor = zstd::Encoder::new(
                     output_file,
@@ -148,7 +146,7 @@ pub async fn edycja_ff(
                     .write_with_encoder(encoder)
                     .map_err(std::io::Error::other)?;
             }
-            OptMetodaKompresjiZdjecia::Bzip2(x) => {
+            ForFfKompresja::Bzip2(x) => {
                 //kompresja 1-9
                 let bz_encoder = BzEncoder::new(
                     output_file,
@@ -161,7 +159,7 @@ pub async fn edycja_ff(
                     .write_with_encoder(encoder)
                     .map_err(std::io::Error::other)?
             }
-            OptMetodaKompresjiZdjecia::Xz(x) => {
+            ForFfKompresja::Xz(x) => {
                 // 1-9 || 6def
                 let xz_encoder =
                     XzEncoder::new(output_file, (*x as f32 / 22.).round().clamp(1., 9.) as u32);
@@ -172,7 +170,7 @@ pub async fn edycja_ff(
                     .write_with_encoder(encoder)
                     .map_err(std::io::Error::other)?
             }
-            OptMetodaKompresjiZdjecia::Brak => {
+            ForFfKompresja::Brak => {
                 let buffered_writer = std::io::BufWriter::new(output_file);
 
                 let encoder = image::codecs::farbfeld::FarbfeldEncoder::new(buffered_writer);
@@ -185,7 +183,7 @@ pub async fn edycja_ff(
 
         aktualizuj_postep(
             &obecna_operacja,
-            &procent_progress,
+            
             metryka_operacji,
             &mut tx,
         )

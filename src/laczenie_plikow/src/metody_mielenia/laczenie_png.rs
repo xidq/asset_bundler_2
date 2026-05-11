@@ -1,4 +1,4 @@
-use enumy::opcje::OptFormatyKoloruObrazOgólny;
+use enumy::rozszerzenia::bdepth::{BdepthPng};
 use futures::SinkExt;
 use futures::channel::mpsc;
 use futures::channel::mpsc::Sender;
@@ -16,13 +16,13 @@ pub async fn laczenie_png(
     nazwa_pliku: &str,
     kompresja: &u8,
     alfa_rgb: &(u16, u16, u16),
-    bit_depth: &OptFormatyKoloruObrazOgólny,
+    bit_depth: &BdepthPng,
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
     let depth = bit_depth;
 
     let (final_img, nazwa_bd) = match depth {
-        OptFormatyKoloruObrazOgólny::B8 | OptFormatyKoloruObrazOgólny::L8 => (
+        BdepthPng::Rgb8 | BdepthPng::Luma8 => (
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);
@@ -45,7 +45,7 @@ pub async fn laczenie_png(
             },
             "_8b",
         ),
-        OptFormatyKoloruObrazOgólny::B8a | OptFormatyKoloruObrazOgólny::L8a => (
+        BdepthPng::Rgb8Alpha | BdepthPng::Luma8Alpha => (
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);
@@ -71,9 +71,8 @@ pub async fn laczenie_png(
             },
             "_8bt",
         ),
-        OptFormatyKoloruObrazOgólny::B16
-        | OptFormatyKoloruObrazOgólny::L16
-        | OptFormatyKoloruObrazOgólny::B32 => (
+        BdepthPng::Rgb16
+        | BdepthPng::Luma16 => (
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);
@@ -96,9 +95,8 @@ pub async fn laczenie_png(
             },
             "_16b",
         ),
-        OptFormatyKoloruObrazOgólny::B16a
-        | OptFormatyKoloruObrazOgólny::L16a
-        | OptFormatyKoloruObrazOgólny::B32a => (
+        BdepthPng::Rgb16Alpha
+        | BdepthPng::Luma16Alpha => (
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);

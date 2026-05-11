@@ -1,8 +1,8 @@
 pub(crate) mod message_ui;
 pub(crate) mod wiadomosci_do_dds;
+pub(crate) mod wiadomosci_do_dds_enum;
 pub(crate) mod wiadomosci_do_laczenia_zdjec;
 pub(crate) mod wiadomosci_do_laczenia_zdjec_enum;
-pub(crate) mod wiadomosci_do_dds_enum;
 pub(crate) mod wiadomosci_do_zbiorowe_przetwarzanie_zdjec;
 pub(crate) mod wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum;
 pub(crate) mod wiadomosci_pakowanie_bin;

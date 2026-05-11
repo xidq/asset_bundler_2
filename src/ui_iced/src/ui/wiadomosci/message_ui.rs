@@ -1,18 +1,21 @@
-use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMessage;
-use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::ŁączenieZdjęćMessage;
-use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
-use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::PakowanieBinarkiMessage;
-use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::RozpakowanieBinarkiMessage;
-use enumy::inne_ui::{UiPodstrony, WybraneOknoEdycjiZdjęć};
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptKompresjaPlikówFiltracjaPlików, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów};
-use enumy::statusy::{LogTxDoBathKonwersjaZdjęć, LogTxDoDekompresjiPliku, LogTxDoKompresjiPliku};
+use std::fmt::Debug;
+use std::sync::Arc;
+use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::BinPakMsg;
+use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
+use enumy::inne_ui::{ActProces, ButtonType, DropdownType, SliderType, TextInputType, UiPods};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::Event;
+use enumy::implementacje::ElementyDropdown;
+use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
+use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
+use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
+// use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum Message {
-    ZmienWariant(UiPodstrony),
+
+    ZmienWariant(UiPods),
 
     // Akcje
     LogDodaj(String),
@@ -20,6 +23,12 @@ pub enum Message {
 
     DevZmienJezyk(WybórJęzyka),
 
+    Dropdown(Arc<dyn ElementyDropdown + Send + Sync>, DropdownType),
+    TextInputHandling(String, TextInputType),
+    Przyciski(ButtonType),
+    Startujemy(ActProces),
+    Slidery(SliderType, i32),
+    ChckStatus,
     Nic,
     
     DoNothingxD(bool),
@@ -29,12 +38,16 @@ pub enum Message {
     UsuńLogi,
 
     WysylkaDanychDoObrobkiZdjec,
-
     InitLogStartowy,
 
-    ŁączenieZdjęć(ŁączenieZdjęćMessage),
-    Dds(DdsMessage),
-    ZbiorowePrzetwarzanieZdjęć(ZbiorowePrzetwarzanieZdjęćMessage),
-    PakowanieBinarki(PakowanieBinarkiMessage),
-    RozpakowanieBinarki(RozpakowanieBinarkiMessage),
+    BtnToggleActive(&'static str),
+
+    ŁączenieZdjęć(MergeMsg),
+    Dds(DdsMsg),
+    ZbiorowePrzetwarzanieZdjęć(KonwMsg),
+    PakowanieBinarki(BinPakMsg),
+    RozpakowanieBinarki(BinUnpakMsg),
+    UruchomProces(ActProces),
+    UpdateProcesUiBtn,
+    UpdateProcesUiBtnPost,
 }

@@ -1,10 +1,10 @@
 [package]
 name = "ui_iced"
-version = "0.4.2"
+version = "0.4.6"
 edition = "2024"
 
 [dependencies]
-iced = { workspace = true }
+iced = { workspace = true, features = ["advanced"] }
 iced_core = { workspace = true }
 enumy = { path = "../enumy" }
 chrono = { workspace = true }
@@ -15,8 +15,9 @@ sys-locale = { workspace = true }
 rfd = { workspace = true }
 tokio = { workspace = true }
 laczenie_plikow = { path = "../laczenie_plikow" }
-dds = { workspace = true }
+#dds = { workspace = true }
 strum = { workspace = true }
 dds_ops = { path = "../dds_ops" }
 rand = { workspace = true }
-noise = { workspace = true }
+lazy_static = "1.5.0"
+#noise = { workspace = true }

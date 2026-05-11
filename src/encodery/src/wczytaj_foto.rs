@@ -3,6 +3,7 @@ use std::io::Read;
 use std::path::PathBuf;
 use image::DynamicImage;
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
+use enumy::rozszerzenia::rozszerzenia;
 
 pub fn wczytaj_zdjęcie(
     ścieżka: PathBuf,
@@ -19,23 +20,70 @@ pub fn wczytaj_zdjęcie(
         .unwrap_or("")
         .to_lowercase();
 
-    // 1. Najpierw przygotowujemy surowe bajty (rozpakowane lub nie)
-    let dane_obrazu = match rozszerzenie.as_str() {
+
+    let (dane_obrazu,depth,w,h) = match rozszerzenie.as_str() {
         "avif" => {
+            // let lib_heif = LibHeif::new();
+            // let ctx = HeifContext::read_from_bytes(&bajty)
+            //     .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+            // let handle = ctx.primary_image_handle()
+            //     .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+            //
+            //
+            // let has_alpha = handle.has_alpha_channel();
+            //
+            // // Dekodujemy do Interleaved RGBA lub RGB.
+            // // Uwaga: libheif-rs przy RgbChroma::Rgba/Rgb zawsze daje 8 bitów.
+            // // Jeśli chcesz 10/12 bit, musiałbyś dekodować do Planar, co jest trudniejsze.
+            // let chroma = if has_alpha { RgbChroma::Rgba } else { RgbChroma::Rgb };
+            // let bytes_per_pixel = if has_alpha { 4 } else { 3 };
+            //
+            // let image = lib_heif.decode(
+            //     &handle,
+            //     ColorSpace::Rgb(chroma),
+            //     None,
+            // ).map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
+            //
+            // let width = image.width() as usize;
+            // let height = image.height() as usize;
+            //
+            // let planes = image.planes();
+            // let interleaved = planes.interleaved.ok_or_else(|| {
+            //     std::io::Error::new(std::io::ErrorKind::Other, "Brak danych interleaved")
+            // })?;
+            //
+            // let data = interleaved.data;
+            // let stride = interleaved.stride as usize;
+            //
+            // let mut clean_vec = Vec::with_capacity(width * height * bytes_per_pixel);
+            //
+            // for y in 0..height {
+            //     let start = y * stride;
+            //     let end = start + (width * bytes_per_pixel);
+            //
+            //     // Teraz start i end to usize, więc indeksowanie zadziała
+            //     clean_vec.extend_from_slice(&data[start..end]);
+            // }
+            //
+            // clean_vec
             let lib_heif = LibHeif::new();
             let ctx = HeifContext::read_from_bytes(&bajty)
                 .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
             let handle = ctx.primary_image_handle()
                 .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e.to_string()))?;
 
-            // Sprawdzamy czy obraz ma alphę
             let has_alpha = handle.has_alpha_channel();
+            let bit_depth = handle.luma_bits_per_pixel(); // Sprawdzamy bity (8, 10, 12)
+            let width = handle.width() as usize;
+            let height = handle.height() as usize;
 
-            // Dekodujemy do Interleaved RGBA lub RGB.
-            // Uwaga: libheif-rs przy RgbChroma::Rgba/Rgb zawsze daje 8 bitów.
-            // Jeśli chcesz 10/12 bit, musiałbyś dekodować do Planar, co jest trudniejsze.
-            let chroma = if has_alpha { RgbChroma::Rgba } else { RgbChroma::Rgb };
-            let bytes_per_pixel = if has_alpha { 4 } else { 3 };
+            // Decydujemy o formacie dekodowania
+            // Jeśli bity > 8, używamy trybu HDR (16-bit na kanał)
+            let (chroma, bytes_per_channel) = if bit_depth > 8 {
+                if has_alpha { (RgbChroma::HdrRgbaBe, 2) } else { (RgbChroma::HdrRgbBe, 2) }
+            } else {
+                if has_alpha { (RgbChroma::Rgba, 1) } else { (RgbChroma::Rgb, 1) }
+            };
 
             let image = lib_heif.decode(
                 &handle,
@@ -45,73 +93,99 @@ pub fn wczytaj_zdjęcie(
 
             let width = image.width() as usize;
             let height = image.height() as usize;
+            let channels = if has_alpha { 4 } else { 3 };
 
             let planes = image.planes();
             let interleaved = planes.interleaved.ok_or_else(|| {
                 std::io::Error::new(std::io::ErrorKind::Other, "Brak danych interleaved")
             })?;
 
-            let data = interleaved.data;
-            let stride = interleaved.stride as usize; // KONWERSJA NA USIZE
+            let data = interleaved.data; // To jest &[u8]
+            let stride = interleaved.stride as usize;
 
-            let mut clean_vec = Vec::with_capacity(width * height * bytes_per_pixel);
+            // clean_vec będzie zawierać surowe bajty.
+            // Jeśli to HDR, każde 2 bajty tworzą jeden kanał (u16, Little Endian).
+            let mut clean_vec = Vec::with_capacity(width * height * channels * bytes_per_channel);
 
             for y in 0..height {
-                let start = y * stride;
-                let end = start + (width * bytes_per_pixel);
+                let line_start = y * stride;
+                let line_end = line_start + (width * channels * bytes_per_channel);
 
-                // Teraz start i end to usize, więc indeksowanie zadziała
-                clean_vec.extend_from_slice(&data[start..end]);
+                // Kopiujemy całą linię uwzględniając stride i szerokość danych
+                clean_vec.extend_from_slice(&data[line_start..line_end]);
             }
 
-            clean_vec
+            (clean_vec,bit_depth,width,height)
         }
         "zst" => {
             let mut decoder = zstd::stream::read::Decoder::new(&bajty[..])?;
             let mut rozpakowane = Vec::new();
             decoder.read_to_end(&mut rozpakowane)?;
-            rozpakowane
+            (rozpakowane, 8,0,0)
         }
         "bz2" => {
             let mut decoder = bzip2::read::BzDecoder::new(&bajty[..]);
             let mut rozpakowane = Vec::new();
             decoder.read_to_end(&mut rozpakowane)?;
-            rozpakowane
+            (rozpakowane, 8,0,0)
         }
         "xz" => {
             let mut decoder = xz2::read::XzDecoder::new(&bajty[..]);
             let mut rozpakowane = Vec::new();
             decoder.read_to_end(&mut rozpakowane)?;
-            rozpakowane
+            (rozpakowane, 8,0,0)
         }
-        _ => bajty,
+        _ => (bajty, 8,0,0),
     };
 
-    // 2. Tworzymy Reader, który automatycznie rozpozna format (JPG, PNG, itp.)
-    // let cursor = std::io::Cursor::new(&dane_obrazu);
-    // let reader = image::ImageReader::new(cursor).with_guessed_format()?;
-    // 2. Poprawione rozpoznawanie formatu
-    let cursor = std::io::Cursor::new(&dane_obrazu);
-    let mut reader = image::ImageReader::new(cursor).with_guessed_format()?;
 
-    // Jeśli automatyczne rozpoznanie po bajtach zawiodło (częste dla TGA)
-    if reader.format().is_none() {
-        // Sprawdzamy czy to nie był skompresowany TGA lub czy oryginał to TGA
-        // Możemy spróbować wymusić format TGA jeśli rozszerzenie na to wskazuje
-        if rozszerzenie == "tga"  {
+    // let cursor = std::io::Cursor::new(&dane_obrazu);
+    // let mut reader = image::ImageReader::new(cursor).with_guessed_format()?;
+    //
+    // // Jeśli automatyczne rozpoznanie po bajtach zawiodło (częste dla TGA)
+    // if reader.format().is_none() {
+    //     if rozszerzenie == "tga"  {
+    //         reader.set_format(image::ImageFormat::Tga);
+    //     }
+    // }
+    //
+    //
+    //
+    // let mut decoder = reader.into_decoder().map_err(std::io::Error::other)?;
+    //
+    //
+    //
+    // let img = DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
+    let img: DynamicImage = if rozszerzenie == "avif" {
+        // Tu używasz zdekodowanego 'clean_vec' i 'bit_depth' z libheif
+        if depth > 8 {
+            // Obraz 10/12 bit promujemy do 16-bitowego DynamicImage
+            let data_u16: Vec<u16> = dane_obrazu.chunks_exact(2)
+                .map(|c| u16::from_le_bytes([c[0], c[1]]))
+                .collect();
+
+            let buffer = image::ImageBuffer::<image::Rgba<u16>, _>::from_raw(w as u32, h as u32, data_u16)
+                .ok_or_else(|| std::io::Error::other("Błąd bufora AVIF 16-bit"))?;
+
+            image::DynamicImage::ImageRgba16(buffer)
+        } else {
+            // Standardowe 8 bit
+            let buffer = image::ImageBuffer::<image::Rgba<u8>, _>::from_raw(w as u32, h as u32, dane_obrazu)
+                .ok_or_else(|| std::io::Error::other("Błąd bufora AVIF 8-bit"))?;
+
+            image::DynamicImage::ImageRgba8(buffer)
+        }
+    } else {
+        // Twoja dotychczasowa logika dla reszty świata (JPG, PNG, TGA)
+        let cursor = std::io::Cursor::new(&dane_obrazu);
+        let mut reader = image::ImageReader::new(cursor).with_guessed_format()?;
+
+        if reader.format().is_none() && rozszerzenie == "tga" {
             reader.set_format(image::ImageFormat::Tga);
         }
-    }
 
-
-    // 3. Dobieramy się do dekodera, żeby wyciągnąć EXIF
-    let mut decoder = reader.into_decoder().map_err(std::io::Error::other)?;
-    // let profil_icc = decoder.icc_profile().map_err(std::io::Error::other)?;
-    // Tutaj wyciągamy EXIF (metoda z traitu ImageDecoder, który wrzuciłeś)
-    // let exif = decoder.exif_metadata().ok().flatten();
-
-    // 4. Dekodujemy sam obraz
-    let img = DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
+        reader.decode().map_err(std::io::Error::other)?
+    };
 
     Ok((img, nazwa))
 }

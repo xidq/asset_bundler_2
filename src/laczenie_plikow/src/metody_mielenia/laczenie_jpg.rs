@@ -1,4 +1,4 @@
-use enumy::opcje::OptFormatyKoloruObrazOgólny;
+use enumy::rozszerzenia::bdepth::{BdepthJpg};
 use image::{DynamicImage, ImageEncoder};
 use std::fs::{File, create_dir_all};
 use std::path::Path;
@@ -10,7 +10,7 @@ pub async fn laczenie_jpg(
     nazwa_pliku: &str,
     jakość: &u8,
     progresywny: &bool,
-    bit_depth: &OptFormatyKoloruObrazOgólny,
+    bit_depth: &BdepthJpg,
     alfa_rgb: &(u16, u16, u16),
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {

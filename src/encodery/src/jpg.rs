@@ -3,8 +3,8 @@ use std::path::Path;
 use image::DynamicImage;
 use image::imageops::FilterType;
 use jpeg_encoder::{Encoder, QuantizationTableType, SamplingFactor};
-use libheif_rs::Image;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif};
+use enumy::rozszerzenia::bdepth::BdepthJpg;
+use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
 use crate::halper::{usun_kanal_alpha, zaszumianie};
 
 pub async fn jpg_match(
@@ -12,10 +12,10 @@ pub async fn jpg_match(
     wymiar: u32,
     filtr:FilterType,
     alfa_rgb:&(u16, u16, u16),
-    bit_depth: &OptFormatyKoloruObrazOgólny,
+    bit_depth: &BdepthJpg,
 ) -> Result<(DynamicImage,String), tokio::io::Error> {
     let (final_img, nazwa_bd) = match bit_depth {
-        OptFormatyKoloruObrazOgólny::L8 => (
+        BdepthJpg::Luma8 => (
             {
                 if wymiar == 0 {
                     DynamicImage::ImageLuma8(
@@ -34,7 +34,7 @@ pub async fn jpg_match(
             },
             "_l8b"
         ),
-        OptFormatyKoloruObrazOgólny::B8 => (
+        BdepthJpg::Rgb8 => (
             {
                 if wymiar == 0 {
                     DynamicImage::ImageRgb8(
@@ -53,10 +53,6 @@ pub async fn jpg_match(
             },
             "_8b"
         ),
-        _ => {
-            // placeholder
-            (DynamicImage::ImageRgb8(bufor.to_rgb8()), "_nima32b")
-        }
     };
     Ok((final_img, nazwa_bd.to_string()))
 }
@@ -70,8 +66,8 @@ pub async fn jpg_zapis(
     nazwa_wariantu: &str,
     jakosc : &u8,
     progressif : &bool,
-    samplerrrz:&JpgSamplingFac,
-    quwanttt: &JpgQuant,
+    samplerrrz:&ForJpgSamplingFac,
+    quwanttt: &ForJpgQuant,
     skanyyy : &u8
 ) -> Result<(), tokio::io::Error> {
 
@@ -122,26 +118,26 @@ pub async fn jpg_zapis(
     //     )
     //     .map_err(std::io::Error::other)?;
     let quant = match quwanttt{
-        JpgQuant::Default => {QuantizationTableType::Default}
-        JpgQuant::Flat => {QuantizationTableType::Flat}
-        JpgQuant::CustomMsSsim => {QuantizationTableType::CustomMsSsim}
-        JpgQuant::CustomPsnrHvs => {QuantizationTableType::CustomPsnrHvs}
-        JpgQuant::ImageMagick => {QuantizationTableType::ImageMagick}
-        JpgQuant::KleinSilversteinCarney => {QuantizationTableType::KleinSilversteinCarney}
-        JpgQuant::DentalXRays => {QuantizationTableType::DentalXRays}
-        JpgQuant::VisualDetectionModel => {QuantizationTableType::VisualDetectionModel}
-        JpgQuant::ImprovedDetectionModel => {QuantizationTableType::ImprovedDetectionModel}
+        ForJpgQuant::Default => {QuantizationTableType::Default}
+        ForJpgQuant::Flat => {QuantizationTableType::Flat}
+        ForJpgQuant::CustomMsSsim => {QuantizationTableType::CustomMsSsim}
+        ForJpgQuant::CustomPsnrHvs => {QuantizationTableType::CustomPsnrHvs}
+        ForJpgQuant::ImageMagick => {QuantizationTableType::ImageMagick}
+        ForJpgQuant::KleinSilversteinCarney => {QuantizationTableType::KleinSilversteinCarney}
+        ForJpgQuant::DentalXRays => {QuantizationTableType::DentalXRays}
+        ForJpgQuant::VisualDetectionModel => {QuantizationTableType::VisualDetectionModel}
+        ForJpgQuant::ImprovedDetectionModel => {QuantizationTableType::ImprovedDetectionModel}
     };
 
     let samplerrr = match samplerrrz{
-        JpgSamplingFac::R444 => {SamplingFactor::R_4_4_4}
-        JpgSamplingFac::R440 => {SamplingFactor::R_4_4_0}
-        JpgSamplingFac::R441 => {SamplingFactor::R_4_4_1}
-        JpgSamplingFac::R422 => {SamplingFactor::R_4_2_2 }
-        JpgSamplingFac::R420 => {SamplingFactor::R_4_2_0}
-        JpgSamplingFac::R421 => {SamplingFactor::R_4_2_1}
-        JpgSamplingFac::R411 => {SamplingFactor::R_4_1_1}
-        JpgSamplingFac::R410 => {SamplingFactor::R_4_1_0}
+        ForJpgSamplingFac::R444 => {SamplingFactor::R_4_4_4}
+        ForJpgSamplingFac::R440 => {SamplingFactor::R_4_4_0}
+        ForJpgSamplingFac::R441 => {SamplingFactor::R_4_4_1}
+        ForJpgSamplingFac::R422 => {SamplingFactor::R_4_2_2 }
+        ForJpgSamplingFac::R420 => {SamplingFactor::R_4_2_0}
+        ForJpgSamplingFac::R421 => {SamplingFactor::R_4_2_1}
+        ForJpgSamplingFac::R411 => {SamplingFactor::R_4_1_1}
+        ForJpgSamplingFac::R410 => {SamplingFactor::R_4_1_0}
     };
     let kolorrrr = match final_finalv3_temp_final_ostatecznyv5.color(){
         image::ColorType::L8 => {jpeg_encoder::ColorType::Luma},

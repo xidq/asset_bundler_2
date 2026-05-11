@@ -12,10 +12,7 @@ pub async fn szyfruj_xor(
     nazwa: String,
     mut tx: mpsc::Sender<LogTxDoKompresjiPliku>,
 ) -> Result<(), tokio::io::Error> {
-    let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania { procent: None })
-        .await;
-    println!("Rozpoczęcie fn szyfru");
+
 
     // 1. Przygotowanie ścieżek
     let sciezka_in = ścieżka.join(format!("{}.jrz", nazwa)); // Plik po kompresji
@@ -52,24 +49,24 @@ pub async fn szyfruj_xor(
         tokio::time::sleep(tokio::time::Duration::from_millis(5)).await;
         // Aktualizacja postępu
         przeczytano_razem += n as u64;
-        let procent = ((przeczytano_razem as f64 / calkowity_rozmiar as f64) * 100.0) as u8;
 
-        // Wysyłka do UI
-        if procent > ostatni_procent {
-            ostatni_procent = procent;
 
-            let _ = tx
-                .send(
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania {
-                        procent: Some(procent),
-                    },
-                )
-                .await;
-        }
+        let _ = tx
+            .send(
+                LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania {
+                    aktualny: przeczytano_razem as u32,
+                    suma: Some(calkowity_rozmiar as u32 +2),
+                },
+            )
+            .await;
+        
     }
 
     let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania { procent: None })
+        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania { 
+            aktualny: przeczytano_razem as u32 +1,
+            suma: Some(calkowity_rozmiar as u32 +2)
+        })
         .await;
 
     // 4. Flush i zamknięcie
@@ -78,7 +75,10 @@ pub async fn szyfruj_xor(
     // 5. Usuwanie pliku .jrz (pośredniego)
     tokio::fs::remove_file(sciezka_in).await?;
     let _ = tx
-        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania { procent: None })
+        .send(LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania {
+            aktualny: przeczytano_razem as u32 +2,
+            suma: Some(calkowity_rozmiar as u32 +2)
+        })
         .await;
 
     Ok(())

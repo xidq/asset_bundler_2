@@ -1,32 +1,28 @@
 use crate::wczytanie_zdjec::aktualizuj_postep;
-use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptInterpolacja, OptRozdzielczościObrazów};
+use enumy::opcje::OptInterpolacja;
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
-use futures::SinkExt;
-use futures::channel::mpsc;
 use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
-use image::{DynamicImage, ImageEncoder};
-use std::error::Error;
-use std::fs::{File, create_dir, create_dir_all};
-use std::path::{Path, PathBuf};
+use image::DynamicImage;
+use std::path::Path;
 use std::sync::Arc;
-use jpeg_encoder::{ColorType, Encoder, QuantizationTableType, SamplingFactor};
 use tokio::sync::Mutex;
-use encodery::halper::{usun_kanal_alpha, zaszumianie};
 use encodery::jpg::{jpg_match, jpg_zapis};
+use enumy::rozszerzenia::bdepth::BdepthJpg;
+use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 
 pub async fn edycja_jpg(
     bufor: DynamicImage,
-    rozdzielczości: &Vec<OptRozdzielczościObrazów>,
+    rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     opt_interpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
-    zbiór_danych: (&u8, &bool, &Vec<OptFormatyKoloruObrazOgólny>, &JpgSamplingFac, &JpgQuant, &u8),
+    zbiór_danych: (&u8, &bool, &Vec<BdepthJpg>, &ForJpgSamplingFac, &ForJpgQuant, &u8),
     alfa_rgb: &(u16, u16, u16),
     do_zaszumienia: Option<u8>,
     metryka_operacji: u32,
     obecna_operacja: Arc<Mutex<u32>>,
-    procent_progress: Arc<Mutex<u8>>,
     mut tx: Sender<LogTxDoBathKonwersjaZdjęć>,
 ) -> Result<(), tokio::io::Error> {
 
@@ -41,19 +37,19 @@ pub async fn edycja_jpg(
 
     for wariant in rozdzielczości {
         let (docelowy_wymiar, nazwa_wariantu) = match wariant {
-            OptRozdzielczościObrazów::R16 => (16, "_16"),
-            OptRozdzielczościObrazów::R32 => (32, "_32"),
-            OptRozdzielczościObrazów::R64 => (64, "_64"),
-            OptRozdzielczościObrazów::R128 => (128, "_128"),
-            OptRozdzielczościObrazów::R256 => (256, "_256"),
-            OptRozdzielczościObrazów::R512 => (512, "_512"),
-            OptRozdzielczościObrazów::R1k => (1024, "_1024"),
-            OptRozdzielczościObrazów::R2k => (2048, "_2k"),
-            OptRozdzielczościObrazów::R4k => (4096, "_4k"),
-            OptRozdzielczościObrazów::R6k => (6144, "_6k"),
-            OptRozdzielczościObrazów::R8k => (8192, "_8k"),
-            OptRozdzielczościObrazów::R16k => (16384, "_16k"),
-            OptRozdzielczościObrazów::Oryginalna => (0, ""),
+            Rozdzielczości::R16 => (16, "_16"),
+            Rozdzielczości::R32 => (32, "_32"),
+            Rozdzielczości::R64 => (64, "_64"),
+            Rozdzielczości::R128 => (128, "_128"),
+            Rozdzielczości::R256 => (256, "_256"),
+            Rozdzielczości::R512 => (512, "_512"),
+            Rozdzielczości::R1k => (1024, "_1024"),
+            Rozdzielczości::R2k => (2048, "_2k"),
+            Rozdzielczości::R4k => (4096, "_4k"),
+            Rozdzielczości::R6k => (6144, "_6k"),
+            Rozdzielczości::R8k => (8192, "_8k"),
+            Rozdzielczości::R16k => (16384, "_16k"),
+            Rozdzielczości::Oryginalna => (0, ""),
         };
 
 
@@ -61,7 +57,7 @@ pub async fn edycja_jpg(
 
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )
@@ -72,7 +68,7 @@ pub async fn edycja_jpg(
     
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )
@@ -83,7 +79,7 @@ pub async fn edycja_jpg(
 
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )

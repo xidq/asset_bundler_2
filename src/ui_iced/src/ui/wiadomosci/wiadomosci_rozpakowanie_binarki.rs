@@ -1,37 +1,43 @@
+use std::default;
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::RozpakowanieBinarkiMessage;
+use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
 use binarka::rozpakowywanie_plikow::ogarnianie_dekompresji;
-use enumy::inne_ui::ActProces;
+use enumy::inne_ui::{ActProces, BtnState, UiPods};
 use enumy::statusy::LogTxDoDekompresjiPliku;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
+use crate::ui::wiadomosci::message_ui::Message;
 
 impl Program {
-    pub fn update_message_rozpakowanie_binarki(&mut self, msg: RozpakowanieBinarkiMessage) -> Task<RozpakowanieBinarkiMessage> {
+    pub fn update_message_rozpakowanie_binarki(&mut self, msg: BinUnpakMsg) -> Task<BinUnpakMsg> {
         match msg {
-            RozpakowanieBinarkiMessage::InputFileText(s) => {
-                self.dane_temp_do_dekompresji_plików.ścieżka_pliku = PathBuf::from(s)
-            }
-            RozpakowanieBinarkiMessage::InputFile => {
+            BinUnpakMsg::InputFile => {
                 if let Some(path) = rfd::FileDialog::new()
                     .add_filter("Plik .jrzs", &["jrzs"])
                     .pick_file()
                 {
-                    self.dane_temp_do_dekompresji_plików.ścieżka_pliku = path;
+                    self.dane_bin_unpak.ścieżka_pliku = path;
                 }
+
+                let _ = self.update(Message::ChckStatus);
+
             }
-            RozpakowanieBinarkiMessage::OutputPathText(s) => {
-                self.dane_temp_do_dekompresji_plików.ścieżka_docelowa = PathBuf::from(s)
-            }
-            RozpakowanieBinarkiMessage::OutputPath => {
+            BinUnpakMsg::OutputPath => {
                 if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                    self.dane_temp_do_dekompresji_plików.ścieżka_docelowa = path;
+                    self.dane_bin_unpak.ścieżka_docelowa = path;
                 }
+
+                let _ = self.update(Message::ChckStatus);
+
             }
-            RozpakowanieBinarkiMessage::Uruchom => {
-                let _ = self.temat.temp.aktywny_proces == ActProces::RozpakowaniePliku;
-                let zestaw = self.dane_temp_do_dekompresji_plików.clone();
+            BinUnpakMsg::Uruchom => {
+                self.status_rozpakowywania_log = Default::default();
+                self.temat.temp.aktywny_proces = Some(ActProces::BinUnpak);
+                let _ = self.update(Message::ChckStatus);
+
+                // self.temat.btn_state.insert(UiPodstrony::BinRozpakowanie.get_id_child(), BtnState::Processing);
+                let zestaw = self.dane_bin_unpak.clone();
 
                 let (tx, rx) = mpsc::channel::<LogTxDoDekompresjiPliku>(100);
                 
@@ -46,15 +52,15 @@ impl Program {
                             })
                             .await
                     },
-                    |_| RozpakowanieBinarkiMessage::Nic,
+                    |_| BinUnpakMsg::Nic,
                 );
 
-                let nasluchiwanie = Task::run(rx, RozpakowanieBinarkiMessage::LogProcesu);
+                let nasluchiwanie = Task::run(rx, BinUnpakMsg::LogProcesu);
 
                 return Task::batch(Vec::from([operacja, nasluchiwanie]));
             }
             
-            RozpakowanieBinarkiMessage::LogProcesu(progres) => {
+            BinUnpakMsg::LogProcesu(progres) => {
                 match progres {
                     
                     LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZbieraniePlików { current, max } => {
@@ -70,6 +76,7 @@ impl Program {
                     }
 
                     LogTxDoDekompresjiPliku::StatusDekompresjaPlikówDekompresja {
+
                         pamięć
                         
                     } => {
@@ -79,8 +86,10 @@ impl Program {
                     }
 
                     LogTxDoDekompresjiPliku::StatusDekompresjaPlikówRozpakowywanie {
+
                         current, 
                         max,
+
                     } => {
 
                         self.status_rozpakowywania_log.rozpakowanie = (current, max);
@@ -88,17 +97,28 @@ impl Program {
 
                     LogTxDoDekompresjiPliku::StatusDekompresjaPlikówZakończenie { czas } => {
 
-                            self.status_rozpakowywania_log.czas = czas;
+                        self.status_rozpakowywania_log.czas = czas;
+                        let _ = self.update(Message::UpdateProcesUiBtnPost);
+                        self.temat.temp.aktywny_proces = None;
+                        let _ = self.update(Message::ChckStatus);
+
+
                     }
 
                     LogTxDoDekompresjiPliku::StatusDekompresjaPlikówBłąd(err) => {
 
                         self.status_rozpakowywania_log.błąd = err;
-                        
+
+                        let _ = self.update(Message::UpdateProcesUiBtnPost);
+                        self.temat.temp.aktywny_proces = None;
+                        let _ = self.update(Message::ChckStatus);
+
                     }
+
                 }
-                
+
             }
+            
         _ => {}
         }
     Task::none()

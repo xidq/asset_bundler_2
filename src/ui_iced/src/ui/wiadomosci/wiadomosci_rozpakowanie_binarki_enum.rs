@@ -1,11 +1,9 @@
 use enumy::statusy::LogTxDoDekompresjiPliku;
 
 #[derive(Debug, Clone)]
-pub enum RozpakowanieBinarkiMessage{
+pub enum BinUnpakMsg {
     InputFile,
-    InputFileText(String),
     OutputPath,
-    OutputPathText(String),
     Uruchom,
     Nic,
     LogProcesu(LogTxDoDekompresjiPliku),

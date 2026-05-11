@@ -53,9 +53,9 @@ pub fn folder_icon<'a, T>(
             .replace("BACK_COLOR", &back),
     };
 
-    // 4. Konwersja: String -> Handle
+
     let handle = svg::Handle::from_memory(processed.into_bytes());
 
-    // 5. Zwracamy gotowy widget
-    iced::widget::svg(handle).width(20).height(20).into()
+
+    iced::widget::svg(handle).width(30).height(30).into()
 }

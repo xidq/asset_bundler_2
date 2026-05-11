@@ -1,29 +1,31 @@
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use std::sync::Arc;
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use enumy::rozszerzenia::bdepth_impl::BitDepth;
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::rozszerzenia::ImgExtTag;
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 
 #[derive(Debug,Clone)]
-pub enum ZbiorowePrzetwarzanieZdjęćMessage{
-    Rozszerzenia(OptRozszerzeniaPlikówZdjęciowychZnacznik),
+pub enum KonwMsg {
+    Rozszerzenia(ImgExtTag),
     JpgJakość(u8),
     JpgProg,
-    JpgSampling(JpgSamplingFac),
-    JpgQua(JpgQuant),
+    JpgSampling(ForJpgSamplingFac),
+    JpgQua(ForJpgQuant),
     JpgScan(u8),
     PngKompresja(u8),
     WypełnienieAlpha(u8, u16),
-    Rozdzielczość(OptRozdzielczościObrazów),
-    TgaBdepth(OptFormatyKoloruObrazuTga),
-    AvifBdepth(OptFormatyKoloruObrazuAvif),
+    Rozdzielczość(Rozdzielczości),
     AvifSpeed(i32),
     WebpLossless,
     AvifLossyToggle,
     AvifLossy(u8),
-    AvifKompresja(AvifMetodaKompresji),
-    AvifChroma(AvifChroma),
+    AvifKompresja(ForAvifKompresja),
+    AvifChroma(ForAvifChroma),
     WebpJakość(u8),
-    FfKompresja(OptMetodaKompresjiZdjecia),
+    FfKompresja(ForFfKompresja),
     FfKompresjaVal(u8),
-    QoiBdepth(OptFormatyKoloruObrazuQoi),
     PathInText(String),
     PathOutText(String),
     PathOutPathInBool(bool),
@@ -31,10 +33,11 @@ pub enum ZbiorowePrzetwarzanieZdjęćMessage{
     Uruchom,
     Log(LogTxDoBathKonwersjaZdjęć),
     PathInFile,
-    Bdepth(OptRozszerzeniaPlikówZdjęciowychZnacznik, OptFormatyKoloruObrazOgólny),
+    Bdepth(ImgExtTag, Arc<dyn BitDepth>),
     Nic,
     PathInFolder,
     PathsReset,
     PathOutFolder,
-    Interpolacja(String)
+    Interpolacja(String),
+    StabilizacjaDanychRozszerzen,
 }

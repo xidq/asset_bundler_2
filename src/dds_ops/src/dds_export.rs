@@ -1,7 +1,7 @@
 use crate::dds_halper::oblicz_ilosc_mipmap;
 use dds::header::{Dx10Header, DxgiFormat, Header};
 use dds::*;
-use enumy::opcje::OptFormatDds;
+use enumy::rozszerzenia::kompresje::ForDds;
 use enumy::statusy::LogTxDoPakowanieDds;
 use futures::channel::mpsc::Sender;
 use std::fs::File;
@@ -13,7 +13,7 @@ pub fn save_rgba_image_with_mipmaps(
     image_data: Vec<&[u8]>,
     width: u32,
     height: u32,
-    format: &OptFormatDds,
+    format: &ForDds,
     kompresja: CompressionQuality,
     mut przerób: &mut f32,
     max_plikow:usize,
@@ -38,33 +38,33 @@ pub fn save_rgba_image_with_mipmaps(
 
 
     let (formatowanko_dxgi, formatowanko_format) = match format {
-        OptFormatDds::DxgiFormatBc1Unorm => (DxgiFormat::BC1_UNORM, Format::BC1_UNORM),
-        OptFormatDds::DxgiFormatBc1UnormSrgb => (DxgiFormat::BC1_UNORM_SRGB, Format::BC1_UNORM),
-        OptFormatDds::DxgiFormatBc1Typeless => (DxgiFormat::BC1_TYPELESS, Format::BC1_UNORM),
+        ForDds::DxgiFormatBc1Unorm => (DxgiFormat::BC1_UNORM, Format::BC1_UNORM),
+        ForDds::DxgiFormatBc1UnormSrgb => (DxgiFormat::BC1_UNORM_SRGB, Format::BC1_UNORM),
+        ForDds::DxgiFormatBc1Typeless => (DxgiFormat::BC1_TYPELESS, Format::BC1_UNORM),
 
-        OptFormatDds::DxgiFormatBc2Unorm => (DxgiFormat::BC2_UNORM, Format::BC2_UNORM),
-        OptFormatDds::DxgiFormatBc2UnormSrgb => (DxgiFormat::BC2_UNORM_SRGB, Format::BC2_UNORM),
-        OptFormatDds::DxgiFormatBc2Typeless => (DxgiFormat::BC2_TYPELESS, Format::BC2_UNORM),
+        ForDds::DxgiFormatBc2Unorm => (DxgiFormat::BC2_UNORM, Format::BC2_UNORM),
+        ForDds::DxgiFormatBc2UnormSrgb => (DxgiFormat::BC2_UNORM_SRGB, Format::BC2_UNORM),
+        ForDds::DxgiFormatBc2Typeless => (DxgiFormat::BC2_TYPELESS, Format::BC2_UNORM),
 
-        OptFormatDds::DxgiFormatBc3Unorm => (DxgiFormat::BC3_UNORM, Format::BC3_UNORM),
-        OptFormatDds::DxgiFormatBc3UnormSrgb => (DxgiFormat::BC3_UNORM_SRGB, Format::BC3_UNORM),
-        OptFormatDds::DxgiFormatBc3Typeless => (DxgiFormat::BC3_TYPELESS, Format::BC3_UNORM),
+        ForDds::DxgiFormatBc3Unorm => (DxgiFormat::BC3_UNORM, Format::BC3_UNORM),
+        ForDds::DxgiFormatBc3UnormSrgb => (DxgiFormat::BC3_UNORM_SRGB, Format::BC3_UNORM),
+        ForDds::DxgiFormatBc3Typeless => (DxgiFormat::BC3_TYPELESS, Format::BC3_UNORM),
 
-        OptFormatDds::DxgiFormatBc4Unorm => (DxgiFormat::BC4_UNORM, Format::BC4_UNORM),
-        OptFormatDds::DxgiFormatBc4Snorm => (DxgiFormat::BC4_SNORM, Format::BC4_SNORM),
-        OptFormatDds::DxgiFormatBc4Typeless => (DxgiFormat::BC4_TYPELESS, Format::BC4_UNORM),
+        ForDds::DxgiFormatBc4Unorm => (DxgiFormat::BC4_UNORM, Format::BC4_UNORM),
+        ForDds::DxgiFormatBc4Snorm => (DxgiFormat::BC4_SNORM, Format::BC4_SNORM),
+        ForDds::DxgiFormatBc4Typeless => (DxgiFormat::BC4_TYPELESS, Format::BC4_UNORM),
 
-        OptFormatDds::DxgiFormatBc5Unorm => (DxgiFormat::BC5_UNORM, Format::BC5_UNORM),
-        OptFormatDds::DxgiFormatBc5Snorm => (DxgiFormat::BC5_SNORM, Format::BC5_SNORM),
-        OptFormatDds::DxgiFormatBc5Typeless => (DxgiFormat::BC5_TYPELESS, Format::BC5_UNORM),
+        ForDds::DxgiFormatBc5Unorm => (DxgiFormat::BC5_UNORM, Format::BC5_UNORM),
+        ForDds::DxgiFormatBc5Snorm => (DxgiFormat::BC5_SNORM, Format::BC5_SNORM),
+        ForDds::DxgiFormatBc5Typeless => (DxgiFormat::BC5_TYPELESS, Format::BC5_UNORM),
 
-        OptFormatDds::DxgiFormatBc6HUF16 => (DxgiFormat::BC6H_UF16, Format::BC6H_UF16),
-        OptFormatDds::DxgiFormatBc6HSF16 => (DxgiFormat::BC6H_SF16, Format::BC6H_SF16),
-        OptFormatDds::DxgiFormatBc6HTypeless => (DxgiFormat::BC6H_TYPELESS, Format::BC6H_UF16),
+        ForDds::DxgiFormatBc6HUF16 => (DxgiFormat::BC6H_UF16, Format::BC6H_UF16),
+        ForDds::DxgiFormatBc6HSF16 => (DxgiFormat::BC6H_SF16, Format::BC6H_SF16),
+        ForDds::DxgiFormatBc6HTypeless => (DxgiFormat::BC6H_TYPELESS, Format::BC6H_UF16),
 
-        OptFormatDds::DxgiFormatBc7Unorm => (DxgiFormat::BC7_UNORM, Format::BC7_UNORM),
-        OptFormatDds::DxgiFormatBc7UnormSrgb => (DxgiFormat::BC7_UNORM_SRGB, Format::BC7_UNORM),
-        OptFormatDds::DxgiFormatBc7Typeless => (DxgiFormat::BC7_TYPELESS, Format::BC7_UNORM),
+        ForDds::DxgiFormatBc7Unorm => (DxgiFormat::BC7_UNORM, Format::BC7_UNORM),
+        ForDds::DxgiFormatBc7UnormSrgb => (DxgiFormat::BC7_UNORM_SRGB, Format::BC7_UNORM),
+        ForDds::DxgiFormatBc7Typeless => (DxgiFormat::BC7_TYPELESS, Format::BC7_UNORM),
     };
     // dbg!(&formatowanko_dxgi, &formatowanko_format);
     // let x: dds::Format = dds::Format::;

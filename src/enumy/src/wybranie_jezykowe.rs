@@ -1,7 +1,8 @@
 use std::fmt;
+use strum::EnumIter;
 
 #[allow(dead_code)]
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter, Eq)]
 pub enum WybórJęzyka {
     PL,
     EN,

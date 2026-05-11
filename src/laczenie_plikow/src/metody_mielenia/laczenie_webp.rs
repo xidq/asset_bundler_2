@@ -1,4 +1,4 @@
-use enumy::opcje::OptFormatyKoloruObrazOgólny;
+use enumy::rozszerzenia::bdepth::BdepthWebp;
 use image::DynamicImage;
 use std::fs::create_dir_all;
 use std::path::Path;
@@ -10,7 +10,7 @@ pub async fn laczenie_webp(
     nazwa_pliku: &str,
     jakość: &u8,
     czy_lossless: bool,
-    bit_depth: &OptFormatyKoloruObrazOgólny,
+    bit_depth: &BdepthWebp,
     alfa_rgb: &(u16, u16, u16),
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
@@ -18,7 +18,7 @@ pub async fn laczenie_webp(
     let depth = bit_depth;
 
         let (final_img, nazwa_bd) = match depth {
-            OptFormatyKoloruObrazOgólny::B8a | OptFormatyKoloruObrazOgólny::L8a => (
+            BdepthWebp::Rgb8Alpha => (
                 {
                     let img_r = bufor.remove(0);
                     let img_g = bufor.remove(0);

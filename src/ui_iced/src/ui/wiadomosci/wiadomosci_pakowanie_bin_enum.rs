@@ -2,12 +2,9 @@ use enumy::opcje::{OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPozio
 use enumy::statusy::LogTxDoKompresjiPliku;
 
 #[derive(Debug, Clone)]
-pub enum PakowanieBinarkiMessage{
+pub enum BinPakMsg {
     InputPath,
-    InputPathText(String),
     OutputPath,
-    OutputPathText(String),
-    Nazwa(String),
     Kompresja(OptKompresjaPlikówPoziomKompresjiZstd),
     Filtr(OptKompresjaPlikówFiltracjaPlików),
     Uruchom,

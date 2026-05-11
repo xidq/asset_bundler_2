@@ -1,19 +1,20 @@
 use encodery::avif::{avif_match, avif_zapis};
 use encodery::halper::zaszumianie;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazuAvif, OptInterpolacja};
-use image::imageops::FilterType;
+use enumy::rozszerzenia::kompresje::ForAvifKompresja;
 use image::DynamicImage;
-use std::path::{Path, PathBuf};
+use std::path::PathBuf;
+use enumy::rozszerzenia::bdepth::{BdepthAvif, };
+use enumy::rozszerzenia::kolor::ForAvifChroma;
 
 pub async fn laczenie_avif(
     bufor: DynamicImage,
     ścieżka_wyjściowa: &PathBuf,
     lossy: Option<u8>,
-    bit_depth: OptFormatyKoloruObrazuAvif,
+    bit_depth: BdepthAvif,
     zaszumianie_zmienna: Option<u8>,
-    metoda_kompresji: AvifMetodaKompresji,
+    metoda_kompresji: ForAvifKompresja,
     szybkość:i32,
-    chrummaaa:AvifChroma,
+    chrummaaa: ForAvifChroma,
 ) -> Result<(), tokio::io::Error> {
 
     let final_final_final_v3_xd = match zaszumianie_zmienna {

@@ -1,8 +1,13 @@
-use enumy::opcje::{JpgQuant, JpgSamplingFac, OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptMetodaKompresjiZdjecia, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use std::rc::Rc;
+use std::sync::Arc;
+use enumy::rozszerzenia::rozszerzenia::ImgExtTag;
+use enumy::rozszerzenia::kompresje::ForFfKompresja;
+use enumy::rozszerzenia::bdepth_impl::BitDepth;
+use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
 use enumy::statusy::LogTxDoŁączeniaZdjęć;
 
 #[derive(Debug, Clone)]
-pub enum ŁączenieZdjęćMessage {
+pub enum MergeMsg {
     WybierzPlikInFotoLaczenieR,
     WybierzPlikInFotoLaczenieG,
     WybierzPlikInFotoLaczenieB,
@@ -13,30 +18,30 @@ pub enum ŁączenieZdjęćMessage {
     WybierzPlikInFotoLaczenieAPathChanged(String),
     WybierzPlikInFotoLaczenieOutPathChanged(String),
     WybierzFolderOutFotoLaczenie,
+    Bdepth(ImgExtTag, Arc<dyn BitDepth>),
+    Rozszerzenia(ImgExtTag),
     ZdjeciaLaczenieZmianaWybranyFf,
     ZdjeciaLaczenieZmianaWybranyQoi,
     ZdjeciaLaczenieZmianaWybranyTga,
     ZdjeciaLaczenieZmianaWybranyWebp,
     ZdjeciaLaczenieZmianaWybranyPng,
-    ZdjeciaLaczenieZmianaWybraneRozszerzenie(OptRozszerzeniaPlikówZdjęciowychZnacznik),
+    ZdjeciaLaczenieZmianaWybraneRozszerzenie(ImgExtTag),
     ZdjeciaLaczenieZmianaJakosciJpg(u8),
-    ZdjeciaEdycjaZmianaJpgSampling(JpgSamplingFac),
-    ZdjeciaEdycjaZmianaJpgQua(JpgQuant),
+    ZdjeciaEdycjaZmianaJpgSampling(ForJpgSamplingFac),
+    ZdjeciaEdycjaZmianaJpgQua(ForJpgQuant),
     ZdjeciaEdycjaZmianaJpgScans(u8),
-    ZdjeciaLaczenieZmianaRozszerzeniePng(OptFormatyKoloruObrazOgólny),
     ZdjeciaLaczenieZmianaKompresjiPng(u8),
-    ZdjeciaLaczenieZmianaRozszerzenieWebp(OptFormatyKoloruObrazOgólny),
     ZdjeciaLaczenieZmianaJakosciWebp(u8),
-    ZdjeciaLaczenieZmianaRozszerzenieTga(OptFormatyKoloruObrazuTga),
-    ZdjeciaLaczenieZmianaRozszerzenieFf(OptMetodaKompresjiZdjecia),
+    ZdjeciaLaczenieZmianaRozszerzenieFf(ForFfKompresja),
 
     ZdjeciaLaczenieZmianaKompresjiFfZstd(u8),
     ZdjeciaLaczenieZmianaKompresjiFfBzip2(u8),
     ZdjeciaLaczenieZmianaKompresjiFfXz(u8),
-    ZdjeciaLaczenieZmianaRozszerzenieQoi(OptFormatyKoloruObrazuQoi),
-    WysylkaDanychDoLaczeniaZdjec,
+    Uruchom,
     PostepLaczeniaFot(LogTxDoŁączeniaZdjęć),
     ZdjeciaLaczenieZmianalosslessWebp,
     WybierzPlikInFotoLaczenieNazwaChanged(String),
     Nic,
+    JpgProg,
+    AvifLossyToggle,
 }

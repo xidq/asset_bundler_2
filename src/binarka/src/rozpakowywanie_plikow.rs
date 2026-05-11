@@ -3,7 +3,7 @@ use iced::futures::SinkExt;
 use std::path::PathBuf;
 use std::time::Instant;
 
-use enumy::dane_do_przetwarzania::DaneDoDekompresjaPlików;
+use enumy::dane_do_przetwarzania::DaneBinUnpak;
 use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
 use enumy::statusy::LogTxDoDekompresjiPliku;
 // pub(crate) use crate::io::import_for_compression::{KolejnośćDziałań, Progress};
@@ -191,7 +191,7 @@ pub async fn wypakuj_pliki(
 }
 
 pub async fn ogarnianie_dekompresji(
-    dane: DaneDoDekompresjaPlików,
+    dane: DaneBinUnpak,
     mut tx: mpsc::Sender<LogTxDoDekompresjiPliku>,
 ) -> Result<(), tokio::io::Error> {
     let start_czas = Instant::now();

@@ -1,18 +1,18 @@
 use crate::zapisy::edycja_ff::dds_ex_ff;
 use crate::zapisy::edycja_jpg::dds_ex_jpg;
 use dds::{ColorFormat, DataLayout, Decoder, ImageViewMut};
-use enumy::opcje::OptRozszerzeniaPlikówZdjęciowych;
+use enumy::rozszerzenia::rozszerzenia::ImgExt;
 use enumy::statusy::LogTxDoRozpakowanieDds;
 use futures::TryFutureExt;
 use futures::channel::mpsc::Sender;
 use image::{DynamicImage, ImageFormat};
 use std::fs::File;
 use std::path::PathBuf;
-use enumy::dane_do_przetwarzania::DaneDoRozpakowaniaDds;
+use enumy::dane_do_przetwarzania::DaneDdsUnpak;
 // Zakładam, że używasz crate 'dds' lub podobnego
 
 pub async fn export_dds_array_to_jpg(
-    dane: DaneDoRozpakowaniaDds,
+    dane: DaneDdsUnpak,
     mut tx: Sender<LogTxDoRozpakowanieDds>,
 ) -> Result<(), std::io::Error> {
     dbg!(dane.ścieżka_wejściowa.display());
@@ -98,7 +98,7 @@ pub async fn export_dds_array_to_jpg(
             let op_ref = &mut obecna_operacja;
             let pr_ref = &mut procent_progress;
             match dane.rozszerzenie {
-                OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, .. } => {
+                ImgExt::Jpg { jakosc, .. } => {
                     dds_ex_jpg(
                         dynamic_img,
                         &dane.ścieżka_wyjściowa,
@@ -112,7 +112,7 @@ pub async fn export_dds_array_to_jpg(
                     )
                     .await?
                 }
-                OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } => {
+                ImgExt::Ff { metoda_kompresji } => {
                     dds_ex_ff(
                         dynamic_img,
                         &dane.ścieżka_wyjściowa,

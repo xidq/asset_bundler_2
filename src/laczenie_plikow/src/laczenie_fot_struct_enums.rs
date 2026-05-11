@@ -4,8 +4,8 @@ use crate::metody_mielenia::laczenie_png::laczenie_png;
 use crate::metody_mielenia::laczenie_qoi::laczenie_qoi;
 use crate::metody_mielenia::laczenie_tga::laczenie_tga;
 use crate::metody_mielenia::laczenie_webp::laczenie_webp;
-use enumy::dane_do_przetwarzania::DaneDoŁączeniaZdjęć;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuAvif, OptFormatyKoloruObrazuQoi, OptRozszerzeniaPlikówZdjęciowychPojedyncze};
+use enumy::dane_do_przetwarzania::DaneMerge;
+use enumy::rozszerzenia::rozszerzenia::RozszerzeniaPojedyncze;
 use futures::SinkExt;
 use futures::channel::mpsc;
 use image::DynamicImage;
@@ -15,7 +15,7 @@ use crate::metody_mielenia::laczenie::{laczenie_vac_to_dyn, ogarnij_sciezki_w_ko
 use crate::metody_mielenia::laczenie_avif::laczenie_avif;
 
 pub async fn fn_do_laczenia_fot(
-    dane: DaneDoŁączeniaZdjęć,
+    dane: DaneMerge,
     mut tx: mpsc::Sender<LogTxDoŁączeniaZdjęć>,
 ) -> Result<(), tokio::io::Error> {
     
@@ -116,8 +116,8 @@ pub async fn fn_do_laczenia_fot(
     let wymiar = (max_x, max_y);
     let obrazki = Vec::from([img_r, img_g, img_b, img_a]);
 
-    let wynik: Result<(), tokio::io::Error> = match dane.out_format {
-        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Png {
+    let wynik: Result<(), tokio::io::Error> = match dane.rozszerzenie {
+        RozszerzeniaPojedyncze::Png {
             bit_depth,
             kompresja,
         } => {
@@ -132,7 +132,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Jpg {
+        RozszerzeniaPojedyncze::Jpg {
             jakosc,
             progresywny,
             bit_depth, sampling, quant, scans,
@@ -149,7 +149,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Webp {
+        RozszerzeniaPojedyncze::Webp {
             jakosc,
             lossless,
             bit_depth,
@@ -167,7 +167,7 @@ pub async fn fn_do_laczenia_fot(
             .await
         }
 
-        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Tga { bit_depth } => {
+        RozszerzeniaPojedyncze::Tga { bit_depth } => {
             laczenie_tga(
                 obrazki,
                 &dane.sciezka_out,
@@ -178,7 +178,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Ff { metoda_kompresji } => {
+        RozszerzeniaPojedyncze::Ff { metoda_kompresji } => {
             laczenie_ff(
                 obrazki,
                 &dane.sciezka_out,
@@ -189,7 +189,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Qoi { bit_depth } => {
+        RozszerzeniaPojedyncze::Qoi { bit_depth } => {
             laczenie_qoi(
                 obrazki,
                 &dane.sciezka_out,
@@ -201,20 +201,14 @@ pub async fn fn_do_laczenia_fot(
             .await
         }
 
-        OptRozszerzeniaPlikówZdjęciowychPojedyncze::Avif { 
+        RozszerzeniaPojedyncze::Avif { 
             chroma, 
             speed, 
             metoda_kompresji, 
             lossy, 
             bit_depth 
         } => {
-            let wrzód  =match bit_depth{
-                OptFormatyKoloruObrazuAvif::B8 => {OptFormatyKoloruObrazOgólny::B8}
-                OptFormatyKoloruObrazuAvif::B8a => {OptFormatyKoloruObrazOgólny::B8a}
-                OptFormatyKoloruObrazuAvif::B10 => {OptFormatyKoloruObrazOgólny::B16}
-                OptFormatyKoloruObrazuAvif::B10a => {OptFormatyKoloruObrazOgólny::B16a}
-            };
-            let obrazeczek = laczenie_vac_to_dyn(obrazki, &wrzód, wymiar).await?;
+            let obrazeczek = laczenie_vac_to_dyn(obrazki, &bit_depth, wymiar).await?;
             let sciezka_vinal_final_chyba_v1 = ogarnij_sciezki_w_koncu(dane.sciezka_out, dane.nazwa).await?;
             laczenie_avif(obrazeczek, &sciezka_vinal_final_chyba_v1 , lossy, bit_depth, None, metoda_kompresji, speed, chroma)
                 .await

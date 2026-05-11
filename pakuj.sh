@@ -25,7 +25,7 @@ echo "przeniesione do export/release"
 
 rm -rf AppDir
 
-# 1. Pobierz linuxdeploy (jeśli nie ma)
+
 if [ ! -f linuxdeploy-x86_64.AppImage ]; then
     wget https://github.com/linuxdeploy/linuxdeploy/releases/download/continuous/linuxdeploy-x86_64.AppImage
     chmod +x linuxdeploy-x86_64.AppImage
@@ -33,10 +33,7 @@ fi
 
 export VERSION=$NOWA_WERSJA
 
-# 2. Stwórz strukturę AppDir i zbuduj AppImage
-# --executable: ścieżka do Twojej binarki
-# --i: ścieżka do ikony (np. app-icon.png)
-# --d: ścieżka do pliku .desktop
+
 ./linuxdeploy-x86_64.AppImage --appdir AppDir \
     --executable "export/temp/Asset-bundler-2" \
     --icon-file "export/resources/align-justify.png" \
@@ -44,10 +41,10 @@ export VERSION=$NOWA_WERSJA
     --desktop-file "app.desktop" \
     --output appimage
 
-# 3. Przenieś gotowy AppImage do export/
+
 
 mv *.AppImage export/release
 
 rm -r export/temp
 
-#shutdown + 15
+#sudo shutdown -h +10

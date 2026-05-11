@@ -1,4 +1,6 @@
 use iced::Color;
+use std::collections::HashMap;
+use strum::{EnumIter, EnumMessage};
 
 #[derive(Clone, Debug)]
 pub enum WybraneOknoEdycjiZdjęć {
@@ -7,20 +9,20 @@ pub enum WybraneOknoEdycjiZdjęć {
     MenuOptRozdzielczościObrazów,
     MenuReszta,
 }
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-pub enum UiPodstrony {
-    BinPakowanie,
-    BinRozpakowanie,
-    KonwersjaFoto,
-    KonwersjaFotoŚcieżki,
-    KonwersjaFotoRozszerzenia,
-    KonwersjaFotoRozdzielczości,
-    KonwersjaFotoMenuReszta,
-    DaneDoŁączeniaZdjęćo,
-    ObslugaDds,
-    // Ustawienia,
-    // Logi,
-    Dev,
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter, Eq)]
+pub enum UiPods {
+    BinPak,
+    BinUnpak,
+    KonwPath,
+    KonwExt,
+    KonwRes,
+    KonwEtc,
+    Merge,
+    DdsPak,
+    DdsUnpak,
+    DdsExt,
+    Ustawienia,
+    MergeExt,
 }
 pub struct UstawieniaThemeWsio{
     pub kolory:ObecnyColorTheme,
@@ -28,15 +30,177 @@ pub struct UstawieniaThemeWsio{
     pub tekst:ObecnyColorCzcionkiPrzezroczystosci,
     pub ustawienia: Ustawienia,
     pub temp: Temp,
+    pub btn_state:HashMap<&'static str,BtnState>,
 }
 pub struct Temp{
-    pub aktywny_proces: ActProces,
-    pub aktywne_okno: UiPodstrony,
+    pub aktywny_proces: Option<ActProces>,
+    pub aktywne_okno: UiPods,
+    pub start_btn_status: StartBtnStatus,
+}
+#[derive(Clone, Debug, EnumMessage, PartialEq)]
+pub enum TextInputType{
+    #[strum(message = "mgt_input_folder")]
+    BinKompPathIn,
+    #[strum(message = "mgt_output_folder")]
+    BinKompPathOut,
+    #[strum(message = "mgt_file_name")]
+    BinKompNazwa,
+    #[strum(message = "mgt_input_folder")]
+    BinDekompPathIn,
+    #[strum(message = "mgt_output_folder")]
+    BinDekompPathOut,
+    #[strum(message = "mgt_input_folder_or_file")]
+    KonwPathIn,
+    #[strum(message = "mgt_output_folder")]
+    KonwPathOut,
+    #[strum(message = "mgt_input_file_r")]
+    MergPathInR,
+    #[strum(message = "mgt_input_file_g")]
+    MergPathInG,
+    #[strum(message = "mgt_input_file_b")]
+    MergPathInB,
+    #[strum(message = "mgt_input_file_a")]
+    MergPathInA,
+    #[strum(message = "mgt_output_folder")]
+    MergePathOut,
+    #[strum(message = "mgt_file_name")]
+    MergeNazwa,
+    #[strum(message = "mgt_output_folder")]
+    DdsPathOut,
+    #[strum(message = "mgt_file_name")]
+    DdsNazwa,
+    DdsRozPathIn,
+    DdsRozPathOut,
+    DdsRozNazwa,
+}
+#[derive(Clone, Debug, PartialEq)]
+pub enum SliderType{
+    KonwJpgQuality,
+    KonwersjaJpgScans,
+    KonwersjaAvifSpeed,
+    KonwersjaAvifQuality,
+    KonwersjaPngKompresja,
+    KonwersjaWebpJakosc,
+    KonwersjaFfZstd,
+    KonwersjaFfBzip2,
+    KonwersjaFfXz,
+    KonwersjaNoising,
+    MergeJpgQuality,
+    MergeJpgScans,
+    MergeAvifSpeed,
+    MergeAvifQuality,
+    MergePngKompresja,
+    MergeWebpJakosc,
+    MergeFfZstd,
+    MergeFfBzip2,
+    MergeFfXz,
+    DdsJpgScans,
+    DdsJpgQuality,
+    DdsWebpJakosc,
+    DdsFfBzip2,
+    DdsFfZstd,
+    DdsFfXz,
+    DdsAvifSpeed,
+    DdsAvifQuality,
+    DdsPngKompresja,
+}
+#[derive(Clone, Debug)]
+pub enum DropdownType{
+    KonwersjaInterpolacja,
+    BinFilter,
+    BinKompresja,
+    KonwersjaKompresjaFf,
+    KonwersjaJpgQuant,
+    KonwersjaJpgSample,
+    KonwersjaAvifKompresja,
+    KonwersjaAvifChroma,
+    MergeJpgSample,
+    MergeJpgQuant,
+    MergeAvifChroma,
+    MergeAvifKompresja,
+    MergeKompresjaFf,
+    DdsPakComp,
+    DdsPakFormat,
+    DdsKompresjaFf,
+    DdsAvifKompresja,
+    DdsAvifChroma,
+    DdsJpgQuant,
+    DdsJpgSample,
+}
+#[derive(Clone, Debug)]
+
+pub enum PrzyciskiGlowneMenu{
+    Binarka,
+    Konwersja,
+    Łączenie,
+    Dds,
+    Ustawienia,
+}
+#[derive(Clone, Debug, EnumMessage,)]
+pub enum ButtonType{
+    #[strum(message = "mgt_input_folder")]
+    BinKompPathIn,
+    #[strum(message = "mgt_output_folder")]
+    BinKompPathOut,
+    #[strum(message = "mgt_output_folder")]
+    BinDekompPathIn,
+    #[strum(message = "mgt_input_folder")]
+    BinDekompPathOut,
+    #[strum(message = "mgt_input_file")]
+    KonwPathInFile,
+    #[strum(message = "mgt_input_folder")]
+    KonwPathInFolder,
+    #[strum(message = "mgt_output_folder")]
+    KonwPathOut,
+    KonwRozszerzenia,
+    #[strum(message = "hint_conversion_jpg_prog")]
+    KonwJpgProg,
+    #[strum(message = "hint_conversion_avif_lossless")]
+    KonwAvifLoss,
+    #[strum(message = "hint_conversion_webp_losless")]
+    KonwWebpLoss,
+    #[strum(message = "mgt_input_file_r")]
+    MergPathInR,
+    #[strum(message = "mgt_input_file_g")]
+    MergPathInG,
+    #[strum(message = "mgt_input_file_b")]
+    MergPathInB,
+    #[strum(message = "mgt_input_file_a")]
+    MergPathInA,
+    MergeRozszerzenia,
+    #[strum(message = "hint_conversion_jpg_prog")]
+    MergeJpgProg,
+    #[strum(message = "hint_conversion_avif_lossless")]
+    MergeAvifLoss,
+    #[strum(message = "mgt_output_folder")]
+    MergePathOut,
+    #[strum(message = "hint_conversion_webp_losless")]
+    MergeWebpLoss,
+    #[strum(message = "mgt_input_file_multiple")]
+    DdsPathInFiles,
+    #[strum(message = "mgt_input_folder_multiple")]
+    DdsPathInFolders,
+    #[strum(message = "mgt_output_folder")]
+    DdsPathOut,
+    DdsRozPathIn,
+    DdsRozPathOut,
+    DdsRozszerzenia,
+    DdsJpgProg,
+    DdsWebpLoss,
+    DdsAvifLoss,
+}
+pub struct StartBtnStatus{
+    pub bin_pak: BtnState,
+    pub bin_unpak: BtnState,
+    pub konwersja: BtnState,
+    pub dds_pak: BtnState,
+    pub dds_unpak: BtnState,
+    pub laczenie: BtnState,
 }
 pub struct Ustawienia{
     pub halp_menu:bool,
+    pub debug_menu:bool,
 
-    
 }
 pub struct  ObecnyColorTheme{
     pub binarka: Color,
@@ -53,6 +217,7 @@ pub struct ObecnyColorThemePrzezroczystosci{
     pub low:f32,
     pub min:f32,
     pub kolor:Color,
+    pub err_font:Color,
     pub bground: Color,
     pub bground_lewy: Color,
 }
@@ -64,22 +229,8 @@ pub struct ObecnyColorCzcionkiPrzezroczystosci{
     pub min:f32,
     pub kolor:Color,
 }
-#[derive(Clone, Debug)]
-pub enum StronyDds {
-    ZplikuDoDds,
-    ZddsDoPliku,
-}
 
-#[allow(dead_code)]
-#[derive(Debug, Clone)]
-pub enum WybranyFormatZdjecia{
-    Jpg,
-    Png,
-    Webp,
-    Tga,
-    Ff,
-    Qoi,
-}
+
 #[allow(dead_code)]
 #[derive(Clone, Copy, Debug, PartialEq)]
 pub enum RodzajeContainer{
@@ -89,13 +240,22 @@ pub enum RodzajeContainer{
 }
 
 #[allow(dead_code)]
-#[derive(Debug, Clone,PartialEq)]
+#[derive(Debug, Clone, PartialEq, EnumIter)]
 pub enum ActProces {
-    PakowaniePliku,
-    RozpakowaniePliku,
-    DdsPakowanie,
-    DdsRozpakowanie,
-    ŁączenieZdjęć,
-    KonwersjaZdjęć,
-    Żodyn,
+    BinPak,
+    BinUnpak,
+    DdsPak,
+    DdsUnpak,
+    Merge,
+    Konw,
+}
+#[derive(Debug, Clone,PartialEq)]
+pub enum BtnState{
+    Active,
+    Disabled,
+    Processing,
+    LackData,
+    U8(u8),
+    U32(u32),
+    F32(f32),
 }

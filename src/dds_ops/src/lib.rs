@@ -1,5 +1,5 @@
-mod dds_export;
-mod dds_halper;
+pub mod dds_export;
+pub mod dds_halper;
 pub mod dds_import;
 pub mod dds_wczytywanie_zdjec;
 pub mod zapisy;

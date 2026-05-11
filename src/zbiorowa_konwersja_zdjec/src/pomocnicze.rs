@@ -1,23 +1,19 @@
-use std::io::ErrorKind;
-use std::thread;
-use std::thread::sleep;
-use std::time::Duration;
 use futures::channel::mpsc::Sender;
 use futures::SinkExt;
-use image::{
-    ColorType, DynamicImage, GenericImageView, GrayImage, ImageBuffer, Luma, LumaA, Rgb, Rgba,
-};
-use rand::{random, random_bool, random_iter};
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
-use enumy::opcje::{OptFormatyKoloruObrazOgólny, OptFormatyKoloruObrazuQoi, OptFormatyKoloruObrazuTga, OptInterpolacja, OptMetodaKompresjiZdjecia, OptRozdzielczościObrazów, OptRozszerzeniaPlikówZdjęciowych};
+use enumy::dane_do_przetwarzania::DaneKonw;
+use enumy::opcje::OptInterpolacja;
+use enumy::rozszerzenia::kompresje::ForFfKompresja;
+use enumy::rozszerzenia::bdepth::{BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use enumy::rozszerzenia::rozszerzenia::ImgExt;
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 
 
 
 pub async fn sprawdz_czy_wsio_ok(
-    pumpum:DaneDoBathKonwersjaZdjec,
+    pumpum: DaneKonw,
     mut tx: Sender<LogTxDoBathKonwersjaZdjęć>
-) -> Result<DaneDoBathKonwersjaZdjec, std::io::Error>{
+) -> Result<DaneKonw, std::io::Error>{
 
     let mut wyslij_update_status = {
         async |msg: String|tx
@@ -50,9 +46,9 @@ pub async fn sprawdz_czy_wsio_ok(
     let _ =wyslij_update_status("Odebrano dane, rozpoczynam analizę".to_string()).await.ok();
 
 
-    for format in &mut dane.rozszerzenia_plików_zdjęciowych {
+    for format in &mut dane.rozszerzenia {
         match format {
-            OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans } => {
+            ImgExt::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans } => {
                 // 1. Korygowanie jakości (0-100)
                 if *jakosc > 100 { *jakosc = 100; }
                 if *jakosc == 0 { *jakosc = 1; }
@@ -70,7 +66,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 //     bit_depth.push(huehuehue);
                 // }
                 bit_depth.dedup();
-                let bul = bit_depth.iter().any(|b| !matches!(b, OptFormatyKoloruObrazOgólny::B8 | OptFormatyKoloruObrazOgólny::L8));
+                let bul = bit_depth.iter().any(|b| !matches!(b, BdepthJpg::Rgb8 | BdepthJpg::Luma8));
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
@@ -92,7 +88,7 @@ pub async fn sprawdz_czy_wsio_ok(
                 let _ =wyslij_update_status("Sprawdzanie danych Jpg: Git!".to_string()).await.ok();
             }
 
-            OptRozszerzeniaPlikówZdjęciowych::Png { kompresja, bit_depth } => {
+            ImgExt::Png { kompresja, bit_depth } => {
                 // 1. Korygowanie kompresji (np. 0-9)
                 *kompresja = (*kompresja).clamp(0_u8, 9_u8);
 
@@ -101,21 +97,21 @@ pub async fn sprawdz_czy_wsio_ok(
                 // bit_depth.sort();
                 bit_depth.dedup();
                 let bul = bit_depth.iter().any(|b| !matches!(b, 
-                    OptFormatyKoloruObrazOgólny::B8 | 
-                    OptFormatyKoloruObrazOgólny::L8 |
-                    OptFormatyKoloruObrazOgólny::B16 | 
-                    OptFormatyKoloruObrazOgólny::L16 |
-                    OptFormatyKoloruObrazOgólny::B8a | 
-                    OptFormatyKoloruObrazOgólny::L8a |
-                    OptFormatyKoloruObrazOgólny::B16a | 
-                    OptFormatyKoloruObrazOgólny::L16a 
+                    BdepthPng::Rgb8 | 
+                    BdepthPng::Luma8 |
+                    BdepthPng::Rgb16 | 
+                    BdepthPng::Luma16 |
+                    BdepthPng::Rgb8Alpha | 
+                    BdepthPng::Luma8Alpha |
+                    BdepthPng::Rgb16Alpha | 
+                    BdepthPng::Luma16Alpha 
                 ));
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
                     let _ = wyslij_update_status("Sprawdzanie danych Png: Err".to_string()).await.ok();
                     let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćBłąd(
-                        "JPG: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
+                        "Png: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
                     )).await;
 
                     // PRZERWANIE: Zwracamy błąd, co kończy działanie pętli i całej funkcji
@@ -127,13 +123,13 @@ pub async fn sprawdz_czy_wsio_ok(
                 let _ = wyslij_update_status("Sprawdzanie danych Png: Git!".to_string()).await.ok();
             }
 
-            OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, lossless, bit_depth } => {
+            ImgExt::Webp { jakosc, lossless, bit_depth } => {
 
                 if *jakosc > 100 { *jakosc = 100; }
                 if *jakosc == 0 { *jakosc = 1; }
 
                 bit_depth.dedup();
-                let bul = bit_depth.iter().any(|b| !matches!(b, OptFormatyKoloruObrazOgólny::B8 | OptFormatyKoloruObrazOgólny::B8a));
+                let bul = bit_depth.iter().any(|b| !matches!(b, BdepthWebp::Rgb8 | BdepthWebp::Rgb8Alpha));
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
@@ -150,13 +146,13 @@ pub async fn sprawdz_czy_wsio_ok(
                 }
                 let _ = wyslij_update_status("Sprawdzanie danych Webp: Git!".to_string()).await.ok();
             }
-            OptRozszerzeniaPlikówZdjęciowych::Tga {  bit_depth } => {
+            ImgExt::Tga {  bit_depth } => {
                 bit_depth.dedup();
                 let bul = bit_depth.iter().any(|b| !matches!(b, 
-                    OptFormatyKoloruObrazuTga::TrueColorA32 | 
-                    OptFormatyKoloruObrazuTga::TrueColor24 |
-                    OptFormatyKoloruObrazuTga::HighColor16 |
-                    OptFormatyKoloruObrazuTga::Szary8
+                    BdepthTga::TrueColorA32 | 
+                    BdepthTga::TrueColor24 |
+                    BdepthTga::HighColor16 |
+                    BdepthTga::Luma8
                 ));
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
@@ -174,13 +170,13 @@ pub async fn sprawdz_czy_wsio_ok(
                 }
                 let _ = wyslij_update_status("Sprawdzanie danych Tga: Git!".to_string()).await.ok();
             }
-            OptRozszerzeniaPlikówZdjęciowych::Ff {  metoda_kompresji } => {
+            ImgExt::Ff {  metoda_kompresji } => {
 
                 let bul = matches!(metoda_kompresji,
-                    OptMetodaKompresjiZdjecia::Bzip2(_) |
-                    OptMetodaKompresjiZdjecia::Zstd(_) |
-                    OptMetodaKompresjiZdjecia::Xz(_) |
-                    OptMetodaKompresjiZdjecia::Brak
+                    ForFfKompresja::Bzip2(_) |
+                    ForFfKompresja::Zstd(_) |
+                    ForFfKompresja::Xz(_) |
+                    ForFfKompresja::Brak
                 );
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
@@ -197,19 +193,19 @@ pub async fn sprawdz_czy_wsio_ok(
                     ));
                 }
                 match metoda_kompresji {
-                    OptMetodaKompresjiZdjecia::Zstd(xx) => {*xx = (*xx).clamp(1_u8,22_u8);}
-                    OptMetodaKompresjiZdjecia::Bzip2(xx) => {*xx = (*xx).clamp(1_u8,22_u8);}
-                    OptMetodaKompresjiZdjecia::Xz(xx) => {*xx = (*xx).clamp(1_u8,22_u8);}
-                    OptMetodaKompresjiZdjecia::Brak => {}
+                    ForFfKompresja::Zstd(xx) => {*xx = (*xx).clamp(1_u8, 22_u8);}
+                    ForFfKompresja::Bzip2(xx) => {*xx = (*xx).clamp(1_u8, 22_u8);}
+                    ForFfKompresja::Xz(xx) => {*xx = (*xx).clamp(1_u8, 22_u8);}
+                    ForFfKompresja::Brak => {}
                 }
                 let _ = wyslij_update_status("Sprawdzanie danych Ff: Git!".to_string()).await.ok();
             }
 
-            OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth } => {
+            ImgExt::Qoi { bit_depth } => {
                 bit_depth.dedup();
                 let bul = bit_depth.iter().any(|b| !matches!(b,
-                    OptFormatyKoloruObrazuQoi::Color24 |
-                    OptFormatyKoloruObrazuQoi::ColorA32
+                    BdepthQoi::Color24 |
+                    BdepthQoi::Color32
                 ));
                 // if bit_depth.len() > 1 {
                 //     bit_depth.truncate(1); // Przykład: QOI może mieć tylko jeden format na raz
@@ -242,19 +238,19 @@ pub async fn sprawdz_czy_wsio_ok(
     }
     let czy_mamy_rozdzielczosc = dane.opcje_rozdzielczości.iter().any(|r| {
         match r {
-            OptRozdzielczościObrazów::R16 => {true}
-            OptRozdzielczościObrazów::R32 => {true}
-            OptRozdzielczościObrazów::R64 => {true}
-            OptRozdzielczościObrazów::R128 => {true}
-            OptRozdzielczościObrazów::R256 => {true}
-            OptRozdzielczościObrazów::R512 => {true}
-            OptRozdzielczościObrazów::R1k => {true}
-            OptRozdzielczościObrazów::R2k => {true}
-            OptRozdzielczościObrazów::R4k => {true}
-            OptRozdzielczościObrazów::R6k => {true}
-            OptRozdzielczościObrazów::R8k => {true}
-            OptRozdzielczościObrazów::R16k => {true}
-            OptRozdzielczościObrazów::Oryginalna => {true}
+            Rozdzielczości::R16 => {true}
+            Rozdzielczości::R32 => {true}
+            Rozdzielczości::R64 => {true}
+            Rozdzielczości::R128 => {true}
+            Rozdzielczości::R256 => {true}
+            Rozdzielczości::R512 => {true}
+            Rozdzielczości::R1k => {true}
+            Rozdzielczości::R2k => {true}
+            Rozdzielczości::R4k => {true}
+            Rozdzielczości::R6k => {true}
+            Rozdzielczości::R8k => {true}
+            Rozdzielczości::R16k => {true}
+            Rozdzielczości::Oryginalna => {true}
         }
     });
 

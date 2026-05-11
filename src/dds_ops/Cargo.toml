@@ -13,5 +13,5 @@ futures = { workspace = true }
 zstd = { workspace = true }
 bzip2 = { workspace = true }
 xz2 = { workspace = true }
-iced = { workspace = true }
-zbiorowa_konwersja_zdjec = { path = "../zbiorowa_konwersja_zdjec" }
+rand = "0.10.1"
+#zbiorowa_konwersja_zdjec = { path = "../zbiorowa_konwersja_zdjec" }

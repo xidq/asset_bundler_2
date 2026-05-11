@@ -1,4 +1,4 @@
-use enumy::opcje::OptFormatyKoloruObrazuQoi;
+use enumy::rozszerzenia::bdepth::BdepthQoi;
 use image::ImageEncoder;
 use image::{DynamicImage, GenericImageView};
 use std::fs::{File, create_dir_all};
@@ -10,14 +10,14 @@ pub async fn laczenie_qoi(
     ścieżka_wyjściowa: &Path,
     nazwa_pliku: &str,
     alfa_rgb: &(u16, u16, u16),
-    bit_depth: &OptFormatyKoloruObrazuQoi,
+    bit_depth: &BdepthQoi,
     wymiar: (u32, u32),
 ) -> Result<(), tokio::io::Error> {
     let depth = bit_depth;
 
     // --- OBSŁUGA BIT DEPTH I FORMATU ---
     let (final_img, nazwa_bd, color_type, szer, wys) = match depth {
-        OptFormatyKoloruObrazuQoi::Color24 => {
+        BdepthQoi::Color24 => {
             let img_r = bufor.remove(0);
             let img_g = bufor.remove(0);
             let img_b = bufor.remove(0);
@@ -44,7 +44,7 @@ pub async fn laczenie_qoi(
             )
         }
 
-        OptFormatyKoloruObrazuQoi::ColorA32 => {
+        BdepthQoi::Color32 => {
             let img_r = bufor.remove(0);
             let img_g = bufor.remove(0);
             let img_b = bufor.remove(0);

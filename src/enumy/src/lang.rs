@@ -1,5 +1,5 @@
-
-
+use std::ffi::OsStr;
+use std::path::{Component, Path};
 // use crate::enums_structs_io::ProcesStatus;
 use crate::wybranie_jezykowe::WybórJęzyka;
 
@@ -54,20 +54,127 @@ where
     zakonczenie.to_string()
 }
 
+pub trait ToU32 {
+    fn to_u32(&self) -> u32;
+}
+
+impl ToU32 for i32 { fn to_u32(&self) -> u32 { *self as u32 } }
+impl ToU32 for i16 { fn to_u32(&self) -> u32 { *self as u32 } }
+impl ToU32 for i8 { fn to_u32(&self) -> u32 { *self as u32 } }
+impl ToU32 for f64 { fn to_u32(&self) -> u32 { *self as u32 } }
+impl ToU32 for f32 { fn to_u32(&self) -> u32 { *self as u32 } }
+impl ToU32 for u16 { fn to_u32(&self) -> u32 { *self as u32 } }
+impl ToU32 for u8 { fn to_u32(&self) -> u32 { *self as u32 } }
+impl WybórJęzyka {
+
+    pub fn format_sciezek(&self, xx: &Path) -> String {
+        let starrrrtuuuuuu = match xx.components().nth(1){
+            None => {String::new()}
+            Some(xxx) => {xxx.as_os_str().to_string_lossy().to_string()}
+        };
+
+        let endo = match xx.file_name(){
+            None => {String::new()}
+            Some(xxx) => {xxx.to_string_lossy().to_string()}
+        };
+
+        let poczatek = if xx.to_string_lossy().len() < 30 {
+            xx.to_string_lossy().to_string()
+        } else if starrrrtuuuuuu.len() < 30 {
+            let secnd = match xx.components().nth(2){
+                None => {String::new()}
+                Some(xxx) => {xxx.as_os_str().to_string_lossy().to_string()}
+            };
+            starrrrtuuuuuu + "/" + &secnd + "/"
+        } else {
+            starrrrtuuuuuu + "/"
+        };
+
+        if xx.to_string_lossy().len() < 30 {
+            poczatek
+        } else {
+            poczatek + " ... " + "/" + endo.as_str()
+        }
+    }
+    pub fn normal_u32_option(&self,var: (impl Into<u32> + std::clone::Clone, Option<impl Into<u32> + std::clone::Clone>)) -> (u32, Option<u32>){
+        let vwar0: u32 = var.0.clone().into();
+        let f1:u32 = vwar0;
+        let mut xxx = None;
+
+        if let Some(wartosc2) = var.1 {
+            xxx = Some(wartosc2.clone().into() )
+        } else {xxx = None}
+        // let f2 = var.1.map(|v| v.to_f32()).unwrap_or(0.0);
+
+        (f1, xxx)
+    }
+
+    pub fn bajt(&self, val:impl Into<u64> + std::clone::Clone )->String{
+        let xx: u64 = val.clone().into();
+        let kb: u64 = 1024_u64 * 8;
+        let mb: u64 = 1024_u64.pow(2) * 8;
+        let gb: u64 = 1024_u64.pow(3) * 8;
+        let tb: u64 = 1024_u64.pow(4) * 8;
+        let ccvbfd = match xx.clone(){
+            0..=8 => { format!("{}b",xx) }
+            n if n < kb => { format!("{:.2}B",xx as f64/8.) }
+            n if n < mb => { format!("{:.2}kB",xx as f64/kb as f64) }
+            n if n < gb => { format!("{:.2}MB",xx as f64/mb as f64) }
+            n if n < tb => { format!("{:.2}GB",xx as f64/gb as f64) }
+            _ => { format!("{:.2}TB", xx as f64/tb as f64 ) }
+        };
+        ccvbfd
+
+    }
+}
+
 impl WybórJęzyka {
     pub fn t(&self, klucz: &str) -> &'static str {
         match self {
             WybórJęzyka::PL => match klucz {
+                "roz_16" => "16"
+                ,"info_roz_16" => "",
+                "roz_32" => "32"
+                ,"info_roz_32" => "",
+                "roz_64" => "64"
+                ,"info_roz_64" => "",
+                "roz_128" => "128"
+                ,"info_roz_128" => "",
+                "roz_256" => "256"
+                ,"info_roz_256" => "",
+                "roz_512" => "512"
+                ,"info_roz_512" => "",
+                "roz_1024" => "1k"
+                ,"info_roz_1024" => "",
+                "roz_2048" => "2k"
+                ,"info_roz_2048" => "",
+                "roz_4096" => "4k"
+                ,"info_roz_4096" => "",
+                "roz_6144" => "6k"
+                ,"info_roz_6144" => "",
+                "roz_8192" => "8k"
+                ,"info_roz_8192" => "",
+                "roz_16384" => "16k"
+                ,"info_roz_16384" => "",
+                "roz_org" => "Rozdzielczość oryginalna",
+                "info_roz_org" => "",
 
                 "numbers_1" => "plik",
                 "numbers_2" => "pliki",
                 "numbers_3" => "plików",
 
                 "mgt_input_file" => "Plik wejściowy",
+                "mgt_input_file_multiple" => "Pliki wejściowe",
+                "mgt_input_file_r" => "Plik wejściowy czerwony",
+                "mgt_input_file_g" => "Plik wejściowy zielony",
+                "mgt_input_file_b" => "Plik wejściowy niebieski",
+                "mgt_input_file_a" => "Plik wejściowy alpha",
                 "mgt_input_folder" => "Folder wejściowy",
+                "mgt_input_folder_multiple" => "Foldery wejściowe",
                 "mgt_input_folder_or_file" => "Plik lub folder wejściowy",
                 "mgt_output_folder" => "Folder wyjściowy",
                 "mgt_compression_level_label" => "Poziom kompresji",
+                "mgt_compression_none" => "Brak kompresji",
                 "mgt_filter_label" => "Filtr",
                 "mgt_file_name" => "Nazwa pliku",
                 "mgt_btn_ready" => "Rozpocznij",
@@ -75,6 +182,11 @@ impl WybórJęzyka {
                 "mgt_btn_busy_processing_other" => "Coś innego już trwa",
                 "mgt_btn_gib_data" => "Uzupełnij informacje",
                 "mgt_proces_error" => "Błąd",
+                "mgt_interpolation" => "Interpolacja",
+                "mgt_gen_off" => "Wyłączone",
+                "mgt_more" => "więcej",
+                "mgt_and" => "i",
+                "msg_no_folder_nor_file" => "Nie wybrano plików bądź folderów",
 
                 "ui_main_btn_binary" => "Binarka",
                 "ui_main_btn_conversion" => "Konwersja",
@@ -87,16 +199,18 @@ impl WybórJęzyka {
                 "ui_conversion_extensions" => "Rozszerzenia",
                 "ui_conversion_resolutions" => "Rozdzielczości",
                 "ui_conversion_rest" => "Inne",
-                "ui_conversion_paths" => "Ścieżki",
-                "ui_conversion_paths" => "Ścieżki",
+                "ui_dds_pack" => "Pakowanie",
+                "ui_dds_unpack" => "Rozpakowywanie",
+                "ui_gen_extensions" => "Rozszerzenia",
+
 
                 "proces_binary_pack_collecting_pending" => "Zebrano",
                 "proces_binary_pack_packing_pending" => "Pakuję",
                 "proces_binary_pack_packing" => "Spakowano",
                 "proces_binary_pack_compression_pending" => "Postęp kompresji",
-                "proces_binary_pack_compression_finished" => "Zakończona kompresja",
+                "proces_binary_pack_compression" => "Zakończona kompresja",
                 "proces_binary_pack_encoding_pending" => "Postęp kodowania",
-                "proces_binary_pack_encoding_finished" => "Zakończone kodowanie",
+                "proces_binary_pack_encoding" => "Zakończone kodowanie",
                 "proces_binary_pack_end" => "Zakończono proces pakowania w czasie",
 
                 "proces_binary_unpack_files_pending" => "Pliki",
@@ -113,15 +227,36 @@ impl WybórJęzyka {
                 "proces_conversion_proces_pending" => "Postęp procesu: ",
                 
 
+                "conversion_jpg_prog" => "Zapis progresywny",
+                "conversion_jpg_sampling" => "Próbkowanie:",
+                "conversion_jpg_qua" => "Kwant?:",
+                "conversion_avif_lossless" => "Bezstratne",
+                "conversion_avif_compression" => "Kompresja:",
+                "conversion_avif_chroma" => "Chroma:",
+                "conversion_webp_losless" => "Bezstratny.",
+                "conversion_noising" => "Zaszumienie:",
+                "conversion_alpha_color" => "Kolor alpha:",
+                "dds_format" => "Format:",
+                "dds_compression" => "Kompresja:",
+
+
+                "hint_mgt_btn_ready" => "Rozpocznij proces",
+                "hint_mgt_btn_busy_processing" => "Proces już jest w fazie działania",
+                "hint_mgt_btn_busy_processing_other" => "Zaiste inny proces obecnie jest wykonywany",
+                "hint_mgt_btn_gib_data" => "Czegoś tu jeszcze brakuje",
+                "hint_mgt_proces_error" => "Błąd",
                 "hint_ui_main_btn_binary" => "Pakowanie/rozpakowywanie plików",
                 "hint_ui_main_btn_conversion" => "Zbiorcze przerabianie zdjęć",
                 "hint_ui_main_btn_merge" => "Łączenie kilku obrazów w jeden",
                 "hint_ui_main_btn_dds" => "Zakładka z obsługą plików z formatem .dds",
                 "hint_ui_main_btn_settings" => "Zakładka z ustawieniami",
+                "hint_ui_menu_bin_pack" => "Pakowanie plików",
+                "hint_ui_menu_bin_unpack" => "Rozpakowywanie plików",
                 "hint_ui_conversion_paths" => "Tutaj wybierzesz ścieżki",
                 "hint_ui_conversion_extensions" => "Tutaj wybierzesz rozszerzenia",
                 "hint_ui_conversion_resolutions" => "Tutaj wybierzesz rozdzielczości",
                 "hint_ui_conversion_rest" => "Tutaj znajdziesz inne operacje",
+                "hint_ui_gen_extensions" => "Menu z rozszerzeniami",
                 "hint_binary_pack_process_btn" => "Przycisk do uruchomienia pakowania plików",
                 "hint_binary_pack_choose_out_path_btn" => "Przycisk do wyboru ścieżki wyjściowej, gdzie ma być umieszczony plik",
                 "hint_binary_pack_choose_in_path_btn" => "Przycisk do wyboru ścieżki wejściowej, z której to pliki będą zbierane do pakowania",
@@ -133,87 +268,169 @@ impl WybórJęzyka {
                 "hint_conversion_choose_file_btn" => "Wybierz plik",
                 "hint_conversion_choose_folder_btn" => "Wybierz folder",
                 "hint_conversion_choose_output_folder" => "Wybierz folder wyjściowy",
+                "hint_conversion_choose_output_folder_paths" => "Folder wyjściowy",
                 "hint_conversion_choose_output_folder_paths_same" => "Folder wyjściowy ten sam co wejściowy",
+                "hint_conversion_reset_paths" => "Zresetuj ścieżki wejściowe",
+                "hint_conversion_jpg_prog" => "Przełącznik zapisu progresywnego",
+                "hint_conversion_webp_losless" => "Jeżeli aktywny to zapis bezstratny",
+                "hint_conversion_process_btn" => "Przycisk do uruchomienia rozpakowywania plików",
+                "hint_conversion_process_btn_pending" => "Kieruj się wskazówkami na przycisku, acz ogólnie to przycisk do uruchomienia rozpakowywania plików",
+                "hint_conversion_avif_lossless" => "Przełącznik zapisu bezstratnego",
+
+                "log_status_welcome_msg_welcome_morning" => "Dobrej nocy", //powitanie w nocy 00 do 6 rano
+                "log_status_welcome_msg_welcome_evening" => "Dobry wieczór",
+                "log_status_welcome_msg_welcome_day" => "Dzień dobry",
+                "log_status_welcome_msg_today" => "Dziś",
+                "log_status_welcome_msg_time" => "Jest godzina",
+                "log_status_welcome_msg_sys_rdy" => "System w gotowości",
+                "log_status_welcome_msg_lang_detected" => "Wykryto język",
+                "log_help_menu" => "'Ctrl + H' aby widzieć podpowiedzi",
+
 
                 _ => "Brak tłumaczenia",
             },
             WybórJęzyka::EN => match klucz {
-                "main_toggle_export" => "Packing",
-                "main_toggle_import" => "Unpacking",
-                "main_toggle_photo_compil" => "Photo Edit",
-                "main_toggle_photo_merge" => "Photo Merge",
+                "roz_16" => "16"
+                ,"info_roz_16" => "",
+                "roz_32" => "32"
+                ,"info_roz_32" => "",
+                "roz_64" => "64"
+                ,"info_roz_64" => "",
+                "roz_128" => "128"
+                ,"info_roz_128" => "",
+                "roz_256" => "256"
+                ,"info_roz_256" => "",
+                "roz_512" => "512"
+                ,"info_roz_512" => "",
+                "roz_1024" => "1k"
+                ,"info_roz_1024" => "",
+                "roz_2048" => "2k"
+                ,"info_roz_2048" => "",
+                "roz_4096" => "4k"
+                ,"info_roz_4096" => "",
+                "roz_6144" => "6k"
+                ,"info_roz_6144" => "",
+                "roz_8192" => "8k"
+                ,"info_roz_8192" => "",
+                "roz_16384" => "16k"
+                ,"info_roz_16384" => "",
+                "roz_org" => "Original resolution",
+                "info_roz_org" => "",
 
-                "packing_config_menu" => "Packing Configuration",
-                "input_folder" => "Input folder...",
-                "output_folder" => "Output folder...",
-                "output_file_name" => "Output file name...",
-                "packing_start" => "START EXPORT",
-                "compression_level_label" => "Compression",
-                "file_filter_label" => "Filtering",
-                "skanuj" => "Scan",
-                "files_counting_numbers_1" => "file",
-                "files_counting_numbers_2" => "files",
-                "files_counting_numbers_3" => "files",
-                "status_note_started" => "Started",
-                "status_note_pending" => "In progress",
-                "status_note_io" => "I/O operations",
-                "status_note_finished" => "Finished",
-                "comp_none" => "No Compression",
-                "comp_std" => "Standard",
-                "comp_max" => "Maximum",
-                "filter_all" => "All",
-                "filter_graphic" => "Graphics",
-                "filter_audio" => "Audio",
-                "filter_text" => "Text",
-                "filter_pdf" => "PDF",
+                "numbers_1" => "file",
+                "numbers_2" | "numbers_3"=> "files",
 
-                "foto_edit_menu_resolution" => "Resolution",
-                "foto_edit_menu_rest" => "Others",
-                "foto_edit_menu_extensions" => "Extensions",
-                "foto_edit_menu_paths" => "Paths",
+                "mgt_input_file" => "Input file",
+                "mgt_input_file_r" => "Input file red",
+                "mgt_input_file_g" => "Input file green",
+                "mgt_input_file_b" => "Input file blue",
+                "mgt_input_file_a" => "Input file alpha",
+                "mgt_input_folder" => "Output folder",
+                "mgt_input_folder_or_file" => "Input file or folder",
+                "mgt_output_folder" => "Input folder",
+                "mgt_compression_level_label" => "Compression level",
+                "mgt_compression_none" => "Without Compression",
+                "mgt_filter_label" => "Filter",
+                "mgt_file_name" => "File name",
+                "mgt_btn_ready" => "Start",
+                "mgt_btn_busy_processing" => "Workin'",
+                "mgt_btn_busy_processing_other" => "Smth else is goin' on",
+                "mgt_btn_gib_data" => "Fill data",
+                "mgt_proces_error" => "Error",
+                "mgt_interpolation" => "Interpolation",
+                "mgt_gen_off" => "Off",
 
-                "general_off" => "disabled",
+                "ui_main_btn_binary" => "Bin file",
+                "ui_main_btn_conversion" => "Conversion",
+                "ui_main_btn_merge" => "Merging",
+                "ui_main_btn_dds" => "DDS",
+                "ui_main_btn_settings" => "Settings",
+                "ui_menu_bin_pack" => "Packing",
+                "ui_menu_bin_unpack" => "Unpacking",
+                "ui_conversion_paths" => "Paths",
+                "ui_conversion_extensions" => "Extensions",
+                "ui_conversion_resolutions" => "Resolutions",
+                "ui_conversion_rest" => "Inne",
+                "ui_dds_pack" => "Packing",
+                "ui_dds_unpack" => "Unpacking",
+                "ui_gen_extensions" => "Extensions",
 
-                "foto_edit_noising" => "Dithering / Noise",
+                "proces_binary_pack_collecting_pending" => "Collected",
+                "proces_binary_pack_packing_pending" => "Packing",
+                "proces_binary_pack_packing" => "Packed",
+                "proces_binary_pack_compression_pending" => "Compression progress",
+                "proces_binary_pack_compression" => "Compression finished",
+                "proces_binary_pack_encoding_pending" => "Encoding progress",
+                "proces_binary_pack_encoding" => "Encoding finished",
+                "proces_binary_pack_end" => "Packing process finished in",
 
-                "foto_edit_interpolation" => "Interpolation",
-                "foto_edit_color" => "Color",
-                "foto_edit_quality" => "Quality",
+                "proces_binary_unpack_files_pending" => "Files",
+                "proces_binary_unpack_files" => "Found",
+                "proces_binary_unpack_decoding_pending" => "Decoding progress",
+                "proces_binary_unpack_decoding" => "Decoded",
+                "proces_binary_unpack_decompression" => "Decompressed",
+                "proces_binary_unpack_unpacking_pending" => "Unpacking progress",
+                "proces_binary_unpack_unpacking" => "Unpacked",
+                "proces_binary_unpack_end" => "Unpacking process finished in",
 
-                "" => "",
+                "proces_conversion_reset_paths" => "Reset paths",
+                "proces_conversion_checkbox" => "Output path same as input",
+                "proces_conversion_proces_pending" => "Process progress: ",
 
-                "console_menu_reset" => "Reset",
-                "console_menu_status" => "Status:",
+                "conversion_jpg_prog" => "Progressive",
+                "conversion_jpg_sampling" => "Sampling:",
+                "conversion_jpg_qua" => "Quant:",
+                "conversion_avif_lossless" => "BLossless",
+                "conversion_avif_compression" => "Compression:",
+                "conversion_avif_chroma" => "Chroma:",
+                "conversion_webp_losless" => "Lossless",
+                "conversion_noising" => "Noising:",
+                "conversion_alpha_color" => "Alpha color:",
 
-                "log_status_welcome_msg_welcome" => "Welcome",
+                "hint_mgt_btn_ready" => "Start the process",
+                "hint_mgt_btn_busy_processing" => "Process is already running",
+                "hint_mgt_btn_busy_processing_other" => "Indeed, another process is currently active",
+                "hint_mgt_btn_gib_data" => "Something is still missing here",
+                "hint_mgt_proces_error" => "Error",
+                "hint_ui_main_btn_binary" => "Pack/unpack files",
+                "hint_ui_main_btn_conversion" => "Bulk image processing",
+                "hint_ui_main_btn_merge" => "Merge multiple images into one",
+                "hint_ui_main_btn_dds" => "Tab for .dds file support",
+                "hint_ui_main_btn_settings" => "Settings tab",
+                "hint_ui_menu_bin_pack" => "Packing files",
+                "hint_ui_menu_bin_unpack" => "Unpacking files",
+                "hint_ui_conversion_paths" => "Select paths here",
+                "hint_ui_conversion_extensions" => "Select extensions here",
+                "hint_ui_conversion_resolutions" => "Select resolutions here",
+                "hint_ui_conversion_rest" => "Other operations can be found here",
+                "hint_binary_pack_process_btn" => "Button to start file packing",
+                "hint_binary_pack_choose_out_path_btn" => "Select the output path for the file",
+                "hint_binary_pack_choose_in_path_btn" => "Select the input path from which files will be collected for packing",
+                "hint_binary_pack_choose_filter" => "File filtration selection menu",
+                "hint_binary_pack_choose_compression" => "Select the compression strength",
+                "hint_binary_unpack_process_btn" => "Button to start file unpacking",
+                "hint_binary_unpack_choose_out_path_btn" => "Select the output path for the unpacked files",
+                "hint_binary_unpack_choose_in_path_btn" => "Select the input file to be unpacked ;)",
+                "hint_conversion_choose_file_btn" => "Select file",
+                "hint_conversion_choose_folder_btn" => "Select folder",
+                "hint_conversion_choose_output_folder" => "Select output folder",
+                "hint_conversion_choose_output_folder_paths" => "Output folder",
+                "hint_conversion_choose_output_folder_paths_same" => "Output folder same as input",
+                "hint_conversion_reset_paths" => "Reset input paths",
+                "hint_conversion_jpg_prog" => "Toggle progressive encoding",
+                "hint_conversion_webp_losless" => "Enable for lossless encoding",
+                "hint_conversion_process_btn" => "Button to start image conversion",
+                "hint_conversion_process_btn_pending" => "Follow the button cues, but generally it's the start button",
+                "hint_conversion_avif_lossless" => "Toggle lossless encoding",
+
+                "log_status_welcome_msg_welcome_morning" => "Good night", // 00:00 to 06:00
+                "log_status_welcome_msg_welcome_evening" => "Good evening",
+                "log_status_welcome_msg_welcome_day" => "Good morning/Good day",
                 "log_status_welcome_msg_today" => "Today is",
-                "log_status_welcome_msg_time" => "Time",
+                "log_status_welcome_msg_time" => "The time is",
                 "log_status_welcome_msg_sys_rdy" => "System ready",
-                "log_status_welcome_msg_lang_detected" => "System language detected",
-                "log_status_" => "",
+                "log_status_welcome_msg_lang_detected" => "Language detected",
 
-                "log_status_critical_error" => "CRITICAL ERROR",
-                "log_status_operation_unpacking" => "Unpacking",
-                "log_status_operation_decompression" => "Decompression",
-                "log_status_finished" => "Finished",
-                "log_status_started" => "Started",
-                "log_status_in_time" => "In time",
-
-                "foto_edit_tooltip_jpg_color" => "Color JPG",
-                "foto_edit_tooltip_jpg_bw" => "Grayscale JPG",
-
-                "foto_edit_resolution_oryginal" => "Original",
-
-                "btn_proces_avaliable" => "Start",
-                "btn_proces_in_progress" => "Processing...",
-                "btn_proces_in_progress_other" => "Another process running",
-                "btn_proces_lack_of_data" => "Missing czcionki",
-
-                "OptInterpolacja_nearest" => "Nearest",
-                "OptInterpolacja_triangle" => "Triangle",
-                "OptInterpolacja_catmull" => "Catmull-Rom",
-                "OptInterpolacja_gaussian" => "Gaussian",
-                "OptInterpolacja_lanczos" => "Lanczos",
                 _ => "Missing translation",
             },
             WybórJęzyka::DE => match klucz {

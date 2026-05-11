@@ -1,25 +1,37 @@
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMessage;
+use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
 use dds_ops::dds_import::export_dds_array_to_jpg;
 use dds_ops::dds_wczytywanie_zdjec::dds_ogarnij_ze_zdjec_do_paczki;
 use enumy::inne_ui::ActProces;
-use enumy::opcje::{OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag, RozszerzeniaPojedyncze};
 use enumy::statusy::{LogTxDoPakowanieDds, LogTxDoRozpakowanieDds};
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
 
+fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
+    if let Some(pos) = vec.iter().position(|x| x == element) {
+        vec.remove(pos);
+    } else {
+        vec.push(element.clone());
+    }
+}
+
 impl Program {
-    pub fn update_message_dds(&mut self, msg: DdsMessage) -> Task<DdsMessage> {
+    pub fn update_message_dds(&mut self, msg: DdsMsg) -> Task<DdsMsg> {
         match msg {
-            DdsMessage::PakowaniePathInFiles => {
+            DdsMsg::PakowaniePathInFiles => {
 
                 if let Some(path) = rfd::FileDialog::new()
                     .add_filter("Tekstury DDS", &["dds"])
                     .pick_files()
 
                 {
-                    self.dane_temp_do_pakowania_dds.ścieżka_wejściowa =
+                    self.dane_dds_pak.ścieżka_wejściowa =
                         if path.is_empty(){
                             None
                         }else{
@@ -27,13 +39,13 @@ impl Program {
                         };
                 }
             }
-            DdsMessage::PakowaniePathInFolders => {
+            DdsMsg::PakowaniePathInFolders => {
 
                 if let Some(path) = rfd::FileDialog::new()
                     .pick_folders()
 
                 {
-                    self.dane_temp_do_pakowania_dds.ścieżka_wejściowa =
+                    self.dane_dds_pak.ścieżka_wejściowa =
                         if path.is_empty(){
                             None
                         }else{
@@ -42,32 +54,31 @@ impl Program {
                 }
             }
 
-            DdsMessage::PakowaniePathOutBtn => {
+            DdsMsg::PakowaniePathOutBtn => {
 
                 if let Some(path) = rfd::FileDialog::new()
                     .pick_folder()
                 {
-                    self.dane_temp_do_pakowania_dds.ścieżka_wyjściowa = path;
+                    self.dane_dds_pak.ścieżka_wyjściowa = path;
                 }
             }
-            DdsMessage::PakowaniePathOut(ścieżka) => {
-                self.dane_temp_do_pakowania_dds.ścieżka_wyjściowa = PathBuf::from(ścieżka);
+            DdsMsg::PakowaniePathOut(ścieżka) => {
+                self.dane_dds_pak.ścieżka_wyjściowa = PathBuf::from(ścieżka);
             }
 
-            DdsMessage::ZmienMenuDds(nowy_stan_menu) => self.ui_dds_podmenu = nowy_stan_menu,
-            DdsMessage::PakowanieFormat(nowy) => {
-                self.dane_temp_do_pakowania_dds.format = nowy;
+            DdsMsg::PakowanieFormat(nowy) => {
+                self.dane_dds_pak.format = nowy;
             }
-            DdsMessage::PakowanieKompresja(nowa) => {
-                self.dane_temp_do_pakowania_dds.kompresja = nowa;
+            DdsMsg::PakowanieKompresja(nowa) => {
+                self.dane_dds_pak.kompresja = nowa;
             }
-            DdsMessage::PakowanieNazwa(lel) => {
-                self.dane_temp_do_pakowania_dds.nazwa = lel;
+            DdsMsg::PakowanieNazwa(lel) => {
+                self.dane_dds_pak.nazwa = lel;
             }
 
-            DdsMessage::PakowanieStart => {
-                let dane_do_pakowania_dds = self.dane_temp_do_pakowania_dds.clone();
-                self.temat.temp.aktywny_proces = ActProces::DdsPakowanie;
+            DdsMsg::PakowanieStart => {
+                let dane_do_pakowania_dds = self.dane_dds_pak.clone();
+                self.temat.temp.aktywny_proces = Some(ActProces::DdsPak);
                 dbg!(&dane_do_pakowania_dds);
                 // self.status_zmiany_fot_log = Default::default();
                 // println!(
@@ -90,14 +101,17 @@ impl Program {
                             })
                             .await
                     },
-                    |_| DdsMessage::Nic,
+                    |_| DdsMsg::Nic,
                 );
 
-                let nasluchiwanie = Task::run(rx, DdsMessage::PakowaniePostęp);
+                let nasluchiwanie = Task::run(rx, DdsMsg::PakowaniePostęp);
 
                 return Task::batch(Vec::from([operacja, nasluchiwanie]));
             }
-            DdsMessage::PakowaniePostęp(progress) => {
+            DdsMsg::ZdjeciaLaczenieZmianaRozszerzenieFf(lejlejlej) =>  {
+                if let RozszerzeniaPojedyncze::Ff{ref mut metoda_kompresji } = self.dane_merge.rozszerzenie {*metoda_kompresji = lejlejlej;};
+            },
+            DdsMsg::PakowaniePostęp(progress) => {
                 match progress {
                     LogTxDoPakowanieDds::StatusPakowanieDdsStart => {
                         // self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
@@ -111,71 +125,86 @@ impl Program {
                         // self.status_zmiany_fot_log.msg_end =
                         //     format!("Zakończono w czasie: {}", czas);
                         self.status_dds_pakowanie.koniec = czas;
-                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
+                        self.temat.temp.aktywny_proces = None;
                     }
                     LogTxDoPakowanieDds::StatusPakowanieDdsBłąd(err) => {
                         self.status_dds_pakowanie.err = err;
                         // self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
                         // self.checker_bool_status_zbiorowe_przetwarzanie_zdjęć = false;
-                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
+                        self.temat.temp.aktywny_proces = None;
                     }
                 }
             }
-            DdsMessage::RozpakInPathBtn => {
+            DdsMsg::RozpakInPathBtn => {
 
                 if let Some(path) = rfd::FileDialog::new()
                     .pick_file()
                 {
-                    self.dane_temp_do_rozpakowywania_dds.ścieżka_wejściowa = path;
+                    self.dane_dds_rozpak.ścieżka_wejściowa = path;
                 }
             }
-            DdsMessage::RozpakInPath(ścieżka) => {
-                self.dane_temp_do_rozpakowywania_dds.ścieżka_wejściowa = PathBuf::from(ścieżka);
+            DdsMsg::RozpakInPath(ścieżka) => {
+                self.dane_dds_rozpak.ścieżka_wejściowa = PathBuf::from(ścieżka);
             }
-            DdsMessage::RozpakOutPathBtn => {
+            DdsMsg::RozpakOutPathBtn => {
 
                 if let Some(path) = rfd::FileDialog::new()
                     .pick_folder()
                 {
-                    self.dane_temp_do_rozpakowywania_dds.ścieżka_wyjściowa = path;
+                    self.dane_dds_rozpak.ścieżka_wyjściowa = path;
                 }
             }
-            DdsMessage::RozpakOutPath(ścieżka) => {
-                self.dane_temp_do_rozpakowywania_dds.ścieżka_wyjściowa = PathBuf::from(ścieżka);
+            DdsMsg::RozpakOutPath(ścieżka) => {
+                self.dane_dds_rozpak.ścieżka_wyjściowa = PathBuf::from(ścieżka);
             }
-            DdsMessage::RozkapExt(huehue) => {
-                self.dane_temp_do_rozpakowania_dds_formaty_zdjec = huehue
+            DdsMsg::Bdepth(rozs, kolor_arc) => {
+                // 1. Dobieramy się do mutowalnej referencji formatu
+                let format = &mut self.dane_dds_rozpak.rozszerzenie;
 
-            },
-            DdsMessage::RozpakBitDepth(rozs, kolor) => {
+                // 2. Musimy użyć jako_any(), aby sprawdzić co jest w środku Arc
+                let kolor_any = kolor_arc.jako_any();
 
-                // 1. Dobieramy się bezpośrednio do pola (to nie jest Vec, więc bez iteracji)
-                let format = &mut self.dane_temp_do_rozpakowywania_dds.rozszerzenie;
-
-                // 2. Sprawdzamy, czy aktualnie wybrany format pasuje do klikniętego znacznika
-                // i od razu wyciągamy referencję do wektora kolorów (bit_depth)
-                let bdepth_vec = match (format, &rozs) {
-                    (OptRozszerzeniaPlikówZdjęciowych::Jpg { bit_depth, .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Jpg) => Some(bit_depth),
-                    (OptRozszerzeniaPlikówZdjęciowych::Png { bit_depth, .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Png) => Some(bit_depth),
-                    (OptRozszerzeniaPlikówZdjęciowych::Webp { bit_depth, .. }, OptRozszerzeniaPlikówZdjęciowychZnacznik::Webp) => Some(bit_depth),
-                    _ => None, // Formaty bez bit_depth lub niezgodność znacznika
-                };
-
-                // 3. Skoro bit_depth to JEDYNY VEC, to tutaj robimy standardowy toggle
-                if let Some(vec) = bdepth_vec {
-                    if let Some(pos) = vec.iter().position(|x| *x == kolor) {
-                        vec.remove(pos); // Usuń jeśli istnieje
-                    } else {
-                        vec.push(kolor); // Dodaj jeśli nie ma
+                // 3. Matchujemy format i znacznik jednocześnie
+                match (format, &rozs) {
+                    (ImgExt::Jpg { bit_depth, .. }, ImgExtTag::Jpg) => {
+                                                if let Some(k) = kolor_any.downcast_ref::<BdepthJpg>() {
+                            toggle_w_vec(bit_depth, k);
+                        }
                     }
+                    (ImgExt::Png { bit_depth, .. }, ImgExtTag::Png) => {
+                                                if let Some(k) = kolor_any.downcast_ref::<BdepthPng>() {
+                            toggle_w_vec(bit_depth, k);
+                        }
+                    }
+                    (ImgExt::Webp { bit_depth, .. }, ImgExtTag::Webp) => {
+                        // Zakładam, że JPG/PNG/WebP używają typu BdepthOgolny
+                        if let Some(k) = kolor_any.downcast_ref::<BdepthWebp>() {
+                            toggle_w_vec(bit_depth, k);
+                        }
+                    }
+                    (ImgExt::Qoi { bit_depth, .. }, ImgExtTag::Qoi) => {
+                        if let Some(k) = kolor_any.downcast_ref::<BdepthQoi>() {
+                            toggle_w_vec(bit_depth, k);
+                        }
+                    }
+                    (ImgExt::Avif { bit_depth, .. }, ImgExtTag::Avif) => {
+                        if let Some(k) = kolor_any.downcast_ref::<BdepthAvif>() {
+                            toggle_w_vec(bit_depth, k);
+                        }
+                    }
+                    (ImgExt::Tga { bit_depth, .. }, ImgExtTag::Tga) => {
+                        if let Some(k) = kolor_any.downcast_ref::<BdepthTga>() {
+                            toggle_w_vec(bit_depth, k);
+                        }
+                    }
+                    _ => {} // Formaty bez bit_depth (np. FF) lub niedopasowanie znacznika
                 }
-
             }
-            DdsMessage::RozpakExtDane(huehue) => {
+            DdsMsg::RozpakExtDane(huehue) => {
                 match huehue{
-                    OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans } => {
-                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
-                            OptRozszerzeniaPlikówZdjęciowych::Jpg{
+                    ImgExt::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans } => {
+                        self.dane_dds_rozpak.rozszerzenie=
+                            ImgExt::Jpg{
                                 jakosc,
                                 progresywny,
                                 bit_depth,
@@ -185,43 +214,43 @@ impl Program {
                             }
 
                     }
-                    OptRozszerzeniaPlikówZdjęciowych::Png { kompresja, bit_depth } => {
-                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
-                            OptRozszerzeniaPlikówZdjęciowych::Png{
+                    ImgExt::Png { kompresja, bit_depth } => {
+                        self.dane_dds_rozpak.rozszerzenie=
+                            ImgExt::Png{
                                 kompresja,
                                 bit_depth,
                             }
 
                     }
-                    OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc, lossless, bit_depth } => {
-                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
-                        OptRozszerzeniaPlikówZdjęciowych::Webp{
+                    ImgExt::Webp { jakosc, lossless, bit_depth } => {
+                        self.dane_dds_rozpak.rozszerzenie=
+                        ImgExt::Webp{
                             jakosc,
                             lossless,
                             bit_depth,
                         }
                     }
-                    OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth } => {
-                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
-                            OptRozszerzeniaPlikówZdjęciowych::Tga{
+                    ImgExt::Tga { bit_depth } => {
+                        self.dane_dds_rozpak.rozszerzenie=
+                            ImgExt::Tga{
                                 bit_depth,
                             }
                     }
 
-                    OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } => {
-                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
-                            OptRozszerzeniaPlikówZdjęciowych::Ff{ metoda_kompresji }
+                    ImgExt::Ff { metoda_kompresji } => {
+                        self.dane_dds_rozpak.rozszerzenie=
+                            ImgExt::Ff{ metoda_kompresji }
                     }
-                    OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth } => {
-                        self.dane_temp_do_rozpakowywania_dds.rozszerzenie=
-                            OptRozszerzeniaPlikówZdjęciowych::Qoi{ bit_depth }
+                    ImgExt::Qoi { bit_depth } => {
+                        self.dane_dds_rozpak.rozszerzenie=
+                            ImgExt::Qoi{ bit_depth }
                     }
-                    OptRozszerzeniaPlikówZdjęciowych::Avif { .. } => {}
+                    ImgExt::Avif { .. } => {}
                 };
             }
-            DdsMessage::RozpakStart => {
-                let dane_do_rozpakowania_dds = self.dane_temp_do_rozpakowywania_dds.clone();
-                self.temat.temp.aktywny_proces = ActProces::DdsRozpakowanie;
+            DdsMsg::RozpakStart => {
+                let dane_do_rozpakowania_dds = self.dane_dds_rozpak.clone();
+                self.temat.temp.aktywny_proces = Some(ActProces::DdsUnpak);
                 dbg!(&dane_do_rozpakowania_dds);
                 // self.status_zmiany_fot_log = Default::default();
                 // println!(
@@ -244,28 +273,104 @@ impl Program {
                             })
                             .await
                     },
-                    |_| DdsMessage::Nic,
+                    |_| DdsMsg::Nic,
                 );
 
-                let nasluchiwanie = Task::run(rx, DdsMessage::RozpakPostęp);
+                let nasluchiwanie = Task::run(rx, DdsMsg::RozpakPostęp);
 
                 return Task::batch(Vec::from([operacja, nasluchiwanie]));
             }
-            DdsMessage::RozpakPostęp(progress) => {
+            DdsMsg::RozpakPostęp(progress) => {
                 match progress {
                     LogTxDoRozpakowanieDds::StatusRozpakowanieDdsStart => {}
                     LogTxDoRozpakowanieDds::StatusRozpakowanieDdsWtrakcie(_) => {}
                     LogTxDoRozpakowanieDds::StatusRozpakowanieDdsKoniec(_) => {
-                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
+                        self.temat.temp.aktywny_proces = None;
                     }
                     LogTxDoRozpakowanieDds::StatusRozpakowanieDdsBłąd(_) => {
-                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
+                        self.temat.temp.aktywny_proces = None;
 
                     }
                 }
             }
+            DdsMsg::JpgProg => {
+                if let ImgExt::Jpg { ref mut progresywny, .. } = self
+                    .dane_dds_rozpak
+                    .rozszerzenie
+                {
+                    *progresywny = !*progresywny;
+                }
+
+            }
+            DdsMsg::WebpLoss => {
+                if let ImgExt::Webp { ref mut lossless, .. } = self
+                    .dane_dds_rozpak
+                    .rozszerzenie
+                {
+                    *lossless = !*lossless;
+                }
+            }
+            DdsMsg::AvifLoss => {
+                if let ImgExt::Avif { ref mut lossy, .. } = self
+                    .dane_dds_rozpak
+                    .rozszerzenie
+                {
+                    if lossy.is_some(){
+                        *lossy = None;
+                    }else{
+                        *lossy = Some(90);
+                    }
+                }
+
+            }
+            DdsMsg::Rozszerzenia(gwiazdek) => {
+                self.dane_dds_rozpak.tag = gwiazdek.clone();
+
+                self.dane_dds_rozpak.rozszerzenie =
+                    match gwiazdek {
+                        ImgExtTag::Jpg => ImgExt::Jpg {
+                            jakosc: 90,
+                            progresywny: false,
+                            bit_depth: Vec::from([BdepthJpg::Rgb8]),
+                            sampling: ForJpgSamplingFac::R420,
+                            quant: ForJpgQuant::Default,
+                            scans: 4,
+                        },
+                        ImgExtTag::Png => ImgExt::Png {
+                            kompresja: 3,
+                            bit_depth: Vec::from([BdepthPng::Rgb8]),
+                        },
+
+                        ImgExtTag::Webp => ImgExt::Webp{
+                            jakosc: 90,
+                            lossless: false,
+                            bit_depth: Vec::from([BdepthWebp::Rgb8]),
+                        },
+                        ImgExtTag::Tga => ImgExt::Tga{
+                            bit_depth: Vec::from([BdepthTga::TrueColor24])
+                        },
+                        ImgExtTag::Ff => ImgExt::Ff{
+                            metoda_kompresji: ForFfKompresja::Brak
+                        },
+                        ImgExtTag::Qoi => ImgExt::Qoi{
+                            bit_depth: Vec::from([BdepthQoi::Color24])
+                        },
+                        ImgExtTag::Avif => ImgExt::Avif {
+                            chroma: ForAvifChroma::C420,
+                            speed: 3,
+                            metoda_kompresji: ForAvifKompresja::Av1,
+                            lossy: Some(90),
+                            bit_depth: Vec::from([BdepthAvif::Rgb10])
+                        }
+                    };
+
+
+
+                let _ = self.update(Message::ChckStatus);
+            }
             _ => {}
         }
+
         Task::none()
     }
 }

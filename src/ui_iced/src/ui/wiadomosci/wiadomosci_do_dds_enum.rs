@@ -1,17 +1,18 @@
-use enumy::inne_ui::{StronyDds, WybranyFormatZdjecia};
-use enumy::opcje::{OptFormatDds, OptFormatyKoloruObrazOgólny, OptKompresjaDds, OptRozszerzeniaPlikówZdjęciowych, OptRozszerzeniaPlikówZdjęciowychZnacznik};
+use enumy::rozszerzenia::bdepth_impl::BitDepth;
+use enumy::rozszerzenia::kompresje::{ForDds, ForDdsKompresja, ForFfKompresja};
+use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
 use enumy::statusy::{LogTxDoPakowanieDds, LogTxDoRozpakowanieDds};
+use std::sync::Arc;
 
 #[derive(Debug, Clone)]
-pub enum DdsMessage {
-    ZmienMenuDds(StronyDds),
+pub enum DdsMsg {
     PakowaniePathIn(String),
     PakowaniePathInFiles,
     PakowaniePathInFolders,
     PakowaniePathOut(String),
     PakowaniePathOutBtn,
-    PakowanieFormat(OptFormatDds),
-    PakowanieKompresja(OptKompresjaDds),
+    PakowanieFormat(ForDds),
+    PakowanieKompresja(ForDdsKompresja),
     PakowanieNazwa(String),
     PakowanieStart,
     PakowaniePostęp(LogTxDoPakowanieDds),
@@ -20,10 +21,16 @@ pub enum DdsMessage {
     RozpakOutPath(String),
     RozpakOutPathBtn,
     Nic,
-    RozkapExt(WybranyFormatZdjecia),
-    RozpakExtDane(OptRozszerzeniaPlikówZdjęciowych),
-    RozpakExtBit(OptRozszerzeniaPlikówZdjęciowych),
-    RozpakBitDepth(OptRozszerzeniaPlikówZdjęciowychZnacznik, OptFormatyKoloruObrazOgólny),
+
+    ZdjeciaLaczenieZmianaRozszerzenieFf(ForFfKompresja),
+    RozpakExtDane(ImgExt),
+    RozpakExtBit(ImgExt),
+    Bdepth(ImgExtTag, Arc<dyn BitDepth>),
+
+    Rozszerzenia(ImgExtTag),
     RozpakStart,
     RozpakPostęp(LogTxDoRozpakowanieDds),
+    JpgProg,
+    WebpLoss,
+    AvifLoss,
 }

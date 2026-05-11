@@ -6,14 +6,16 @@ use futures::channel::mpsc::Sender;
 use futures::SinkExt;
 use image::{DynamicImage, imageops::FilterType, Rgba, ImageBuffer, GenericImageView, ColorType};
 use tokio::sync::Mutex;
-use crate::pomocnicze::usun_kanal_alpha;
-use crate::zmiana_fot::{ OptRozszerzeniaPlikówZdjęciowych, zaszumianie, LogTxDoBathKonwersjaZdjęć};
-use enumy::enums_structs_io::{OptInterpolacja, Obraz, OptRozdzielczościObrazów};
-use crate::wczytanie_zdjec::aktualizuj_postep;
+use enumy::opcje::OptInterpolacja;
+use enumy::rozszerzenia::bdepth::BdepthPng;
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use crate::dds_halper::{usun_kanal_alpha, zaszumianie};
+use crate::zapisy::inne_dds::aktualizuj_postep_dds;
 
 pub async fn edycja_png(
     bufor: DynamicImage,
-    rozdzielczości: &Vec<OptRozdzielczościObrazów>,
+    rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca:&String,
     OptInterpolacja: &OptInterpolacja,
@@ -22,7 +24,7 @@ pub async fn edycja_png(
     kompresja: &u8,
     // filtr_alfa: &bool,
     alfa_rgb: &(u16, u16, u16),
-    bit_depth: &Vec<Obraz>,
+    bit_depth: &Vec<BdepthPng>,
     zaszumianie_zmienna: Option<u8>,
     metryka_operacji:u32,
     obecna_operacja: Arc<Mutex<u32>>,
@@ -42,19 +44,19 @@ pub async fn edycja_png(
     // 2. Główna pętla rozdzielczości
     for wariant in rozdzielczości {
         let (docelowy_wymiar, nazwa_wariantu) = match wariant {
-            OptRozdzielczościObrazów::R16 => (16, "_16"),
-            OptRozdzielczościObrazów::R32 => (32, "_32"),
-            OptRozdzielczościObrazów::R64 => (64, "_64"),
-            OptRozdzielczościObrazów::R128 => (128, "_128"),
-            OptRozdzielczościObrazów::R256 => (256, "_256"),
-            OptRozdzielczościObrazów::R512 => (512, "_512"),
-            OptRozdzielczościObrazów::R1k => (1024, "_1k"),
-            OptRozdzielczościObrazów::R2k => (2048, "_2k"),
-            OptRozdzielczościObrazów::R4k => (4096, "_4k"),
-            OptRozdzielczościObrazów::R6k => (6144, "_6k"),
-            OptRozdzielczościObrazów::R8k => (8192, "_8k"),
-            OptRozdzielczościObrazów::R16k => (16384, "_16k"),
-            OptRozdzielczościObrazów::Oryginalna => (0, ""),
+            Rozdzielczości::R16 => (16, "_16"),
+            Rozdzielczości::R32 => (32, "_32"),
+            Rozdzielczości::R64 => (64, "_64"),
+            Rozdzielczości::R128 => (128, "_128"),
+            Rozdzielczości::R256 => (256, "_256"),
+            Rozdzielczości::R512 => (512, "_512"),
+            Rozdzielczości::R1k => (1024, "_1k"),
+            Rozdzielczości::R2k => (2048, "_2k"),
+            Rozdzielczości::R4k => (4096, "_4k"),
+            Rozdzielczości::R6k => (6144, "_6k"),
+            Rozdzielczości::R8k => (8192, "_8k"),
+            Rozdzielczości::R16k => (16384, "_16k"),
+            Rozdzielczości::Oryginalna => (0, ""),
         };
 
 
@@ -72,11 +74,11 @@ pub async fn edycja_png(
             // }
             // drop(procenciki);
 
-            aktualizuj_postep(&obecna_operacja, &procent_progress, metryka_operacji, &mut tx).await;
+            // aktualizuj_postep_dds(&obecna_operacja, &procent_progress, metryka_operacji, &mut tx).await;
 
             // --- OBSŁUGA BIT DEPTH I FORMATU ---
             let (final_img, nazwa_bd) = match fdgfshd {
-                Obraz::L8 =>(
+                BdepthPng::Luma8 =>(
                     {
                         if docelowy_wymiar == 0 {
                             DynamicImage::ImageLuma8(usun_kanal_alpha(bufor.clone(), *alfa_rgb).to_luma8())
@@ -86,14 +88,14 @@ pub async fn edycja_png(
                     },
                     "_l8b"
                 ),
-                Obraz::L8a => ({
+                BdepthPng::Luma8Alpha => ({
                        if docelowy_wymiar == 0 {
                            DynamicImage::ImageLumaA8(bufor.to_luma_alpha8())
                        }else{
                            DynamicImage::ImageLumaA8(bufor.to_luma_alpha8()).resize(docelowy_wymiar, docelowy_wymiar, filtr)
                        }
                    }, "_l8bt"),
-                Obraz::B8 => (
+                BdepthPng::Rgb8 => (
                     {
                         if docelowy_wymiar == 0 {
                             DynamicImage::ImageRgb8(usun_kanal_alpha(bufor.clone(), *alfa_rgb).to_rgb8())
@@ -103,49 +105,43 @@ pub async fn edycja_png(
                     },
                     "_8b"
                 ),
-                Obraz::B8a => ({
+                BdepthPng::Rgb8Alpha => ({
                        if docelowy_wymiar == 0 {
                            DynamicImage::ImageRgba8(bufor.to_rgba8())
                        }else{
                            DynamicImage::ImageRgba8(bufor.to_rgba8()).resize(docelowy_wymiar, docelowy_wymiar, filtr)
                        }
                    }, "_8bt"),
-                Obraz::B16 => ({
+                BdepthPng::Rgb16 => ({
                         if docelowy_wymiar == 0 {
                             DynamicImage::ImageRgb16(bufor.to_rgb16())
                         }else{
                             DynamicImage::ImageRgb16(usun_kanal_alpha(bufor.clone(), *alfa_rgb).to_rgb16()).resize(docelowy_wymiar, docelowy_wymiar, filtr)
                         }
                    }, "_16b"),
-                Obraz::B16a => ({
+                BdepthPng::Rgb16Alpha => ({
                         if docelowy_wymiar == 0 {
                             DynamicImage::ImageRgba16(bufor.to_rgba16())
                         }else{
                             DynamicImage::ImageRgba16(bufor.to_rgba16()).resize(docelowy_wymiar, docelowy_wymiar, filtr)
                         }
                     }, "_16bt"),
-                Obraz::L16 => ({
+                BdepthPng::Luma16 => ({
                        if docelowy_wymiar == 0 {
                            DynamicImage::ImageLuma16(bufor.to_luma16())
                        }else{
                            DynamicImage::ImageLuma16(usun_kanal_alpha(bufor.clone(), *alfa_rgb).to_luma16()).resize(docelowy_wymiar, docelowy_wymiar, filtr)
                        }
                    }, "_16b"),
-                Obraz::L16a => ({
+                BdepthPng::Luma16Alpha => ({
                         if docelowy_wymiar == 0 {
                             DynamicImage::ImageLumaA16(bufor.to_luma_alpha16())
                         }else{
                             DynamicImage::ImageLumaA16(bufor.to_luma_alpha16()).resize(docelowy_wymiar, docelowy_wymiar, filtr)
                         }
                     }, "_16bt"),
-                Obraz::B32 => {
-                //placeholder
-                    (DynamicImage::ImageRgb16(bufor.to_rgb16()), "_nima32b")
-                },
-                //placeholder
-                Obraz::B32a => (DynamicImage::ImageRgba16(bufor.to_rgba16()), "_nima32bt"),
             };
-            aktualizuj_postep(&obecna_operacja, &procent_progress, metryka_operacji, &mut tx).await;
+            // aktualizuj_postep_dds(&obecna_operacja, &procent_progress, metryka_operacji, &mut tx).await;
             let final_final_final_v3_xd = match zaszumianie_zmienna{
                 Some(x) => zaszumianie(x,final_img),
                 None => final_img,
@@ -177,7 +173,7 @@ pub async fn edycja_png(
             );
 
             final_final_final_v3_xd.write_with_encoder(encoder).map_err(std::io::Error::other)?;
-            aktualizuj_postep(&obecna_operacja, &procent_progress, metryka_operacji, &mut tx).await;
+            // aktualizuj_postep_dds(&obecna_operacja, &procent_progress, metryka_operacji, &mut tx).await;
 
     }}
 

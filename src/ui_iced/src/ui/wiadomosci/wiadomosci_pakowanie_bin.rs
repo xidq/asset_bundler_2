@@ -1,50 +1,56 @@
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::PakowanieBinarkiMessage;
+use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::BinPakMsg;
 use binarka::pakowanie_plikow::ogarnianie_eksportu;
 use chrono::Local;
 use enumy::enums_structs_io::LogPakowanie;
-use enumy::inne_ui::ActProces;
+use enumy::inne_ui::{ActProces, BtnState};
 use enumy::statusy::LogTxDoKompresjiPliku;
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
+use std::rc::Rc;
+use std::sync::Arc;
+use strum::IntoEnumIterator;
+use enumy::rozszerzenia::rozszerzenia::{ImgExt, ImgExtTag};
+use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
 
 impl Program {
-    pub fn update_message_pakowanie_binarki(&mut self, msg: PakowanieBinarkiMessage) -> Task<PakowanieBinarkiMessage> {
+    pub fn update_message_pakowanie_binarki(&mut self, msg: BinPakMsg) -> Task<BinPakMsg> {
         match msg {
-            PakowanieBinarkiMessage::InputPathText(s) => {
-                self.dane_temp_do_kompresji_plików.ścieżka_in = PathBuf::from(s)
-            }
-            PakowanieBinarkiMessage::InputPath => {
+            BinPakMsg::InputPath => {
                 if let Some(path) = rfd::FileDialog::new()
                     .pick_folder()
                 {
-                    self.dane_temp_do_kompresji_plików.ścieżka_in= path;
+                    self.dane_bin_pak.ścieżka_in= path;
                 }
+
+                let _ = self.update(Message::ChckStatus);
             }
-            PakowanieBinarkiMessage::OutputPathText(s) => {
-                self.dane_temp_do_kompresji_plików.ścieżka_out = PathBuf::from(s)
-            }
-            PakowanieBinarkiMessage::OutputPath => {
+            BinPakMsg::OutputPath => {
+                
                 if let Some(path) = rfd::FileDialog::new().pick_folder() {
-                    self.dane_temp_do_kompresji_plików.ścieżka_out = path;
+                    self.dane_bin_pak.ścieżka_out = path;
                 }
-            }
-            PakowanieBinarkiMessage::Nazwa(xx) => {
-                self.dane_temp_do_kompresji_plików.nazwa = xx;
-            }
-            PakowanieBinarkiMessage::Filtr(filtr) => {
 
-                self.dane_temp_do_kompresji_plików.filtracja = filtr;
+                let _ = self.update(Message::ChckStatus);
+
             }
-            PakowanieBinarkiMessage::Kompresja(poziom) => {
-                self.dane_temp_do_kompresji_plików.kompresja = poziom;
+            BinPakMsg::Filtr(filtr) => {
+
+                self.dane_bin_pak.filtracja = filtr;
             }
-            PakowanieBinarkiMessage::Uruchom => {
+            BinPakMsg::Kompresja(poziom) => {
+                self.dane_bin_pak.kompresja = poziom;
+            }
+            BinPakMsg::Uruchom => {
+
                 self.status_pakowanie_log = LogPakowanie::default();
-                self.temat.temp.aktywny_proces = ActProces::PakowaniePliku;
-                let zestaw = self.dane_temp_do_kompresji_plików.clone();
+                self.temat.temp.aktywny_proces = Some(ActProces::BinPak);
+                let _ = self.update(Message::ChckStatus);
 
+                let zestaw = self.dane_bin_pak.clone();
+                dbg!(&zestaw);
                 let (tx, rx) = mpsc::channel::<LogTxDoKompresjiPliku>(100);
                 
                 let handle = tokio::runtime::Handle::current();
@@ -57,39 +63,42 @@ impl Program {
                             })
                             .await
                     },
-                    |_| PakowanieBinarkiMessage::Nic,
+                    |_| BinPakMsg::Nic,
                 );
 
-                let nasluchiwanie = Task::run(rx, PakowanieBinarkiMessage::LogProcesu);
+                let nasluchiwanie = Task::run(rx, BinPakMsg::LogProcesu);
 
                 return Task::batch(Vec::from([operacja, nasluchiwanie]));
             }
-            PakowanieBinarkiMessage::LogProcesu(progres) => {
+            BinPakMsg::LogProcesu(progres) => {
 
                 match progres {
+                    
                     LogTxDoKompresjiPliku::StatusKompresjaPlikówZnalezionePliki { pliki } => {
                         
-                            self.status_pakowanie_log.zbieranie_plików = pliki;
+                        self.status_pakowanie_log.zbieranie_plików = pliki;
                         
                     }
 
                     LogTxDoKompresjiPliku::StatusKompresjaPlikówPakowanie { aktualny, suma } => {
-                        
-                            self.status_pakowanie_log.pakowanie = (aktualny, suma)
+
+                        self.status_pakowanie_log.pakowanie = (aktualny, suma)
                     }
 
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesKompresji { procent } => {
-                        
-                            self.status_pakowanie_log.kompresja = procent;
+                    LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesKompresji {  aktualny, suma} => {
+
+                        self.status_pakowanie_log.kompresja = (aktualny, suma);
 
                     }
 
-                    LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania { procent } => {
-                            self.status_pakowanie_log.szyfrowanie = procent;
+                    LogTxDoKompresjiPliku::StatusKompresjaPlikówProcesSzyfrowania {  aktualny, suma } => {
+                        self.status_pakowanie_log.szyfrowanie = (aktualny, suma);
                     }
 
                     LogTxDoKompresjiPliku::StatusKompresjaPlikówZakonczono { czas } => {
-                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
+
+                        self.temat.temp.aktywny_proces = None;
+
 
                         self.log_prawe_okno.push(format!(
                             "{} [Pakowanie] Zakończone, minęło: {}",
@@ -97,16 +106,21 @@ impl Program {
                             czas
                         ));
                         self.status_pakowanie_log.koniec =czas;
+                        let _ = self.update(Message::ChckStatus);
+
                     }
 
                     LogTxDoKompresjiPliku::StatusKompresjaPlikówBłąd(err) => {
-                        self.temat.temp.aktywny_proces = ActProces::Żodyn;
+                        
+                        self.temat.temp.aktywny_proces = None;
                         self.log_prawe_okno.push(format!(
                             "!!! {}: {} !!!",
                             "log_status_critical_error",
                             err
                         ));
                         self.status_pakowanie_log.błąd = err;
+                        let _ = self.update(Message::ChckStatus);
+
                     }
 
                     
@@ -114,6 +128,7 @@ impl Program {
 
             }
             _ => {}
+            
         }
         Task::none()
     }

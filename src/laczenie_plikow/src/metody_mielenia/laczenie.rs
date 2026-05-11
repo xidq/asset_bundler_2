@@ -1,18 +1,19 @@
 use std::path::PathBuf;
 use encodery::halper::usun_kanal_alpha;
-use enumy::opcje::OptFormatyKoloruObrazOgólny;
 use image::DynamicImage;
+use enumy::rozszerzenia::bdepth::TrybLączenia;
+use enumy::rozszerzenia::bdepth_impl::BitDepth;
 
 pub async fn laczenie_vac_to_dyn(
     mut bufor: Vec<DynamicImage>,
-    bit_depth: &OptFormatyKoloruObrazOgólny,
+    bit_depth: &dyn BitDepth,
     wymiar: (u32, u32),
 ) -> Result<(DynamicImage), tokio::io::Error> {
     let depth = bit_depth;
     let alfa_rgb:(u16, u16, u16) = (0, 0, 0);
 
-    let (final_img) = match depth {
-        OptFormatyKoloruObrazOgólny::B8 | OptFormatyKoloruObrazOgólny::L8 => 
+    let (final_img) = match depth.tryb_laczenia() {
+        TrybLączenia::Rgb8 | TrybLączenia::Luma8 =>
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);
@@ -32,9 +33,13 @@ pub async fn laczenie_vac_to_dyn(
                     ]);
                 }
                 DynamicImage::ImageRgb8(nowy_bufor)
-            },
+            }
 
-        OptFormatyKoloruObrazOgólny::B8a | OptFormatyKoloruObrazOgólny::L8a => 
+        TrybLączenia::Rgb8Alpha
+        | TrybLączenia::HighColor16
+        | TrybLączenia::Luma8Alpha
+        | TrybLączenia::Color32
+        | TrybLączenia::TrueColorA32=>
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);
@@ -57,10 +62,13 @@ pub async fn laczenie_vac_to_dyn(
                     ]);
                 }
                 DynamicImage::ImageRgba8(nowy_bufor)
-            },
-        OptFormatyKoloruObrazOgólny::B16
-        | OptFormatyKoloruObrazOgólny::L16
-        | OptFormatyKoloruObrazOgólny::B32 => 
+            }
+        TrybLączenia::Rgb16
+        | TrybLączenia::Luma16
+        | TrybLączenia::F32
+        | TrybLączenia::Rgb10
+        | TrybLączenia::Color24
+        | TrybLączenia::TrueColor24 =>
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);
@@ -80,10 +88,11 @@ pub async fn laczenie_vac_to_dyn(
                     ]);
                 }
                 DynamicImage::ImageRgb16(nowy_bufor)
-            },
-        OptFormatyKoloruObrazOgólny::B16a
-        | OptFormatyKoloruObrazOgólny::L16a
-        | OptFormatyKoloruObrazOgólny::B32a => 
+            }
+        TrybLączenia::Rgb16Alpha
+        | TrybLączenia::Rgb10Alpha
+        | TrybLączenia::Luma16Alpha
+        | TrybLączenia::F32Alpha => 
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);
@@ -106,7 +115,9 @@ pub async fn laczenie_vac_to_dyn(
                     ]);
                 }
                 DynamicImage::ImageRgba16(nowy_bufor)
-            },
+            }
+
+
     };
     Ok((final_img))
 }

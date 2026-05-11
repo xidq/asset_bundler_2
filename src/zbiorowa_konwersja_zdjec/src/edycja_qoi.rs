@@ -1,30 +1,29 @@
 use crate::wczytanie_zdjec::aktualizuj_postep;
-use enumy::opcje::{OptFormatyKoloruObrazuQoi, OptInterpolacja, OptRozdzielczościObrazów};
+use enumy::opcje::OptInterpolacja;
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
-use futures::SinkExt;
-use futures::channel::mpsc;
 use futures::channel::mpsc::Sender;
 use image::ImageEncoder;
-use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Rgba, imageops::FilterType};
-use std::fs::{File, create_dir_all};
-use std::path::{Path, PathBuf};
+use image::{imageops::FilterType, DynamicImage, GenericImageView};
+use std::fs::{create_dir_all, File};
+use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use encodery::halper::{usun_kanal_alpha, zaszumianie};
+use enumy::rozszerzenia::bdepth::BdepthQoi;
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 
 pub async fn edycja_qoi(
     bufor: DynamicImage,
-    rozdzielczości: &Vec<OptRozdzielczościObrazów>,
+    rozdzielczości: &Vec<Rozdzielczości>,
     ścieżka_wyjściowa: &Path,
     ścieżka_dopełniająca: &String,
     OptInterpolacja: &OptInterpolacja,
     nazwa_pliku: &str,
     alfa_rgb: &(u16, u16, u16),
-    bit_depth: &Vec<OptFormatyKoloruObrazuQoi>,
+    bit_depth: &Vec<BdepthQoi>,
     zaszumianie_zmienna: Option<u8>,
     metryka_operacji: u32,
     obecna_operacja: Arc<Mutex<u32>>,
-    procent_progress: Arc<Mutex<u8>>,
     mut tx: Sender<LogTxDoBathKonwersjaZdjęć>,
 ) -> Result<(), tokio::io::Error> {
     dbg!("jestem w qoi");
@@ -41,19 +40,19 @@ pub async fn edycja_qoi(
     // 2. Główna pętla rozdzielczości
     for wariant in rozdzielczości {
         let (docelowy_wymiar, nazwa_wariantu) = match wariant {
-            OptRozdzielczościObrazów::R16 => (16, "_16"),
-            OptRozdzielczościObrazów::R32 => (32, "_32"),
-            OptRozdzielczościObrazów::R64 => (64, "_64"),
-            OptRozdzielczościObrazów::R128 => (128, "_128"),
-            OptRozdzielczościObrazów::R256 => (256, "_256"),
-            OptRozdzielczościObrazów::R512 => (512, "_512"),
-            OptRozdzielczościObrazów::R1k => (1024, "_1k"),
-            OptRozdzielczościObrazów::R2k => (2048, "_2k"),
-            OptRozdzielczościObrazów::R4k => (4096, "_4k"),
-            OptRozdzielczościObrazów::R6k => (6144, "_6k"),
-            OptRozdzielczościObrazów::R8k => (8192, "_8k"),
-            OptRozdzielczościObrazów::R16k => (16384, "_16k"),
-            OptRozdzielczościObrazów::Oryginalna => (0, ""),
+            Rozdzielczości::R16 => (16, "_16"),
+            Rozdzielczości::R32 => (32, "_32"),
+            Rozdzielczości::R64 => (64, "_64"),
+            Rozdzielczości::R128 => (128, "_128"),
+            Rozdzielczości::R256 => (256, "_256"),
+            Rozdzielczości::R512 => (512, "_512"),
+            Rozdzielczości::R1k => (1024, "_1k"),
+            Rozdzielczości::R2k => (2048, "_2k"),
+            Rozdzielczości::R4k => (4096, "_4k"),
+            Rozdzielczości::R6k => (6144, "_6k"),
+            Rozdzielczości::R8k => (8192, "_8k"),
+            Rozdzielczości::R16k => (16384, "_16k"),
+            Rozdzielczości::Oryginalna => (0, ""),
         };
         // *obecna_operacja +=1;
 
@@ -79,7 +78,7 @@ pub async fn edycja_qoi(
             // drop(procenciki);
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )
@@ -87,7 +86,7 @@ pub async fn edycja_qoi(
 
             // --- OBSŁUGA BIT DEPTH I FORMATU ---
             let (final_img, nazwa_bd, color_type, szer, wys) = match fdgfshd {
-                OptFormatyKoloruObrazuQoi::Color24 => {
+                BdepthQoi::Color24 => {
                     // 1. Usuwamy alfę i przygotowujemy RGB8
                     dbg!("[debug] qoi tc24");
                     let img = usun_kanal_alpha(bufor.clone(), *alfa_rgb);
@@ -117,7 +116,7 @@ pub async fn edycja_qoi(
                     )
                 }
 
-                OptFormatyKoloruObrazuQoi::ColorA32 => {
+                BdepthQoi::Color32 => {
                     dbg!("[debug] qoi tc32");
                     // 1. Tutaj zostawiamy alfę, więc prosto do RGBA8
                     let obrazek = bufor.clone();
@@ -153,7 +152,7 @@ pub async fn edycja_qoi(
             };
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )
@@ -180,7 +179,7 @@ pub async fn edycja_qoi(
                 .map_err(std::io::Error::other)?;
             aktualizuj_postep(
                 &obecna_operacja,
-                &procent_progress,
+                
                 metryka_operacji,
                 &mut tx,
             )

@@ -9,3 +9,4 @@ pub mod statusy;
 pub mod wybranie_jezykowe;
 pub mod inne_ui;
 pub mod fn_ogolne_przeliczeniowe;
+pub mod rozszerzenia;

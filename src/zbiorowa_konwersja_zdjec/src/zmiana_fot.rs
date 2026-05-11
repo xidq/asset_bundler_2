@@ -4,9 +4,9 @@ use crate::edycja_png::edycja_png;
 use crate::edycja_qoi::edycja_qoi;
 use crate::edycja_tga::edycja_tga;
 use crate::edycja_webp::edycja_webp;
-use enumy::dane_do_przetwarzania::DaneDoBathKonwersjaZdjec;
+use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::enums_structs_io::FILTERFOTO;
-use enumy::opcje::OptRozszerzeniaPlikówZdjęciowych;
+use enumy::rozszerzenia::rozszerzenia::ImgExt;
 use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
 use futures::SinkExt;
 use futures::channel::mpsc;
@@ -25,7 +25,7 @@ use crate::edycja_avif::edycja_avif;
 use crate::pomocnicze::sprawdz_czy_wsio_ok;
 
 pub async fn ogarnianie_foto(
-    zestaw_danych: DaneDoBathKonwersjaZdjec,
+    zestaw_danych: DaneKonw,
     mut tx: mpsc::Sender<LogTxDoBathKonwersjaZdjęć>,
 ) -> Result<(), tokio::io::Error> {
     let start_czas = Instant::now();
@@ -51,30 +51,30 @@ pub async fn ogarnianie_foto(
 
         let mut suma_wariantow_bit_depth = 0u32;
 
-        for rozszerzenie in &wsio_dane.rozszerzenia_plików_zdjęciowych {
+        for rozszerzenie in &wsio_dane.rozszerzenia {
             match rozszerzenie {
-                OptRozszerzeniaPlikówZdjęciowych::Jpg { bit_depth, .. } => {
+                ImgExt::Jpg { bit_depth, .. } => {
                     // Jeśli JPG ma zaznaczone L8 i B8, to są 2 warianty
                     suma_wariantow_bit_depth += bit_depth.len() as u32;
                 }
-                OptRozszerzeniaPlikówZdjęciowych::Png { bit_depth, .. } => {
+                ImgExt::Png { bit_depth, .. } => {
                     // Jeśli PNG ma zaznaczone B8, B16, L16, to są 3 warianty
                     suma_wariantow_bit_depth += bit_depth.len() as u32;
                 }
-                OptRozszerzeniaPlikówZdjęciowych::Webp { bit_depth, .. } => {
+                ImgExt::Webp { bit_depth, .. } => {
                     // Webp u Ciebie nie ma bit_depth w enumie, więc liczymy jako 1
                     suma_wariantow_bit_depth += bit_depth.len() as u32;
                 }
-                OptRozszerzeniaPlikówZdjęciowych::Tga {bit_depth, ..} => {
+                ImgExt::Tga {bit_depth, ..} => {
                     suma_wariantow_bit_depth += bit_depth.len() as u32;
                 }
-                OptRozszerzeniaPlikówZdjęciowych::Ff { .. }  => {
+                ImgExt::Ff { .. }  => {
                     suma_wariantow_bit_depth += 1;
                 }
-                OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth } => {
+                ImgExt::Qoi { bit_depth } => {
                     suma_wariantow_bit_depth += bit_depth.len() as u32;
                 }
-                OptRozszerzeniaPlikówZdjęciowych::Avif { bit_depth,.. } => {
+                ImgExt::Avif { bit_depth,.. } => {
                     suma_wariantow_bit_depth += bit_depth.len() as u32;
                 }
             }
@@ -84,7 +84,7 @@ pub async fn ogarnianie_foto(
         let total_operacji = ścieżki_do_zdjęć.len() as u32 * ile_rozdzielczosci * suma_wariantow_bit_depth;
         let metryka_operacji = total_operacji * 3;
 
-        let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(ścieżki_do_zdjęć.len() as u32)).await;
+        // let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(ścieżki_do_zdjęć.len() as u32)).await;
 
         let tx_dla_rayona = tx.clone();
 
@@ -100,9 +100,8 @@ pub async fn ogarnianie_foto(
                         eprintln!("Pomijam uszkodzony plik {:?}: {}", p.0, e);
                         // Opcjonalnie: wyślij tx.blocking_send z informacją o błędzie konkretnego pliku
 
-                        // WAŻNE: Musimy i tak podbić licznik o tyle, ile ten plik miał mieć operacji!
                         let mut oopr = obecna_operacja.blocking_lock();
-                        let ile_rozszerzen = wsio_dane.rozszerzenia_plików_zdjęciowych.len() as u32;
+                        let ile_rozszerzen = wsio_dane.rozszerzenia.len() as u32;
                         let ile_rozdzielczosci = wsio_dane.opcje_rozdzielczości.len() as u32;
                         *oopr += ile_rozszerzen * ile_rozdzielczosci;
                         drop(oopr);
@@ -144,13 +143,13 @@ pub async fn ogarnianie_foto(
 
 
 
-                for r in &wsio_dane.rozszerzenia_plików_zdjęciowych {
+                for r in &wsio_dane.rozszerzenia {
 
                     block_on(async {
                         let tx_zadanie = tx_dla_rayona.clone();
 
                         match &r {
-                            OptRozszerzeniaPlikówZdjęciowych::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans, } => {
+                            ImgExt::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans, } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let zbiór_danych = (jakosc,progresywny,bit_depth,sampling,quant,scans);
                                 edycja_jpg(
@@ -164,11 +163,10 @@ pub async fn ogarnianie_foto(
                                     wsio_dane.noising,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    procent_progress.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
-                            OptRozszerzeniaPlikówZdjęciowych::Png { kompresja, bit_depth } => {
+                            ImgExt::Png { kompresja, bit_depth } => {
                                 edycja_png(
                                     bufor.clone(),
                                     &wsio_dane.opcje_rozdzielczości,
@@ -182,11 +180,10 @@ pub async fn ogarnianie_foto(
                                     wsio_dane.noising,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    procent_progress.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
-                            OptRozszerzeniaPlikówZdjęciowych::Webp { jakosc , lossless, bit_depth} => {
+                            ImgExt::Webp { jakosc , lossless, bit_depth} => {
                                 edycja_webp(
                                     bufor.clone(),
                                     &wsio_dane.opcje_rozdzielczości,
@@ -201,11 +198,10 @@ pub async fn ogarnianie_foto(
                                     wsio_dane.noising,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    procent_progress.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
-                            OptRozszerzeniaPlikówZdjęciowych::Tga { bit_depth } => {
+                            ImgExt::Tga { bit_depth } => {
                                 edycja_tga(
                                     bufor.clone(),
                                     &wsio_dane.opcje_rozdzielczości,
@@ -218,11 +214,10 @@ pub async fn ogarnianie_foto(
                                     wsio_dane.noising,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    procent_progress.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
-                            OptRozszerzeniaPlikówZdjęciowych::Ff { metoda_kompresji } => {
+                            ImgExt::Ff { metoda_kompresji } => {
                                 edycja_ff(
                                     bufor.clone(),
                                     &wsio_dane.opcje_rozdzielczości,
@@ -234,12 +229,11 @@ pub async fn ogarnianie_foto(
                                     wsio_dane.noising,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    procent_progress.clone(),
                                     metoda_kompresji,
                                     tx_zadanie,
                                 ).await?;
                             }
-                            OptRozszerzeniaPlikówZdjęciowych::Qoi { bit_depth } => {
+                            ImgExt::Qoi { bit_depth } => {
                                 dbg!("wchodzę w fn edycja_qoi");
                                 edycja_qoi(
                                     bufor.clone(),
@@ -253,11 +247,10 @@ pub async fn ogarnianie_foto(
                                     wsio_dane.noising,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    procent_progress.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
-                            OptRozszerzeniaPlikówZdjęciowych::Avif {
+                            ImgExt::Avif {
                                 chroma,
                                 speed,
                                 metoda_kompresji,
@@ -280,7 +273,6 @@ pub async fn ogarnianie_foto(
                                     chroma,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    procent_progress.clone(),
                                     tx_zadanie
                                 ).await?;
                             }
@@ -355,7 +347,7 @@ fn wez_sprawdz_sciezki(
                     przetworzone_pliki += 1;
                     let _ = tx.try_send(
                         LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(
-                            przetworzone_pliki,
+                            Some(przetworzone_pliki),
                         ),
                     );
 
@@ -408,7 +400,7 @@ fn zgarnij_dane_z_pliku(
                 przetworzone_pliki += 1;
                 let _ = tx.try_send(
                     LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(
-                        przetworzone_pliki,
+                        Some(przetworzone_pliki),
                     ),
                 );
                 // println!("[zgarnij_dane_z_pliku]ścieżka: {:?}\nnazwa pliku:{:?}\nścieżka dopełniająca: {}",ścieżka.clone(), nazwa_pliku,String::from(""));

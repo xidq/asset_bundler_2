@@ -1,20 +1,17 @@
 use std::fs::create_dir_all;
 use std::path::Path;
-use std::sync::Arc;
-use futures::channel::mpsc;
-use enumy::opcje::{AvifChroma, AvifMetodaKompresji, OptFormatyKoloruObrazuAvif, OptInterpolacja, OptRozdzielczościObrazów};
+use enumy::rozszerzenia::kompresje::ForAvifKompresja;
 use image::{DynamicImage, GenericImageView};
-use image::imageops::FilterType;
 use libheif_rs::{Channel, ColorSpace, CompressionFormat, EncoderParameterValue, EncoderQuality, HeifContext, Image, LibHeif, RgbChroma};
-use tokio::sync::Mutex;
-use enumy::statusy::LogTxDoBathKonwersjaZdjęć;
+use enumy::rozszerzenia::bdepth::BdepthAvif;
+use enumy::rozszerzenia::kolor::ForAvifChroma;
 
 pub async fn avif_match(
     mut bufor: DynamicImage,
-    bit_depth: &OptFormatyKoloruObrazuAvif,
+    bit_depth: &BdepthAvif,
 ) -> Result<(Image,String), tokio::io::Error> {
             let (heif_img, nazwa_bd) = match bit_depth {
-                OptFormatyKoloruObrazuAvif::B10a =>
+                BdepthAvif::Rgb10Alpha =>
                     {
                         // dbg!("jestem w B10a");
                         let res = bufor.to_rgba16();
@@ -115,7 +112,7 @@ pub async fn avif_match(
                         }
                         (heif_img,"_10a")
                     }
-                OptFormatyKoloruObrazuAvif::B8a =>
+                BdepthAvif::Rgb8Alpha =>
                     {
                         // dbg!("jestem w B8a");
                         let res = bufor.to_rgba8();
@@ -190,7 +187,7 @@ pub async fn avif_match(
                         (heif_img,"_8a")
                     }
 
-                OptFormatyKoloruObrazuAvif::B10 =>
+                BdepthAvif::Rgb10 =>
                     {
                         // dbg!("jestem w B10");
                         let res = bufor.to_rgb16();
@@ -280,7 +277,7 @@ pub async fn avif_match(
                         }
                         (heif_img, "_10")
                     }
-                OptFormatyKoloruObrazuAvif::B8 =>
+                BdepthAvif::Rgb8 =>
                     {
                         // dbg!("jestem w B8");
                         let res = bufor.to_rgb8();
@@ -348,6 +345,7 @@ pub async fn avif_match(
                         }
                         (heif_img, "_8")
                     }
+
             };
 
 
@@ -363,8 +361,8 @@ pub async fn avif_zapis(
     nazwa_pliku: &str,
     lossy: Option<u8>,
     szybkość:i32,
-    chroma:&AvifChroma,
-    metoda_kompresji: &AvifMetodaKompresji,
+    chroma:&ForAvifChroma,
+    metoda_kompresji: &ForAvifKompresja,
 ) -> Result<(), tokio::io::Error> {
 
             let qual = match lossy{
@@ -373,22 +371,22 @@ pub async fn avif_zapis(
             };
 
             let kompresja = match metoda_kompresji{
-                AvifMetodaKompresji::Undefined => {CompressionFormat::Undefined}
-                AvifMetodaKompresji::Hevc => {CompressionFormat::Hevc}
-                AvifMetodaKompresji::Avc => {CompressionFormat::Avc}
-                AvifMetodaKompresji::Jpeg => {CompressionFormat::Jpeg}
-                AvifMetodaKompresji::Av1 => {CompressionFormat::Av1}
-                AvifMetodaKompresji::Vvc => {CompressionFormat::Vvc}
-                AvifMetodaKompresji::Evc => {CompressionFormat::Evc}
-                AvifMetodaKompresji::Jpeg2000 => {CompressionFormat::Jpeg2000}
-                AvifMetodaKompresji::Uncompressed => {CompressionFormat::Uncompressed}
-                AvifMetodaKompresji::Mask => {CompressionFormat::Mask}
-                AvifMetodaKompresji::HtJ2k => {CompressionFormat::HtJ2k}
+                ForAvifKompresja::Undefined => {CompressionFormat::Undefined}
+                ForAvifKompresja::Hevc => {CompressionFormat::Hevc}
+                ForAvifKompresja::Avc => {CompressionFormat::Avc}
+                ForAvifKompresja::Jpeg => {CompressionFormat::Jpeg}
+                ForAvifKompresja::Av1 => {CompressionFormat::Av1}
+                ForAvifKompresja::Vvc => {CompressionFormat::Vvc}
+                ForAvifKompresja::Evc => {CompressionFormat::Evc}
+                ForAvifKompresja::Jpeg2000 => {CompressionFormat::Jpeg2000}
+                ForAvifKompresja::Uncompressed => {CompressionFormat::Uncompressed}
+                ForAvifKompresja::Mask => {CompressionFormat::Mask}
+                ForAvifKompresja::HtJ2k => {CompressionFormat::HtJ2k}
             };
             let chroma = match chroma{
-                AvifChroma::C444 => {"444".to_string()}
-                AvifChroma::C422 => {"422".to_string()}
-                AvifChroma::C420 => {"420".to_string()}
+                ForAvifChroma::C444 => {"444".to_string()}
+                ForAvifChroma::C422 => {"422".to_string()}
+                ForAvifChroma::C420 => {"420".to_string()}
             };
 
 
