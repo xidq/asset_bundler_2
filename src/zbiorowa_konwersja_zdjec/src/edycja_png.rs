@@ -56,18 +56,7 @@ pub async fn edycja_png(
         };
 
         for fdgfshd in bit_depth {
-            // let mut oopr = obecna_operacja.lock().await;
-            // *oopr += 1;
-            // let obecnie = *oopr;
-            // drop(oopr);
-            //
-            // let mut procenciki = procent_progress.lock().await;
-            // if (((obecnie as f32 / metryka_operacji as f32)*100.).round() as u8) > *procenciki {
-            //     *procenciki = (( obecnie as f32 / metryka_operacji as f32 )*100.).round() as u8;
-            //     dbg!("{}%,  obecna operacja:{} / {}",*procenciki,obecnie,metryka_operacji);
-            //     let _ = tx.send(LogTxDoBathKonwersjaZdjęć::Rozpoczęto(1, *procenciki)).await;
-            // }
-            // drop(procenciki);
+
 
             aktualizuj_postep(
                 &obecna_operacja,

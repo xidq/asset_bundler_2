@@ -228,7 +228,7 @@ where T: Logi{
                 *lossy = match lossy{
                     None => {None}
                     Some(xx) => {
-                        if *xx <= 0 {
+                        if *xx == 0 {
                             None
                         } else {
                             Some((*xx).clamp(0,100))

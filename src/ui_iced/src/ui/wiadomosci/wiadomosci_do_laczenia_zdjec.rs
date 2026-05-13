@@ -6,7 +6,7 @@ use enumy::inne_ui::ActProces;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::ext::{ImgExtTag, RozszerzeniaPojedyncze};
+use enumy::rozszerzenia::ext::{ImgExtTag, ImgExtSingle};
 use enumy::statusy::LogTxMerge;
 use futures::channel::mpsc;
 use iced::Task;
@@ -91,7 +91,7 @@ impl Program {
             }
             MergeMsg::ZdjeciaLaczenieZmianaWybraneRozszerzenie(huehue) => match huehue {
                 ImgExtTag::Jpg  => {
-                    let piksidipsi = RozszerzeniaPojedyncze::Jpg {
+                    let piksidipsi = ImgExtSingle::Jpg {
                         jakosc:90,
                         progresywny:false,
                         bit_depth: BdepthJpg::Rgb8,
@@ -105,7 +105,7 @@ impl Program {
                     };
                 }
                 ImgExtTag::Png  => {
-                    let piksidipsi = RozszerzeniaPojedyncze::Png {
+                    let piksidipsi = ImgExtSingle::Png {
                         kompresja:3,
                         bit_depth: BdepthPng::Rgb8,
                     };
@@ -115,7 +115,7 @@ impl Program {
                     }
                 }
                 ImgExtTag::Webp  => {
-                    let piksidipsi = RozszerzeniaPojedyncze::Webp {
+                    let piksidipsi = ImgExtSingle::Webp {
                         jakosc: 90,
                         bit_depth: BdepthWebp::Rgb8,
                         lossless: false,
@@ -126,7 +126,7 @@ impl Program {
                     }
                 }
                 ImgExtTag::Tga  => {
-                    let piksidipsi = RozszerzeniaPojedyncze::Tga {
+                    let piksidipsi = ImgExtSingle::Tga {
                         bit_depth: BdepthTga::TrueColor24,
                     };
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
@@ -135,7 +135,7 @@ impl Program {
                     }
                 }
                 ImgExtTag::Ff  => {
-                    let piksidipsi = RozszerzeniaPojedyncze::Ff {
+                    let piksidipsi = ImgExtSingle::Ff {
                         metoda_kompresji: ForFfKompresja::Brak,
                     };
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
@@ -144,7 +144,7 @@ impl Program {
                     }
                 }
                 ImgExtTag::Qoi  => {
-                    let piksidipsi = RozszerzeniaPojedyncze::Qoi {
+                    let piksidipsi = ImgExtSingle::Qoi {
                         bit_depth: BdepthQoi::Color24,
                     };
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
@@ -153,7 +153,7 @@ impl Program {
                     }
                 }
                 ImgExtTag::Avif => {
-                    let piksidipsi = RozszerzeniaPojedyncze::Avif {
+                    let piksidipsi = ImgExtSingle::Avif {
                         chroma: ForAvifChroma::C420,
                         speed: 0,
                         metoda_kompresji: ForAvifKompresja::Av1,
@@ -172,32 +172,32 @@ impl Program {
                 let kolor_any = kolor_rc.jako_any();
 
                 match &mut self.dane_merge.rozszerzenie {
-                    RozszerzeniaPojedyncze::Jpg { bit_depth, .. } if rozs == ImgExtTag::Jpg => {
+                    ImgExtSingle::Jpg { bit_depth, .. } if rozs == ImgExtTag::Jpg => {
                         if let Some(k) = kolor_any.downcast_ref::<BdepthJpg>() {
                             *bit_depth = *k;
                         }
                     }
-                    RozszerzeniaPojedyncze::Png { bit_depth, .. } if rozs == ImgExtTag::Png => {
+                    ImgExtSingle::Png { bit_depth, .. } if rozs == ImgExtTag::Png => {
                         if let Some(k) = kolor_any.downcast_ref::<BdepthPng>() {
                             *bit_depth = *k;
                         }
                     }
-                    RozszerzeniaPojedyncze::Webp { bit_depth, .. } if rozs == ImgExtTag::Webp => {
+                    ImgExtSingle::Webp { bit_depth, .. } if rozs == ImgExtTag::Webp => {
                         if let Some(k) = kolor_any.downcast_ref::<BdepthWebp>() {
                             *bit_depth = *k;
                         }
                     }
-                    RozszerzeniaPojedyncze::Avif { bit_depth, .. } if rozs == ImgExtTag::Avif => {
+                    ImgExtSingle::Avif { bit_depth, .. } if rozs == ImgExtTag::Avif => {
                         if let Some(k) = kolor_any.downcast_ref::<BdepthAvif>() {
                             *bit_depth = *k;
                         }
                     }
-                    RozszerzeniaPojedyncze::Qoi { bit_depth, .. } if rozs == ImgExtTag::Qoi => {
+                    ImgExtSingle::Qoi { bit_depth, .. } if rozs == ImgExtTag::Qoi => {
                         if let Some(k) = kolor_any.downcast_ref::<BdepthQoi>() {
                             *bit_depth = *k;
                         }
                     }
-                    RozszerzeniaPojedyncze::Tga { bit_depth, .. } if rozs == ImgExtTag::Tga => {
+                    ImgExtSingle::Tga { bit_depth, .. } if rozs == ImgExtTag::Tga => {
                         if let Some(k) = kolor_any.downcast_ref::<BdepthTga>() {
                             *bit_depth = *k;
                         }
@@ -210,13 +210,13 @@ impl Program {
 
             MergeMsg::ZdjeciaLaczenieZmianaJakosciJpg(procent) => {
                 // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
-                if let RozszerzeniaPojedyncze::Jpg {ref mut jakosc,..} = self.dane_merge.rozszerzenie {
+                if let ImgExtSingle::Jpg {ref mut jakosc,..} = self.dane_merge.rozszerzenie {
                     *jakosc = procent
                 };
 
             }
             MergeMsg::ZdjeciaEdycjaZmianaJpgSampling(xx) => {
-                if let RozszerzeniaPojedyncze::Jpg { ref mut sampling, .. } = 
+                if let ImgExtSingle::Jpg { ref mut sampling, .. } = 
                     self.dane_merge.rozszerzenie
                 {
                     *sampling = xx;
@@ -224,7 +224,7 @@ impl Program {
 
             }
             MergeMsg::ZdjeciaEdycjaZmianaJpgQua(xx) => {
-                if let RozszerzeniaPojedyncze::Jpg { ref mut quant, .. } = 
+                if let ImgExtSingle::Jpg { ref mut quant, .. } = 
                     self.dane_merge.rozszerzenie
                 {
                     // 2. lossless jest tutaj mutowalną referencją (&mut bool)
@@ -233,7 +233,7 @@ impl Program {
 
             }
             MergeMsg::ZdjeciaEdycjaZmianaJpgScans(skany) => {
-                if let RozszerzeniaPojedyncze::Jpg { ref mut scans, .. } = 
+                if let ImgExtSingle::Jpg { ref mut scans, .. } = 
                     self.dane_merge.rozszerzenie
                 {
                     *scans = skany; // Jeśli znaleziono, aktualizujemy wartość
@@ -245,7 +245,7 @@ impl Program {
             MergeMsg::Rozszerzenia(gwiazdek) => {
                 // dbg!("rozszerzenia", &gwiazdek);
                     let (nowy_format, nowy_tag) = match gwiazdek {
-                        ImgExtTag::Jpg => (RozszerzeniaPojedyncze::Jpg {
+                        ImgExtTag::Jpg => (ImgExtSingle::Jpg {
                             jakosc: 90,
                             progresywny: false,
                             bit_depth: BdepthJpg::Rgb8,
@@ -253,26 +253,26 @@ impl Program {
                             quant: ForJpgQuant::Default,
                             scans: 4,
                         }, ImgExtTag::Jpg),
-                        ImgExtTag::Png => (RozszerzeniaPojedyncze::Png {
+                        ImgExtTag::Png => (ImgExtSingle::Png {
                             kompresja: 3,
                             bit_depth: BdepthPng::Rgb8,
                         }, ImgExtTag::Png),
 
-                        ImgExtTag::Webp => (RozszerzeniaPojedyncze::Webp{
+                        ImgExtTag::Webp => (ImgExtSingle::Webp{
                             jakosc: 90,
                             lossless: false,
                             bit_depth:  BdepthWebp::Rgb8,
                         }, ImgExtTag::Webp),
-                        ImgExtTag::Tga => (RozszerzeniaPojedyncze::Tga{
+                        ImgExtTag::Tga => (ImgExtSingle::Tga{
                             bit_depth: BdepthTga::TrueColor24
                         }, ImgExtTag::Tga),
-                        ImgExtTag::Ff => (RozszerzeniaPojedyncze::Ff{
+                        ImgExtTag::Ff => (ImgExtSingle::Ff{
                             metoda_kompresji: ForFfKompresja::Brak
                         }, ImgExtTag::Ff),
-                        ImgExtTag::Qoi => (RozszerzeniaPojedyncze::Qoi{
+                        ImgExtTag::Qoi => (ImgExtSingle::Qoi{
                             bit_depth: BdepthQoi::Color24
                         }, ImgExtTag::Qoi),
-                        ImgExtTag::Avif => (RozszerzeniaPojedyncze::Avif {
+                        ImgExtTag::Avif => (ImgExtSingle::Avif {
                             chroma: ForAvifChroma::C420,
                             speed: 3,
                             metoda_kompresji: ForAvifKompresja::Av1,
@@ -285,20 +285,20 @@ impl Program {
 
             }
             MergeMsg::ZdjeciaLaczenieZmianaKompresjiPng(procent) => {
-                if let RozszerzeniaPojedyncze::Png {ref mut kompresja,..} = self.dane_merge.rozszerzenie {*kompresja = procent};
+                if let ImgExtSingle::Png {ref mut kompresja,..} = self.dane_merge.rozszerzenie {*kompresja = procent};
             }
 
             MergeMsg::ZdjeciaLaczenieZmianaJakosciWebp(procent) => {
-                if let RozszerzeniaPojedyncze::Webp { ref mut jakosc,.. } = self.dane_merge.rozszerzenie { *jakosc = procent; }
+                if let ImgExtSingle::Webp { ref mut jakosc,.. } = self.dane_merge.rozszerzenie { *jakosc = procent; }
             }
 
             MergeMsg::ZdjeciaLaczenieZmianalosslessWebp => {
-                if let RozszerzeniaPojedyncze::Webp {ref mut lossless,..} = self.dane_merge.rozszerzenie { *lossless = !*lossless}
+                if let ImgExtSingle::Webp {ref mut lossless,..} = self.dane_merge.rozszerzenie { *lossless = !*lossless}
 
             }
 
             MergeMsg::ZdjeciaLaczenieZmianaRozszerzenieFf(lejlejlej) =>  {
-                if let RozszerzeniaPojedyncze::Ff{ref mut metoda_kompresji } = self.dane_merge.rozszerzenie {*metoda_kompresji = lejlejlej;};
+                if let ImgExtSingle::Ff{ref mut metoda_kompresji } = self.dane_merge.rozszerzenie {*metoda_kompresji = lejlejlej;};
             },
 
             MergeMsg::WybierzPlikInFotoLaczenieNazwaChanged(blob) => {
@@ -307,7 +307,7 @@ impl Program {
 
             MergeMsg::ZdjeciaLaczenieZmianaKompresjiFfZstd(procent) => {
                 // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
-                if let RozszerzeniaPojedyncze::Ff {
+                if let ImgExtSingle::Ff {
                     metoda_kompresji: ForFfKompresja::Zstd(ref mut aktualny_procent), .. } = self.dane_merge.rozszerzenie {
 
                         *aktualny_procent = procent;
@@ -317,7 +317,7 @@ impl Program {
             }
             MergeMsg::ZdjeciaLaczenieZmianaKompresjiFfBzip2(procent) => {
                 // self.stan_boolean_do_laczenia_zdjec.jpg_jakosc = procent;
-                if let RozszerzeniaPojedyncze::Ff {
+                if let ImgExtSingle::Ff {
                     metoda_kompresji: ForFfKompresja::Bzip2(ref mut aktualny_procent), ..
                 } = self.dane_merge.rozszerzenie {
 
@@ -328,7 +328,7 @@ impl Program {
             }
             MergeMsg::ZdjeciaLaczenieZmianaKompresjiFfXz(procent) => {
 
-                if let RozszerzeniaPojedyncze::Ff {
+                if let ImgExtSingle::Ff {
                     metoda_kompresji: ForFfKompresja::Xz(ref mut aktualny_procent), ..
                 } = self.dane_merge.rozszerzenie {
 
@@ -379,14 +379,14 @@ impl Program {
                 LogTxMerge::Sprawdzanie(_) => {}
             },
             MergeMsg::JpgProg => {
-                if let RozszerzeniaPojedyncze::Jpg { ref mut progresywny, .. } = self
+                if let ImgExtSingle::Jpg { ref mut progresywny, .. } = self
                     .dane_merge.rozszerzenie
                 {
                     *progresywny = !*progresywny;
                 }
             }
             MergeMsg::AvifLossyToggle => {
-                if let RozszerzeniaPojedyncze::Avif { ref mut lossy, .. } = self
+                if let ImgExtSingle::Avif { ref mut lossy, .. } = self
                     .dane_merge
                     .rozszerzenie
                 {

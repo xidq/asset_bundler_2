@@ -1,4 +1,4 @@
-use encodery::avif::{avif_match, avif_zapis};
+use encodery::zapisywanie::avif::{avif_match, avif_zapis};
 use encodery::halper::zaszumianie;
 use enumy::rozszerzenia::bdepth::BdepthAvif;
 use enumy::rozszerzenia::kolor::ForAvifChroma;

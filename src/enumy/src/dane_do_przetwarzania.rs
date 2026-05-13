@@ -1,10 +1,11 @@
 use crate::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
-use crate::rozszerzenia::ext::{ImgExt, ImgExtTag, RozszerzeniaPojedyncze};
+use crate::rozszerzenia::ext::{ImgExt, ImgExtTag, ImgExtSingle};
 use crate::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use std::any::Any;
 use std::cmp::PartialEq;
 use std::path::PathBuf;
+use image::imageops::FilterType;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
@@ -63,7 +64,7 @@ pub struct DaneMerge {
     pub sciezka_b: Option<PathBuf>,
     pub sciezka_a: Option<PathBuf>,
     pub sciezka_out: PathBuf,
-    pub rozszerzenie: RozszerzeniaPojedyncze,
+    pub rozszerzenie: ImgExtSingle,
     pub tag: ImgExtTag,
     pub nazwa: String,
 }
@@ -93,7 +94,7 @@ pub struct DaneProces {
     pub opcje_rozdzielczości: Vec<Rozdzielczości>,
     pub noising: Option<u8>,
     pub rozszerzenia: Vec<ImgExt>,
-    pub inter: OptInterpolacja,
+    pub inter: FilterType,
     pub alfa_rgb: (u16, u16, u16),
 }
 

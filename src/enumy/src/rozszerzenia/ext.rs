@@ -93,7 +93,7 @@ impl Default for ImgExt {
 }
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, EnumMessage, Display)]
-pub enum RozszerzeniaPojedyncze {
+pub enum ImgExtSingle {
 
     Jpg {
         jakosc: u8,

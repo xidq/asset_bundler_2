@@ -17,7 +17,7 @@ use enumy::rozszerzenia::bdepth::BdepthJpg;
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForFfKompresja};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::rozszerzenia::ext::{ImgExt, RozszerzeniaPojedyncze, ImgExtTag};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtSingle, ImgExtTag};
 pub(crate) use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
 use iced::widget::{image, stack, Column, Row};
 use iced::{Border, Color, Element, Length};
@@ -116,7 +116,7 @@ impl Program {
                     sciezka_b: None,
                     sciezka_a: None,
                     sciezka_out: PathBuf::new(),
-                    rozszerzenie: RozszerzeniaPojedyncze::Jpg {
+                    rozszerzenie: ImgExtSingle::Jpg {
                         jakosc: 90,
                         bit_depth: BdepthJpg::Rgb8,
                         sampling: ForJpgSamplingFac::R444,
@@ -447,7 +447,7 @@ impl Program {
                         }
                         DropdownType::MergeJpgSample => {
                             if let Some(v) = wybrane.downcast_ref::<ForJpgSamplingFac>()
-                                && let RozszerzeniaPojedyncze::Jpg { ref mut sampling, .. } = self.dane_merge.rozszerzenie
+                                && let ImgExtSingle::Jpg { ref mut sampling, .. } = self.dane_merge.rozszerzenie
                                 {
                                     *sampling = *v;
                                 }
@@ -455,7 +455,7 @@ impl Program {
                         }
                         DropdownType::MergeJpgQuant => {
                             if let Some(v) = wybrane.downcast_ref::<ForJpgQuant>()
-                                && let RozszerzeniaPojedyncze::Jpg { ref mut quant, .. } = self.dane_merge.rozszerzenie
+                                && let ImgExtSingle::Jpg { ref mut quant, .. } = self.dane_merge.rozszerzenie
                                 {
                                     *quant = *v;
                                 }
@@ -463,7 +463,7 @@ impl Program {
                         }
                         DropdownType::MergeAvifChroma => {
                             if let Some(v) = wybrane.downcast_ref::<ForAvifChroma>()
-                                && let RozszerzeniaPojedyncze::Avif { ref mut chroma, .. } = self.dane_merge.rozszerzenie
+                                && let ImgExtSingle::Avif { ref mut chroma, .. } = self.dane_merge.rozszerzenie
                                 {
                                     *chroma = v.clone();
                                 }
@@ -471,7 +471,7 @@ impl Program {
                         }
                         DropdownType::MergeAvifKompresja => {
                             if let Some(v) = wybrane.downcast_ref::<ForAvifKompresja>()
-                                && let RozszerzeniaPojedyncze::Avif { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
+                                && let ImgExtSingle::Avif { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
                                 {
                                     *metoda_kompresji = v.clone();
                                 }
@@ -479,7 +479,7 @@ impl Program {
                         }
                         DropdownType::MergeKompresjaFf => {
                             if let Some(v) = wybrane.downcast_ref::<ForFfKompresja>()
-                                && let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
+                                && let ImgExtSingle::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie
                                 {
                                     *metoda_kompresji = v.ustaw_domyslny_poziom();
                                 }
@@ -755,47 +755,47 @@ impl Program {
                         }
                     }
                     SliderType::MergeJpgQuality => {
-                        if let RozszerzeniaPojedyncze::Jpg { ref mut jakosc, .. } = self.dane_merge.rozszerzenie {
+                        if let ImgExtSingle::Jpg { ref mut jakosc, .. } = self.dane_merge.rozszerzenie {
                             *jakosc = wartość as u8;
                         }
                     }
                     SliderType::MergeJpgScans => {
-                        if let RozszerzeniaPojedyncze::Jpg { ref mut scans, .. } = self.dane_merge.rozszerzenie {
+                        if let ImgExtSingle::Jpg { ref mut scans, .. } = self.dane_merge.rozszerzenie {
                             *scans = wartość as u8;
                         }
                     }
                     SliderType::MergeAvifSpeed => {
-                        if let RozszerzeniaPojedyncze::Avif { ref mut speed, .. } = self.dane_merge.rozszerzenie {
+                        if let ImgExtSingle::Avif { ref mut speed, .. } = self.dane_merge.rozszerzenie {
                             *speed = wartość ;
                         }
                     }
                     SliderType::MergeAvifQuality => {
-                        if let RozszerzeniaPojedyncze::Avif { ref mut lossy, .. } = self.dane_merge.rozszerzenie {
+                        if let ImgExtSingle::Avif { ref mut lossy, .. } = self.dane_merge.rozszerzenie {
                             *lossy = Some(wartość as u8) ;
                         }
                     }
                     SliderType::MergePngKompresja => {
-                        if let RozszerzeniaPojedyncze::Png { ref mut kompresja, .. } = self.dane_merge.rozszerzenie {
+                        if let ImgExtSingle::Png { ref mut kompresja, .. } = self.dane_merge.rozszerzenie {
                             *kompresja = wartość as u8 ;
                         }
                     }
                     SliderType::MergeWebpJakosc => {
-                            if let RozszerzeniaPojedyncze::Webp { ref mut jakosc, .. } = self.dane_merge.rozszerzenie {
+                            if let ImgExtSingle::Webp { ref mut jakosc, .. } = self.dane_merge.rozszerzenie {
                                 *jakosc = wartość as u8 ;
                             }
                     }
                     SliderType::MergeFfZstd => {
-                        if let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
+                        if let ImgExtSingle::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
                             *metoda_kompresji = ForFfKompresja::Zstd(wartość as u8);
                         }
                     }
                     SliderType::MergeFfBzip2 => {
-                        if let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
+                        if let ImgExtSingle::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
                             *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
                         }
                     }
                     SliderType::MergeFfXz => {
-                        if let RozszerzeniaPojedyncze::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
+                        if let ImgExtSingle::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
                             *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
                         }
                     }

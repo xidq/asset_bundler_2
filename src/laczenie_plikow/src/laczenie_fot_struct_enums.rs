@@ -5,7 +5,7 @@ use crate::metody_mielenia::laczenie_qoi::laczenie_qoi;
 use crate::metody_mielenia::laczenie_tga::laczenie_tga;
 use crate::metody_mielenia::laczenie_webp::laczenie_webp;
 use enumy::dane_do_przetwarzania::DaneMerge;
-use enumy::rozszerzenia::ext::RozszerzeniaPojedyncze;
+use enumy::rozszerzenia::ext::ImgExtSingle;
 use futures::SinkExt;
 use futures::channel::mpsc;
 use image::DynamicImage;
@@ -116,7 +116,7 @@ pub async fn fn_do_laczenia_fot(
     let obrazki = Vec::from([img_r, img_g, img_b, img_a]);
 
     let wynik: Result<(), tokio::io::Error> = match dane.rozszerzenie {
-        RozszerzeniaPojedyncze::Png {
+        ImgExtSingle::Png {
             bit_depth,
             kompresja,
         } => {
@@ -131,7 +131,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        RozszerzeniaPojedyncze::Jpg {
+        ImgExtSingle::Jpg {
             jakosc,
             progresywny,
             bit_depth, sampling:_, quant:_, scans:_,
@@ -148,7 +148,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        RozszerzeniaPojedyncze::Webp {
+        ImgExtSingle::Webp {
             jakosc,
             lossless,
             bit_depth,
@@ -166,7 +166,7 @@ pub async fn fn_do_laczenia_fot(
             .await
         }
 
-        RozszerzeniaPojedyncze::Tga { bit_depth } => {
+        ImgExtSingle::Tga { bit_depth } => {
             laczenie_tga(
                 obrazki,
                 &dane.sciezka_out,
@@ -177,7 +177,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        RozszerzeniaPojedyncze::Ff { metoda_kompresji } => {
+        ImgExtSingle::Ff { metoda_kompresji } => {
             laczenie_ff(
                 obrazki,
                 &dane.sciezka_out,
@@ -188,7 +188,7 @@ pub async fn fn_do_laczenia_fot(
             )
             .await
         }
-        RozszerzeniaPojedyncze::Qoi { bit_depth } => {
+        ImgExtSingle::Qoi { bit_depth } => {
             laczenie_qoi(
                 obrazki,
                 &dane.sciezka_out,
@@ -200,7 +200,7 @@ pub async fn fn_do_laczenia_fot(
             .await
         }
 
-        RozszerzeniaPojedyncze::Avif { 
+        ImgExtSingle::Avif { 
             chroma, 
             speed, 
             metoda_kompresji, 

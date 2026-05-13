@@ -2,7 +2,17 @@ use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, B
 use crate::rozszerzenia::ext::ImgExtTag;
 use std::any::Any;
 use strum::EnumMessage;
+use crate::rozszerzenia::kompresje::ForFfKompresja;
 
+pub enum BdepthEnum{
+    Jpg(BdepthJpg),
+    Png(BdepthPng),
+    Webp(BdepthWebp),
+    Avif(BdepthAvif),
+    Tga(BdepthTga),
+    Qoi(BdepthQoi),
+    Ff(ForFfKompresja),
+}
 pub trait BitDepth: std::fmt::Debug + Any + Send + Sync{
     fn label_min(&self) -> &'static str;
     fn label_max(&self) -> &'static str;
@@ -16,6 +26,7 @@ pub trait BitDepth: std::fmt::Debug + Any + Send + Sync{
         false
     }
     fn format(&self) -> ImgExtTag;
+    fn jako_enum(self) -> BdepthEnum;
 }
 
 
@@ -38,22 +49,23 @@ impl BitDepth for BdepthJpg {
     //     false
     // }
     fn format(&self) -> ImgExtTag { ImgExtTag::Jpg}
+    fn jako_enum(self) -> BdepthEnum {BdepthEnum::Jpg(self)}
 }
 impl BitDepth for BdepthPng {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Png")}
     fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Png")}
     fn tryb_laczenia(&self) -> TrybLączenia {
-    match self {
-        Self::Luma8 => TrybLączenia::Luma8,
-        Self::Rgb8 => TrybLączenia::Rgb8,
-        Self::Luma8Alpha => TrybLączenia::Luma8Alpha ,
-        Self::Rgb8Alpha => TrybLączenia::Rgb8Alpha ,
-        Self::Luma16 => TrybLączenia::Luma16 ,
-        Self::Luma16Alpha => TrybLączenia::Luma16Alpha ,
-        Self::Rgb16 => TrybLączenia::Rgb16 ,
-        Self::Rgb16Alpha => TrybLączenia::Rgb16Alpha ,
+        match self {
+            Self::Luma8 => TrybLączenia::Luma8,
+            Self::Rgb8 => TrybLączenia::Rgb8,
+            Self::Luma8Alpha => TrybLączenia::Luma8Alpha ,
+            Self::Rgb8Alpha => TrybLączenia::Rgb8Alpha ,
+            Self::Luma16 => TrybLączenia::Luma16 ,
+            Self::Luma16Alpha => TrybLączenia::Luma16Alpha ,
+            Self::Rgb16 => TrybLączenia::Rgb16 ,
+            Self::Rgb16Alpha => TrybLączenia::Rgb16Alpha ,
+        }
     }
-}
     fn jako_any(&self) -> &dyn Any { self }
     // fn jest_rowny(&self, inny: &dyn Any) -> bool {
     //     if let Some(v) = inny.downcast_ref::<Self>() {
@@ -62,6 +74,30 @@ impl BitDepth for BdepthPng {
     //     false
     // }
     fn format(&self) -> ImgExtTag { ImgExtTag::Png}
+    fn jako_enum(self) -> BdepthEnum {BdepthEnum::Png(self)}
+
+}
+impl BitDepth for ForFfKompresja {
+    fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Png")}
+    fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Png")}
+    fn tryb_laczenia(&self) -> TrybLączenia {
+        match self {
+            ForFfKompresja::Zstd(_) => TrybLączenia::Zstd,
+            ForFfKompresja::Bzip2(_) => TrybLączenia::Bzip2,
+            ForFfKompresja::Xz(_) => TrybLączenia::Xz,
+            ForFfKompresja::Brak => TrybLączenia::Brak,
+        }
+    }
+    fn jako_any(&self) -> &dyn Any { self }
+    // fn jest_rowny(&self, inny: &dyn Any) -> bool {
+    //     if let Some(v) = inny.downcast_ref::<Self>() {
+    //         return v == self;
+    //     }
+    //     false
+    // }
+    fn format(&self) -> ImgExtTag { ImgExtTag::Ff}
+    fn jako_enum(self) -> BdepthEnum {BdepthEnum::Ff(self)}
+
 }
 impl BitDepth for BdepthWebp {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Webp")}
@@ -80,6 +116,8 @@ impl BitDepth for BdepthWebp {
     //     }
     //     false
     // }
+    fn jako_enum(self) -> BdepthEnum {BdepthEnum::Webp(self)}
+
 }
 impl BitDepth for BdepthAvif {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Avif")}
@@ -100,6 +138,8 @@ impl BitDepth for BdepthAvif {
     //     }
     //     false
     // }
+    fn jako_enum(self) -> BdepthEnum {BdepthEnum::Avif(self)}
+
 }
 impl BitDepth for BdepthTga {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Tga")}
@@ -120,6 +160,8 @@ impl BitDepth for BdepthTga {
     //     }
     //     false
     // }
+    fn jako_enum(self) -> BdepthEnum {BdepthEnum::Tga(self)}
+
 }
 impl BitDepth for BdepthQoi {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Qoi")}
@@ -138,6 +180,7 @@ impl BitDepth for BdepthQoi {
     //     }
     //     false
     // }
+    fn jako_enum(self) -> BdepthEnum {BdepthEnum::Qoi(self)}
 }
 
 impl BdepthAvif {

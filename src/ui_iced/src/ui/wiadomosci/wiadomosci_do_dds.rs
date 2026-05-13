@@ -7,7 +7,7 @@ use enumy::inne_ui::ActProces;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag, RozszerzeniaPojedyncze};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag, ImgExtSingle};
 use enumy::statusy::{LogTxDdsPak, LogTxDdsUnpak};
 use futures::channel::mpsc;
 use iced::Task;
@@ -109,7 +109,7 @@ impl Program {
                 return Task::batch(Vec::from([operacja, nasluchiwanie]));
             }
             DdsMsg::ZdjeciaLaczenieZmianaRozszerzenieFf(lejlejlej) =>  {
-                if let RozszerzeniaPojedyncze::Ff{ref mut metoda_kompresji } = self.dane_merge.rozszerzenie {*metoda_kompresji = lejlejlej;};
+                if let ImgExtSingle::Ff{ref mut metoda_kompresji } = self.dane_merge.rozszerzenie {*metoda_kompresji = lejlejlej;};
             },
             DdsMsg::PakowaniePostęp(progress) => {
                 match progress {

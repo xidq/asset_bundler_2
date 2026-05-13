@@ -1,6 +1,6 @@
 use crate::wczytanie_zdjec::aktualizuj_postep;
 use enumy::opcje::OptInterpolacja;
-use enumy::statusy::LogTxKonw;
+use enumy::statusy::{LogTxKonw, Logi};
 use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
 use image::DynamicImage;
@@ -8,25 +8,25 @@ use std::path::Path;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use encodery::jpg::{jpg_match, jpg_zapis};
+use encodery::send::wyslij_status;
+use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieJpg};
 use enumy::rozszerzenia::bdepth::BdepthJpg;
+use enumy::rozszerzenia::bdepth_impl::BitDepth;
 use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-#[allow(clippy::too_many_arguments)]
-pub async fn edycja_jpg(
-    bufor: DynamicImage,
-    rozdzielczości: &Vec<Rozdzielczości>,
-    ścieżka_wyjściowa: &Path,
-    opt_interpolacja: &OptInterpolacja,
-    nazwa_pliku: &str,
-    zbiór_danych: (&u8, &bool, &Vec<BdepthJpg>, &ForJpgSamplingFac, &ForJpgQuant, &u8),
-    alfa_rgb: &(u16, u16, u16),
-    do_zaszumienia: Option<u8>,
-    metryka_operacji: u32,
+pub async fn edycja_jpg<T, F, G>(
+    dane: F,
+    metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
-    mut tx: Sender<LogTxKonw>,
-) -> Result<(), tokio::io::Error> {
+    mut tx: Sender<T>,
+) -> Result<(), tokio::io::Error>
+where T: Logi,
+F: DaneDoPrzetwarzania<G>,
+G: BitDepth,
+{
 
-    let filtr = match opt_interpolacja {
+
+    let filtr = match &dane.interpolacja() {
         OptInterpolacja::Nearest => FilterType::Nearest,
         OptInterpolacja::Triangle => FilterType::Triangle,
         OptInterpolacja::CatmullRom => FilterType::CatmullRom,
@@ -35,7 +35,7 @@ pub async fn edycja_jpg(
     };
 
 
-    for wariant in rozdzielczości {
+    for wariant in &dane.rozdzielczosci() {
         let (docelowy_wymiar, nazwa_wariantu) = match wariant {
             Rozdzielczości::R16 => (16, "_16"),
             Rozdzielczości::R32 => (32, "_32"),
@@ -53,37 +53,39 @@ pub async fn edycja_jpg(
         };
 
 
-        for wybór in zbiór_danych.2 {
+        for wybór in &dane.bdepth() {
+            let mut oopr = obecna_operacja.lock().await;
+            *oopr += 1;
+            let obecnie = *oopr;
+            drop(oopr);
+            wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
 
-            aktualizuj_postep(
-                &obecna_operacja,
-                
-                metryka_operacji,
-                &mut tx,
-            )
-            .await;
             
-            let (final_img, nazwa_bd) = jpg_match(&bufor, docelowy_wymiar, filtr, alfa_rgb,  wybór).await?;
+            let (final_img, nazwa_bd) = jpg_match(&dane.bufor, docelowy_wymiar, filtr, dane.alpha, &wybór).await?;
                 
     
-            aktualizuj_postep(
-                &obecna_operacja,
-                
-                metryka_operacji,
-                &mut tx,
-            )
-            .await;
+            // aktualizuj_postep(
+            //     &obecna_operacja,
+            //
+            //     metryka_operacji,
+            //     &mut tx,
+            // )
+            // .await;
+            let mut oopr = obecna_operacja.lock().await;
+            *oopr += 1;
+            let obecnie = *oopr;
+            drop(oopr);
+            wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
 
 
-            jpg_zapis(final_img,nazwa_bd,ścieżka_wyjściowa,do_zaszumienia,nazwa_pliku,nazwa_wariantu,zbiór_danych.0,zbiór_danych.1,zbiór_danych.3,zbiór_danych.4,zbiór_danych.5).await?;
 
-            aktualizuj_postep(
-                &obecna_operacja,
-                
-                metryka_operacji,
-                &mut tx,
-            )
-            .await;
+            jpg_zapis(final_img,nazwa_bd,dane.clone(),nazwa_wariantu).await?;
+
+            let mut oopr = obecna_operacja.lock().await;
+            *oopr += 1;
+            let obecnie = *oopr;
+            drop(oopr);
+            wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
         }
     }
 

@@ -1,11 +1,5 @@
-use crate::edycja_avif::edycja_avif;
-use crate::edycja_ff::edycja_ff;
-use crate::edycja_jpg::edycja_jpg;
-use crate::edycja_png::edycja_png;
-use crate::edycja_qoi::edycja_qoi;
-use crate::edycja_tga::edycja_tga;
-use crate::edycja_webp::edycja_webp;
-use crate::pomocnicze::sprawdz_czy_wsio_ok;
+
+use encodery::check::sprawdzacz;
 use encodery::halper::merge_sciezki;
 use encodery::wczytaj_foto::wczytaj_zdjęcie;
 use enumy::dane_do_przetwarzania::DaneKonw;
@@ -21,6 +15,8 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
+use encodery::zapisywanie::generic::zapisywanie_generic;
+use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 
 pub async fn ogarnianie_foto(
     zestaw_danych: DaneKonw,
@@ -28,7 +24,7 @@ pub async fn ogarnianie_foto(
 ) -> Result<(), tokio::io::Error> {
     let start_czas = Instant::now();
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
-    let saf = sprawdz_czy_wsio_ok(zestaw_danych, tx.clone()).await?;
+    let saf = sprawdzacz(zestaw_danych, tx.clone()).await?;
     let wsio_dane = Arc::new(saf);
 
     let wynik = async {
@@ -79,7 +75,7 @@ pub async fn ogarnianie_foto(
 
 
         let total_operacji = ścieżki_do_zdjęć.len() as u32 * ile_rozdzielczosci * suma_wariantow_bit_depth;
-        let metryka_operacji = total_operacji * 3;
+        let metryka_operacji = Some(total_operacji * 3);
 
         // let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(ścieżki_do_zdjęć.len() as u32)).await;
 
@@ -147,100 +143,120 @@ pub async fn ogarnianie_foto(
                         match &r {
                             ImgExt::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans, } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let zbiór_danych = (jakosc,progresywny,bit_depth,sampling,quant,scans);
-                                edycja_jpg(
-                                    bufor.clone(),
-                                    &wsio_dane.opcje_rozdzielczości,
-                                    &sciezka,
-                                    &wsio_dane.inter,
-                                    &nazwa,
-                                    zbiór_danych,
-                                    &wsio_dane.alfa_rgb,
-                                    wsio_dane.noising,
+                                let dane = PrzetwarzanieJpg{
+                                    bufor: bufor.clone(),
+                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                                    sciezka_wyjsciowa: sciezka,
+                                    nazwa: nazwa.clone(),
+                                    interpolacja: wsio_dane.inter,
+                                    jakosc: *jakosc,
+                                    progresywny: *progresywny,
+                                    bdepth: *bit_depth,
+                                    sampling: *sampling,
+                                    quant: *quant,
+                                    skany: *scans,
+                                    alpha: wsio_dane.alfa_rgb,
+                                    zaszumienie: wsio_dane.noising,
+                                };
+                                zapisywanie_generic(
+                                    dane,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
                             ImgExt::Png { kompresja, bit_depth } => {
-                                edycja_png(
-                                    bufor.clone(),
-                                    &wsio_dane.opcje_rozdzielczości,
-                                    &wsio_dane.ścieżka_wyjściowa,
-                                    &p.2,
-                                    &wsio_dane.inter,
-                                    &nazwa,
-                                    kompresja,
-                                    &wsio_dane.alfa_rgb,
-                                    bit_depth,
-                                    wsio_dane.noising,
+                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                                let dane = PrzetwarzaniePng{
+                                    bufor: bufor.clone(),
+                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                                    sciezka_wyjsciowa: sciezka,
+                                    nazwa: nazwa.clone(),
+                                    interpolacja: wsio_dane.inter,
+                                    kompresja: *kompresja,
+                                    bdepth: *bit_depth,
+                                    alpha: wsio_dane.alfa_rgb,
+                                    zaszumienie: wsio_dane.noising,
+                                };
+                                zapisywanie_generic(
+                                    dane,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
                             ImgExt::Webp { jakosc , lossless, bit_depth} => {
-                                edycja_webp(
-                                    bufor.clone(),
-                                    &wsio_dane.opcje_rozdzielczości,
-                                    &wsio_dane.ścieżka_wyjściowa,
-                                    &p.2, //ścieżka dopełniająca
-                                    &wsio_dane.inter,
-                                    &nazwa,
-                                    jakosc,
-                                    *lossless,
-                                    bit_depth,
-                                    &wsio_dane.alfa_rgb,
-                                    wsio_dane.noising,
+                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                                let dane = PrzetwarzanieWebp{
+                                    bufor: bufor.clone(),
+                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                                    sciezka_wyjsciowa: sciezka,
+                                    nazwa: nazwa.clone(),
+                                    interpolacja: wsio_dane.inter,
+                                    bdepth: *bit_depth,
+                                    alpha: wsio_dane.alfa_rgb,
+                                    zaszumienie: wsio_dane.noising,
+                                    lossy: if *lossless { None } else { Some(*jakosc) },
+                                };
+                                zapisywanie_generic(
+                                    dane,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
                             ImgExt::Tga { bit_depth } => {
-                                edycja_tga(
-                                    bufor.clone(),
-                                    &wsio_dane.opcje_rozdzielczości,
-                                    &wsio_dane.ścieżka_wyjściowa,
-                                    &p.2,
-                                    &wsio_dane.inter,
-                                    &nazwa,
-                                    &wsio_dane.alfa_rgb,
-                                    bit_depth,
-                                    wsio_dane.noising,
+                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                                let dane = PrzetwarzanieTga{
+                                    bufor: bufor.clone(),
+                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                                    sciezka_wyjsciowa: sciezka,
+                                    nazwa: nazwa.clone(),
+                                    interpolacja: wsio_dane.inter,
+                                    bdepth: *bit_depth,
+                                    alpha: wsio_dane.alfa_rgb,
+                                    zaszumienie: wsio_dane.noising,
+                                };
+                                zapisywanie_generic(
+                                    dane,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
                                 ).await?;
                             }
                             ImgExt::Ff { metoda_kompresji } => {
-                                edycja_ff(
-                                    bufor.clone(),
-                                    &wsio_dane.opcje_rozdzielczości,
-                                    &wsio_dane.ścieżka_wyjściowa,
-                                    &p.2,
-                                    &wsio_dane.inter,
-                                    &nazwa,
-                                    &wsio_dane.alfa_rgb,
-                                    wsio_dane.noising,
+                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                                let dane = PrzetwarzanieFf{
+                                    bufor: bufor.clone(),
+                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                                    sciezka_wyjsciowa: sciezka,
+                                    nazwa: nazwa.clone(),
+                                    interpolacja: wsio_dane.inter,
+                                    kompresja: vec![*metoda_kompresji],
+                                    alpha: wsio_dane.alfa_rgb,
+                                    zaszumienie: wsio_dane.noising,
+                                };
+                                zapisywanie_generic(
+                                    dane,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    metoda_kompresji,
                                     tx_zadanie,
                                 ).await?;
                             }
                             ImgExt::Qoi { bit_depth } => {
-                                dbg!("wchodzę w fn edycja_qoi");
-                                edycja_qoi(
-                                    bufor.clone(),
-                                    &wsio_dane.opcje_rozdzielczości,
-                                    &wsio_dane.ścieżka_wyjściowa,
-                                    &p.2,
-                                    &wsio_dane.inter,
-                                    &nazwa,
-                                    &wsio_dane.alfa_rgb,
-                                    bit_depth,
-                                    wsio_dane.noising,
+                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                                let dane = PrzetwarzanieQoi{
+                                    bufor: bufor.clone(),
+                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                                    sciezka_wyjsciowa: sciezka,
+                                    nazwa: nazwa.clone(),
+                                    interpolacja: wsio_dane.inter,
+                                    bdepth: *bit_depth,
+                                    alpha: wsio_dane.alfa_rgb,
+                                    zaszumienie: wsio_dane.noising,
+                                };
+                                zapisywanie_generic(
+                                    dane,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
@@ -253,23 +269,26 @@ pub async fn ogarnianie_foto(
                                 lossy,
                                 bit_depth
                             } => {
-                                edycja_avif(
-                                    bufor.clone(),
-                                    &wsio_dane.opcje_rozdzielczości,
-                                    &wsio_dane.ścieżka_wyjściowa,
-                                    &p.2,
-                                    &wsio_dane.inter,
-                                    &nazwa,
-                                    lossy,
-                                    bit_depth,
-                                    None,
-                                    &wsio_dane.alfa_rgb,
-                                    metoda_kompresji,
-                                    *speed,
-                                    chroma,
+                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                                let dane = PrzetwarzanieAvif{
+                                    bufor: bufor.clone(),
+                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                                    sciezka_wyjsciowa: sciezka,
+                                    nazwa: nazwa.clone(),
+                                    interpolacja: wsio_dane.inter,
+                                    bdepth: *bit_depth,
+                                    alpha: wsio_dane.alfa_rgb,
+                                    zaszumienie: wsio_dane.noising,
+                                    chroma: *chroma,
+                                    speed: *speed,
+                                    metoda_kompresji: *metoda_kompresji,
+                                    lossy: *lossy,
+                                };
+                                zapisywanie_generic(
+                                    dane,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
-                                    tx_zadanie
+                                    tx_zadanie,
                                 ).await?;
                             }
                         }
@@ -367,7 +386,7 @@ fn zgarnij_dane_z_pliku(
         FILTERFOTO.map(|item| item.strip_prefix("ff.").unwrap_or(item));
     println!("jestem w zgarnij_dane_z_pliku");
 
-    // Używamy WalkDir, żeby ogarnąć foldery i podfoldery
+
     for entry in WalkDir::new(&ścieżka).into_iter().flatten() {
         let path = entry.path();
 

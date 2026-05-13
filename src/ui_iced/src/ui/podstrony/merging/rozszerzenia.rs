@@ -8,7 +8,7 @@ use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, Ustawie
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::ext::{ImgExtTag, RozszerzeniaPojedyncze};
+use enumy::rozszerzenia::ext::{ImgExtTag, ImgExtSingle};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{container, space, Column, Row};
 use iced_core::{Color, Length};
@@ -43,7 +43,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                         Row::new().height(300.)
                             .push(
                                 if let
-                                    RozszerzeniaPojedyncze::Jpg {
+                                    ImgExtSingle::Jpg {
                                         jakosc,
                                         progresywny,
                                         bit_depth:_,
@@ -109,7 +109,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                         Row::new().height(150.)
                             .push(
                                 if let
-                                    RozszerzeniaPojedyncze::Png {
+                                    ImgExtSingle::Png {
                                         kompresja, bit_depth
                                     } = dane.rozszerzenie
                                 {
@@ -170,7 +170,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                         Row::new().height(150.)
                             .push(
                                 if let
-                                    RozszerzeniaPojedyncze::Webp {
+                                    ImgExtSingle::Webp {
                                         jakosc, lossless, bit_depth
                                     } = dane.rozszerzenie
                                 {
@@ -217,7 +217,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                         Row::new().height(100.)
                             .push(
                                 if let
-                                    RozszerzeniaPojedyncze::Tga {
+                                    ImgExtSingle::Tga {
                                         bit_depth
                                     } = dane.rozszerzenie
                                 {
@@ -250,7 +250,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                         Row::new().height(100.)
                             .push(
                                 if let
-                                    RozszerzeniaPojedyncze::Ff {
+                                    ImgExtSingle::Ff {
                                         metoda_kompresji
                                     } = dane.rozszerzenie
                                 {
@@ -297,7 +297,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                         Row::new().height(100.)
                             .push(
                                 if let
-                                    RozszerzeniaPojedyncze::Qoi {
+                                    ImgExtSingle::Qoi {
                                         bit_depth
                                     } = dane.rozszerzenie
                                 {
@@ -332,7 +332,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
 
                             .push(
                                 if let
-                                    RozszerzeniaPojedyncze::Avif {
+                                    ImgExtSingle::Avif {
                                         chroma: _,
                                         speed,
                                         metoda_kompresji: _,
