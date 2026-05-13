@@ -9,6 +9,7 @@ use enumy::dane_do_przetwarzania::DaneMerge;
 use enumy::rozszerzenia::ext::ImgExtSingle;
 use futures::SinkExt;
 use futures::channel::mpsc;
+use futures::executor::block_on;
 use image::DynamicImage;
 use tokio::sync::Mutex;
 use encodery::halper::merge_sciezki;
@@ -127,164 +128,167 @@ pub async fn fn_do_laczenia_fot(
     let wymiar = (max_x, max_y);
     let obrazki = Vec::from([img_r, img_g, img_b, img_a]);
     // let bfor = laczenie_vac_to_dyn(obrazki,bit_depth,wymiar);
-    let wynik: Result<(), tokio::io::Error> = match dane.rozszerzenie {
-        ImgExtSingle::Png {
-            bit_depth,
-            kompresja,
-        } => {
-            let dane = PrzetwarzaniePng{
-                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
-                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                sciezka_wyjsciowa: dane.sciezka_out,
-                nazwa: dane.nazwa.clone(),
-                interpolacja: OptInterpolacja::Lanczos3,
-                kompresja: kompresja.clone(),
-                bdepth: vec![bit_depth.clone()],
-                alpha: (0,0,0),
-                zaszumienie: None,
-            };
-            zapisywanie_generic(
-                dane,
-                metryka_operacji,
-                obecna_operacja.clone(),
-                tx.clone(),
-            ).await
-        }
-        ImgExtSingle::Jpg {
-            jakosc,
-            progresywny,
-            bit_depth, sampling:_, quant:_, scans:_,
-        } => {
-            let dane = PrzetwarzanieJpg{
-                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
-                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                sciezka_wyjsciowa: dane.sciezka_out,
-                nazwa: dane.nazwa.clone(),
-                interpolacja: OptInterpolacja::Lanczos3,
+
+    let wynik: Result<(), tokio::io::Error> = block_on(async {
+        match dane.rozszerzenie {
+            ImgExtSingle::Png {
+                bit_depth,
+                kompresja,
+            } => {
+                let dane = PrzetwarzaniePng {
+                    bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
+                    rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                    sciezka_wyjsciowa: dane.sciezka_out,
+                    nazwa: dane.nazwa.clone(),
+                    interpolacja: OptInterpolacja::Lanczos3,
+                    kompresja: kompresja.clone(),
+                    bdepth: vec![bit_depth.clone()],
+                    alpha: (0, 0, 0),
+                    zaszumienie: None,
+                };
+                zapisywanie_generic(
+                    dane,
+                    metryka_operacji,
+                    obecna_operacja.clone(),
+                    tx.clone(),
+                ).await
+            }
+            ImgExtSingle::Jpg {
                 jakosc,
-                bdepth: vec![bit_depth.clone()],
-                sampling: Default::default(),
-                quant: Default::default(),
-                skany: 4,
-                alpha: (0, 0, 0),
-                zaszumienie: None,
-                progresywny
-            };
-            zapisywanie_generic(
-                dane,
-                metryka_operacji,
-                obecna_operacja.clone(),
-                tx.clone(),
-            ).await
-        }
-        ImgExtSingle::Webp {
-            jakosc,
-            lossless,
-            bit_depth,
-        } => {
-            let dane = PrzetwarzanieWebp{
-                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
-                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                sciezka_wyjsciowa: dane.sciezka_out,
-                nazwa: dane.nazwa.clone(),
-                interpolacja: OptInterpolacja::Lanczos3,
-                bdepth: vec![bit_depth.clone()],
-                alpha: (0, 0, 0),
-                zaszumienie: None,
-                lossy: if lossless { None } else { Some(jakosc) },
-            };
-            zapisywanie_generic(
-                dane,
-                metryka_operacji,
-                obecna_operacja.clone(),
-                tx.clone(),
-            ).await
-        }
+                progresywny,
+                bit_depth, sampling: _, quant: _, scans: _,
+            } => {
+                let dane = PrzetwarzanieJpg {
+                    bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
+                    rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                    sciezka_wyjsciowa: dane.sciezka_out,
+                    nazwa: dane.nazwa.clone(),
+                    interpolacja: OptInterpolacja::Lanczos3,
+                    jakosc,
+                    bdepth: vec![bit_depth.clone()],
+                    sampling: Default::default(),
+                    quant: Default::default(),
+                    skany: 4,
+                    alpha: (0, 0, 0),
+                    zaszumienie: None,
+                    progresywny
+                };
+                zapisywanie_generic(
+                    dane,
+                    metryka_operacji,
+                    obecna_operacja.clone(),
+                    tx.clone(),
+                ).await
+            }
+            ImgExtSingle::Webp {
+                jakosc,
+                lossless,
+                bit_depth,
+            } => {
+                let dane = PrzetwarzanieWebp {
+                    bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
+                    rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                    sciezka_wyjsciowa: dane.sciezka_out,
+                    nazwa: dane.nazwa.clone(),
+                    interpolacja: OptInterpolacja::Lanczos3,
+                    bdepth: vec![bit_depth.clone()],
+                    alpha: (0, 0, 0),
+                    zaszumienie: None,
+                    lossy: if lossless { None } else { Some(jakosc) },
+                };
+                zapisywanie_generic(
+                    dane,
+                    metryka_operacji,
+                    obecna_operacja.clone(),
+                    tx.clone(),
+                ).await
+            }
 
-        ImgExtSingle::Tga { bit_depth } => {
-            let dane = PrzetwarzanieTga{
-                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
-                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                sciezka_wyjsciowa: dane.sciezka_out,
-                nazwa: dane.nazwa.clone(),
-                interpolacja: OptInterpolacja::Lanczos3,
-                bdepth: vec![bit_depth.clone()],
-                alpha: (0, 0, 0),
-                zaszumienie: None,
-            };
-            zapisywanie_generic(
-                dane,
-                metryka_operacji,
-                obecna_operacja.clone(),
-                tx.clone(),
-            ).await
-        }
-        ImgExtSingle::Ff { metoda_kompresji } => {
-            let dane = PrzetwarzanieFf{
-                bufor: laczenie_vac_to_dyn(obrazki,BdepthQoi::Color32,wymiar).await.ok().unwrap(),
-                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                sciezka_wyjsciowa: dane.sciezka_out,
-                nazwa: dane.nazwa.clone(),
-                interpolacja: OptInterpolacja::Lanczos3,
-                kompresja: vec![metoda_kompresji],
-                alpha: (0, 0, 0),
-                zaszumienie: None,
-            };
-            zapisywanie_generic(
-                dane,
-                metryka_operacji,
-                obecna_operacja.clone(),
-                tx.clone(),
-            ).await
-        }
-        ImgExtSingle::Qoi { bit_depth } => {
-            let dane = PrzetwarzanieQoi{
-                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
-                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                sciezka_wyjsciowa: dane.sciezka_out,
-                nazwa: dane.nazwa.clone(),
-                interpolacja: OptInterpolacja::Lanczos3,
-                bdepth: vec![bit_depth.clone()],
-                alpha: (0, 0, 0),
-                zaszumienie: None,
-            };
-            zapisywanie_generic(
-                dane,
-                metryka_operacji,
-                obecna_operacja.clone(),
-                tx.clone(),
-            ).await
-        }
+            ImgExtSingle::Tga { bit_depth } => {
+                let dane = PrzetwarzanieTga {
+                    bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
+                    rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                    sciezka_wyjsciowa: dane.sciezka_out,
+                    nazwa: dane.nazwa.clone(),
+                    interpolacja: OptInterpolacja::Lanczos3,
+                    bdepth: vec![bit_depth.clone()],
+                    alpha: (0, 0, 0),
+                    zaszumienie: None,
+                };
+                zapisywanie_generic(
+                    dane,
+                    metryka_operacji,
+                    obecna_operacja.clone(),
+                    tx.clone(),
+                ).await
+            }
+            ImgExtSingle::Ff { metoda_kompresji } => {
+                let dane = PrzetwarzanieFf {
+                    bufor: laczenie_vac_to_dyn(obrazki, BdepthQoi::Color32, wymiar).await.ok().unwrap(),
+                    rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                    sciezka_wyjsciowa: dane.sciezka_out,
+                    nazwa: dane.nazwa.clone(),
+                    interpolacja: OptInterpolacja::Lanczos3,
+                    kompresja: vec![metoda_kompresji],
+                    alpha: (0, 0, 0),
+                    zaszumienie: None,
+                };
+                zapisywanie_generic(
+                    dane,
+                    metryka_operacji,
+                    obecna_operacja.clone(),
+                    tx.clone(),
+                ).await
+            }
+            ImgExtSingle::Qoi { bit_depth } => {
+                let dane = PrzetwarzanieQoi {
+                    bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
+                    rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                    sciezka_wyjsciowa: dane.sciezka_out,
+                    nazwa: dane.nazwa.clone(),
+                    interpolacja: OptInterpolacja::Lanczos3,
+                    bdepth: vec![bit_depth.clone()],
+                    alpha: (0, 0, 0),
+                    zaszumienie: None,
+                };
+                zapisywanie_generic(
+                    dane,
+                    metryka_operacji,
+                    obecna_operacja.clone(),
+                    tx.clone(),
+                ).await
+            }
 
-        ImgExtSingle::Avif { 
-            chroma, 
-            speed, 
-            metoda_kompresji, 
-            lossy, 
-            bit_depth 
-        } => {
-            let dane = PrzetwarzanieAvif{
-                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
-                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                sciezka_wyjsciowa: dane.sciezka_out,
-                nazwa: dane.nazwa.clone(),
-                interpolacja: OptInterpolacja::Lanczos3,
-                bdepth: vec![bit_depth.clone()],
-                alpha: (0, 0, 0),
-                zaszumienie: None,
+            ImgExtSingle::Avif {
                 chroma,
                 speed,
                 metoda_kompresji,
                 lossy,
-            };
-            zapisywanie_generic(
-                dane,
-                metryka_operacji,
-                obecna_operacja.clone(),
-                tx.clone(),
-            ).await
+                bit_depth
+            } => {
+                let dane = PrzetwarzanieAvif {
+                    bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
+                    rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                    sciezka_wyjsciowa: dane.sciezka_out,
+                    nazwa: dane.nazwa.clone(),
+                    interpolacja: OptInterpolacja::Lanczos3,
+                    bdepth: vec![bit_depth.clone()],
+                    alpha: (0, 0, 0),
+                    zaszumienie: None,
+                    chroma,
+                    speed,
+                    metoda_kompresji,
+                    lossy,
+                };
+                zapisywanie_generic(
+                    dane,
+                    metryka_operacji,
+                    obecna_operacja.clone(),
+                    tx.clone(),
+                ).await
+            }
         }
-    };
+    });
 
     match wynik {
         Ok(_) => {

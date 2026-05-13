@@ -148,7 +148,7 @@ where T: Logi,
                 let (w, h) = res.dimensions();
                 let raw_u8 = res.into_raw();
 
-                // 
+                //
                 let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
                     .map_err(std::io::Error::other)?;
 
@@ -217,14 +217,14 @@ where T: Logi,
         BdepthAvif::Rgb10 =>
             {
                 // dbg!("jestem w B10");
-                
+
                 let res = usun_kanal_alpha(reskalowanie, dane.alpha).to_rgb16();
 
                 // dbg!("ogarnięto Rgb16Image");
                 let (w, h) = res.dimensions();
                 let raw_u16 = res.into_raw();
 
-                // 
+                //
                 let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
                     .map_err(std::io::Error::other)?;
 
@@ -309,13 +309,13 @@ where T: Logi,
             {
                 // dbg!("jestem w B8");
                 let res = usun_kanal_alpha(reskalowanie, dane.alpha).to_rgb8();
-                
+
 
                 // dbg!("ogarnięto Rgb8Image");
                 let (w, h) = res.dimensions();
                 let raw_u8 = res.into_raw();
 
-                // 
+                //
                 let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
                     .map_err(std::io::Error::other)?;
 
@@ -382,7 +382,7 @@ where T: Logi,
     drop(oopr);
 
     wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
-    
+
     let qual = match dane.lossy{
         None => {EncoderQuality::LossLess}
         Some(x) => {EncoderQuality::Lossy(x)}
@@ -409,81 +409,37 @@ where T: Logi,
 
 
 
-    // dbg!("jestem po match z bit_depth");
 
     let lib = LibHeif::new();
-    // dbg!("jestem po lib = LibHeif::new();");
     let mut context = HeifContext::new()
         .map_err(std::io::Error::other)?;
 
-    // dbg!("jestem po let mut context = HeifContext::new()");
     let mut encoder = lib.encoder_for_format(kompresja)
         .map_err(std::io::Error::other)?;
-    // dbg!("jestem po let mut encoder = lib.encoder_for_format(CompressionFormat::Av1)");
 
     encoder.set_quality(qual)
         .map_err(std::io::Error::other)?;
-    // dbg!("jestem po encoder.set_quality(EncoderQuality::LossLess)");
-    // Dostępny parametr: chroma
-    // Dostępny parametr: quality
-    // Dostępny parametr: realtime
-    // Dostępny parametr: tune
-    // Dostępny parametr: alpha-min-q
-    // Dostępny parametr: lossless-alpha
-    // Dostępny parametr: enable-intrabc
-    // Dostępny parametr: alpha-max-q
-    // Dostępny parametr: max-q
-    // Dostępny parametr: lossless
-    // Dostępny parametr: auto-tiles
-    // Dostępny parametr: min-q
-    // Dostępny parametr: alpha-quality
-    // Dostępny parametr: threads
-    // Dostępny parametr: speed
+
     encoder.set_parameter_value("chroma", EncoderParameterValue::String(chroma)).ok();
 
 
     encoder.set_parameter_value("speed", EncoderParameterValue::Int(dane.speed)).ok(); // 0-10 (wolniej = lepsza kompresja)
     encoder.set_parameter_value("tune", EncoderParameterValue::String("ssim".to_string())).ok(); // Optymalizacja pod jakość wizualną
-    // let params = encoder.parameters_names();
-    // for p in params {
-    //     dbg!("Dostępny parametr: {}", p);
-    //
-    // }
-    // dbg!("chroma",encoder.parameter("chroma"));
-    // dbg!("speed",encoder.parameter("speed"));
-    // dbg!("tune",encoder.parameter("tune"));
 
-
-    // dbg!("Przed encode_image");
     context.encode_image(&heif_img, &mut encoder, None).map_err(std::io::Error::other)?;
     // dbg!("Po encode_image");
 
 
     let final_bytes = context.write_to_bytes()
         .map_err(std::io::Error::other)?;
-    // dbg!("jestem po let final_bytes = context.write_to_bytes()");
 
-
-
-
-
-    // 1. Przygotowanie ścieżki wyjściowej
-    // Zakładam, że masz dostęp do zmiennej ze ścieżką wejściową, np. `path`
     let mut output_path = dane.sciezka_wyjsciowa.to_path_buf();
 
     if !output_path.exists() {
         create_dir_all(output_path.clone())?;
     }
     output_path.push(format!("{}{}{}.avif",dane.nazwa,nazwa_wariantu,nazwa_bd));
-    // output_path.push(".avif");
-    // Jeśli chcesz dodać sufix (np. obraz_rgba10.avif):
-    // let stem = path.file_stem().unwrap().to_str().unwrap();
-    // let output_path = path.with_file_name(format!("{}{}.avif", stem, suffix));
 
-    // dbg!("ścieżka wyjściowa: {}", &output_path);
-
-
-    // 2. Fizyczny zapis na dysk
     std::fs::write(&output_path, &final_bytes)
         .map_err(|e| std::io::Error::other(format!("Błąd zapisu pliku: {}", e)))?;
 

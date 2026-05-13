@@ -343,6 +343,8 @@ impl Program {
                 let dane_do_obrobki = self.dane_merge.clone();
                 self.temat.temp.act_proc = Some(ActProces::Merge);
                 let _ = self.update(Message::ChckStatus);
+                // fn check_send<T: Send>(_: &T) {}
+                // check_send(&dane_do_obrobki);
 
                 let (tx, rx) = mpsc::channel::<LogTxMerge>(100);
 
