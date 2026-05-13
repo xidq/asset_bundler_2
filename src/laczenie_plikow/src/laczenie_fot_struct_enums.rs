@@ -1,18 +1,26 @@
-use crate::metody_mielenia::laczenie_ff::laczenie_ff;
-use crate::metody_mielenia::laczenie_jpg::laczenie_jpg;
-use crate::metody_mielenia::laczenie_png::laczenie_png;
-use crate::metody_mielenia::laczenie_qoi::laczenie_qoi;
-use crate::metody_mielenia::laczenie_tga::laczenie_tga;
-use crate::metody_mielenia::laczenie_webp::laczenie_webp;
+use std::sync::Arc;
+// use crate::metody_mielenia::laczenie_ff::laczenie_ff;
+// use crate::metody_mielenia::laczenie_jpg::laczenie_jpg;
+// use crate::metody_mielenia::laczenie_png::laczenie_png;
+// use crate::metody_mielenia::laczenie_qoi::laczenie_qoi;
+// use crate::metody_mielenia::laczenie_tga::laczenie_tga;
+// use crate::metody_mielenia::laczenie_webp::laczenie_webp;
 use enumy::dane_do_przetwarzania::DaneMerge;
 use enumy::rozszerzenia::ext::ImgExtSingle;
 use futures::SinkExt;
 use futures::channel::mpsc;
 use image::DynamicImage;
+use tokio::sync::Mutex;
+use encodery::halper::merge_sciezki;
 use encodery::wczytaj_foto::wczytaj_zdjęcie;
+use encodery::zapisywanie::generic::zapisywanie_generic;
+use enumy::opcje::OptInterpolacja;
+use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
+use enumy::rozszerzenia::bdepth::{BdepthPng, BdepthQoi};
+use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 pub use enumy::statusy::LogTxMerge;
 use crate::metody_mielenia::laczenie::{laczenie_vac_to_dyn, ogarnij_sciezki_w_koncu};
-use crate::metody_mielenia::laczenie_avif::laczenie_avif;
+// use crate::metody_mielenia::laczenie_avif::laczenie_avif;
 
 pub async fn fn_do_laczenia_fot(
     dane: DaneMerge,
@@ -20,6 +28,10 @@ pub async fn fn_do_laczenia_fot(
 ) -> Result<(), tokio::io::Error> {
     
     let _ = tx.send(LogTxMerge::Start).await;
+
+    let metryka_operacji = Some(3);
+    let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
+
 
     // let start_czas = std::time::Instant::now();
 
@@ -114,90 +126,134 @@ pub async fn fn_do_laczenia_fot(
     // };
     let wymiar = (max_x, max_y);
     let obrazki = Vec::from([img_r, img_g, img_b, img_a]);
-
+    // let bfor = laczenie_vac_to_dyn(obrazki,bit_depth,wymiar);
     let wynik: Result<(), tokio::io::Error> = match dane.rozszerzenie {
         ImgExtSingle::Png {
             bit_depth,
             kompresja,
         } => {
-            laczenie_png(
-                obrazki,
-                &dane.sciezka_out,
-                &dane.nazwa,
-                &kompresja,
-                &(0, 0, 0),
-                &bit_depth,
-                wymiar,
-            )
-            .await
+            let dane = PrzetwarzaniePng{
+                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
+                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                sciezka_wyjsciowa: dane.sciezka_out,
+                nazwa: dane.nazwa.clone(),
+                interpolacja: OptInterpolacja::Lanczos3,
+                kompresja: kompresja.clone(),
+                bdepth: vec![bit_depth.clone()],
+                alpha: (0,0,0),
+                zaszumienie: None,
+            };
+            zapisywanie_generic(
+                dane,
+                metryka_operacji,
+                obecna_operacja.clone(),
+                tx.clone(),
+            ).await
         }
         ImgExtSingle::Jpg {
             jakosc,
             progresywny,
             bit_depth, sampling:_, quant:_, scans:_,
         } => {
-            laczenie_jpg(
-                obrazki,
-                &dane.sciezka_out,
-                &dane.nazwa,
-                &jakosc,
-                &progresywny,
-                &bit_depth,
-                &(0, 0, 0),
-                wymiar,
-            )
-            .await
+            let dane = PrzetwarzanieJpg{
+                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
+                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                sciezka_wyjsciowa: dane.sciezka_out,
+                nazwa: dane.nazwa.clone(),
+                interpolacja: OptInterpolacja::Lanczos3,
+                jakosc,
+                bdepth: vec![bit_depth.clone()],
+                sampling: Default::default(),
+                quant: Default::default(),
+                skany: 4,
+                alpha: (0, 0, 0),
+                zaszumienie: None,
+                progresywny
+            };
+            zapisywanie_generic(
+                dane,
+                metryka_operacji,
+                obecna_operacja.clone(),
+                tx.clone(),
+            ).await
         }
         ImgExtSingle::Webp {
             jakosc,
             lossless,
             bit_depth,
         } => {
-            laczenie_webp(
-                obrazki,
-                &dane.sciezka_out,
-                &dane.nazwa,
-                &jakosc,
-                lossless,
-                &bit_depth,
-                &(0, 0, 0),
-                wymiar,
-            )
-            .await
+            let dane = PrzetwarzanieWebp{
+                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
+                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                sciezka_wyjsciowa: dane.sciezka_out,
+                nazwa: dane.nazwa.clone(),
+                interpolacja: OptInterpolacja::Lanczos3,
+                bdepth: vec![bit_depth.clone()],
+                alpha: (0, 0, 0),
+                zaszumienie: None,
+                lossy: if lossless { None } else { Some(jakosc) },
+            };
+            zapisywanie_generic(
+                dane,
+                metryka_operacji,
+                obecna_operacja.clone(),
+                tx.clone(),
+            ).await
         }
 
         ImgExtSingle::Tga { bit_depth } => {
-            laczenie_tga(
-                obrazki,
-                &dane.sciezka_out,
-                &dane.nazwa,
-                &(0, 0, 0),
-                &bit_depth,
-                wymiar,
-            )
-            .await
+            let dane = PrzetwarzanieTga{
+                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
+                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                sciezka_wyjsciowa: dane.sciezka_out,
+                nazwa: dane.nazwa.clone(),
+                interpolacja: OptInterpolacja::Lanczos3,
+                bdepth: vec![bit_depth.clone()],
+                alpha: (0, 0, 0),
+                zaszumienie: None,
+            };
+            zapisywanie_generic(
+                dane,
+                metryka_operacji,
+                obecna_operacja.clone(),
+                tx.clone(),
+            ).await
         }
         ImgExtSingle::Ff { metoda_kompresji } => {
-            laczenie_ff(
-                obrazki,
-                &dane.sciezka_out,
-                &dane.nazwa,
-                &(0, 0, 0),
-                &metoda_kompresji,
-                wymiar,
-            )
-            .await
+            let dane = PrzetwarzanieFf{
+                bufor: laczenie_vac_to_dyn(obrazki,BdepthQoi::Color32,wymiar).await.ok().unwrap(),
+                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                sciezka_wyjsciowa: dane.sciezka_out,
+                nazwa: dane.nazwa.clone(),
+                interpolacja: OptInterpolacja::Lanczos3,
+                kompresja: vec![metoda_kompresji],
+                alpha: (0, 0, 0),
+                zaszumienie: None,
+            };
+            zapisywanie_generic(
+                dane,
+                metryka_operacji,
+                obecna_operacja.clone(),
+                tx.clone(),
+            ).await
         }
         ImgExtSingle::Qoi { bit_depth } => {
-            laczenie_qoi(
-                obrazki,
-                &dane.sciezka_out,
-                &dane.nazwa,
-                &(0, 0, 0),
-                &bit_depth,
-                wymiar,
-            )
-            .await
+            let dane = PrzetwarzanieQoi{
+                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
+                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                sciezka_wyjsciowa: dane.sciezka_out,
+                nazwa: dane.nazwa.clone(),
+                interpolacja: OptInterpolacja::Lanczos3,
+                bdepth: vec![bit_depth.clone()],
+                alpha: (0, 0, 0),
+                zaszumienie: None,
+            };
+            zapisywanie_generic(
+                dane,
+                metryka_operacji,
+                obecna_operacja.clone(),
+                tx.clone(),
+            ).await
         }
 
         ImgExtSingle::Avif { 
@@ -207,10 +263,26 @@ pub async fn fn_do_laczenia_fot(
             lossy, 
             bit_depth 
         } => {
-            let obrazeczek = laczenie_vac_to_dyn(obrazki, &bit_depth, wymiar).await?;
-            let sciezka_vinal_final_chyba_v1 = ogarnij_sciezki_w_koncu(dane.sciezka_out, dane.nazwa).await?;
-            laczenie_avif(obrazeczek, &sciezka_vinal_final_chyba_v1 , lossy, bit_depth, None, metoda_kompresji, speed, chroma)
-                .await
+            let dane = PrzetwarzanieAvif{
+                bufor: laczenie_vac_to_dyn(obrazki,bit_depth,wymiar).await.ok().unwrap(),
+                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                sciezka_wyjsciowa: dane.sciezka_out,
+                nazwa: dane.nazwa.clone(),
+                interpolacja: OptInterpolacja::Lanczos3,
+                bdepth: vec![bit_depth.clone()],
+                alpha: (0, 0, 0),
+                zaszumienie: None,
+                chroma,
+                speed,
+                metoda_kompresji,
+                lossy,
+            };
+            zapisywanie_generic(
+                dane,
+                metryka_operacji,
+                obecna_operacja.clone(),
+                tx.clone(),
+            ).await
         }
     };
 

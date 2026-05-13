@@ -4,11 +4,13 @@ use image::DynamicImage;
 use enumy::rozszerzenia::bdepth::TrybLączenia;
 use enumy::rozszerzenia::bdepth_impl::BitDepth;
 
-pub async fn laczenie_vac_to_dyn(
+pub async fn laczenie_vac_to_dyn<T>(
     mut bufor: Vec<DynamicImage>,
-    bit_depth: &dyn BitDepth,
+    bit_depth: T,
     wymiar: (u32, u32),
-) -> Result<DynamicImage, tokio::io::Error> {
+) -> Result<DynamicImage, tokio::io::Error>
+where T:BitDepth + std::clone::Clone
+{
     let depth = bit_depth;
     let alfa_rgb:(u16, u16, u16) = (0, 0, 0);
 
@@ -89,10 +91,7 @@ pub async fn laczenie_vac_to_dyn(
                 }
                 DynamicImage::ImageRgb16(nowy_bufor)
             }
-        TrybLączenia::Rgb16Alpha
-        | TrybLączenia::Rgb10Alpha
-        | TrybLączenia::Luma16Alpha
-        | TrybLączenia::F32Alpha => 
+        _ =>
             {
                 let img_r = bufor.remove(0);
                 let img_g = bufor.remove(0);
@@ -116,7 +115,6 @@ pub async fn laczenie_vac_to_dyn(
                 }
                 DynamicImage::ImageRgba16(nowy_bufor)
             }
-
 
     };
     Ok(final_img)
