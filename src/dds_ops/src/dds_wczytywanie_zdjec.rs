@@ -1,18 +1,19 @@
-use crate::dds_export::save_rgba_image_with_mipmaps;
+use crate::dds_export::save_image_to_dds;
 use enumy::dane_do_przetwarzania::DaneDdsPak;
 use enumy::rozszerzenia::kompresje::ForDdsKompresja;
 use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc;
 use futures::SinkExt;
-use image::GenericImageView;
+use image::{DynamicImage, GenericImageView};
 use std::fs;
 use std::fs::create_dir_all;
 use std::io::Read;
 use std::path::PathBuf;
 use std::time::Instant;
+use image::imageops::FilterType;
 use walkdir::WalkDir;
 
-pub async fn dds_ogarnij_ze_zdjec_do_paczki(
+pub async fn image_to_dds(
     dane: DaneDdsPak,
     mut tx: mpsc::Sender<LogTxDdsPak>,
 ) -> Result<(), std::io::Error> {
@@ -25,7 +26,7 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
         ForDdsKompresja::Unreasonable => {dds::CompressionQuality::Unreasonable}
     };
     let mut przerób: f32 = 0.;
-
+    let allow_diff_sizes = true;
 
     let mut percent: u8 = 0;
 
@@ -41,7 +42,7 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
         };
         
 
-        dbg!(&max_plikow);
+
 
             lololo.iter().try_for_each(|e| -> Result<(), std::io::Error > {
                 match e.is_file() {
@@ -83,17 +84,32 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
                         let decoder = reader.into_decoder().map_err(std::io::Error::other)?;
                         let img = image::DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
 
-                        if first_image {
-                            (width, height) = img.dimensions();
-                            first_image = false;
-                        } else {
-                            if img.width() != width || img.height() != height {
-                                Err(std::io::Error::other(
-                                    "Image dimensions do not match",
-                                ))?
+                        match (first_image, allow_diff_sizes) {
+                            (true, _) => {
+                                (width, height) = img.dimensions();
+                                first_image = false;
+                            },
+                            (false, false) => {
+                                if img.width() != width || img.height() != height {
+                                    Err(std::io::Error::other(
+                                        "Image dimensions do not match",
+                                    ))?
+                                }
                             }
+                            (_, true) => {
+                                if img.width() > width || img.height() > height {
+                                    if img.width() > width{
+                                        width = img.width();
+                                    } else {
+                                        height = img.height();
+                                    }
+
+                                }
+                            }
+
                         }
-                        images_data.push(img.to_rgba8().into_raw());
+
+                        images_data.push(img);
 
                         Ok(())
                     }
@@ -148,17 +164,31 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
                             let decoder = reader.into_decoder().map_err(std::io::Error::other)?;
                             let img = image::DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
 
-                            if first_image {
-                                (width, height) = img.dimensions();
-                                first_image = false;
-                            } else {
-                                if img.width() != width || img.height() != height {
-                                    Err(std::io::Error::other(
-                                        "Image dimensions do not match",
-                                    ))?
+                            match (first_image, allow_diff_sizes) {
+                                (true, _) => {
+                                    (width, height) = img.dimensions();
+                                    first_image = false;
+                                },
+                                (false, false) => {
+                                    if img.width() != width || img.height() != height {
+                                        Err(std::io::Error::other(
+                                            "Image dimensions do not match",
+                                        ))?
+                                    }
                                 }
+                                (_, true) => {
+                                    if img.width() > width || img.height() > height {
+                                        if img.width() > width{
+                                            width = img.width();
+                                        } else {
+                                            height = img.height();
+                                        }
+
+                                    }
+                                }
+
                             }
-                            images_data.push(img.to_rgba8().into_raw());
+                            images_data.push(img);
 
                         } Ok(())
                     }
@@ -166,11 +196,36 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
             }
         )?;
 
+        dbg!(&max_plikow);
+        let obrazki_zmiana_rozmiaru: Vec<Vec<u8>> =
+            images_data.iter().map(|xoxo| {
+                if allow_diff_sizes {
+                    if xoxo.width() == width && xoxo.height() == height {
+                        return xoxo.to_rgba8().into_raw();
+                    }
+                    let przeskalowany = xoxo.resize(width,height,FilterType::Lanczos3);
+
+                    let mut tlo = DynamicImage::ImageRgba8(image::ImageBuffer::new(width, height));
+
+
+                    let x_pos = (width - przeskalowany.width()) / 2;
+                    let y_pos = (height - przeskalowany.height()) / 2;
+
+                    // 5. Nakładanie
+                    image::imageops::overlay(&mut tlo, &przeskalowany, x_pos as i64, y_pos as i64);
+                    tlo.to_rgba8().into_raw()
+                } else {
+                    xoxo.to_rgba8().into_raw()
+                }
+            }
+            ).collect();
 
 
 
 
-        let refs_to_data: Vec<&[u8]> = images_data.iter().map(|v| v.as_slice()).collect();
+
+
+        let refs_to_data: Vec<&[u8]> = obrazki_zmiana_rozmiaru.iter().map(|v| v.as_slice()).collect();
 
         let finalna_nazwa = format!("{}.dds", dane.nazwa);
         let mut ścieżka_pliku = dane.ścieżka_wyjściowa.to_path_buf();
@@ -181,7 +236,7 @@ pub async fn dds_ogarnij_ze_zdjec_do_paczki(
         ścieżka_pliku.push(finalna_nazwa);
         let mut huehuehue = fs::File::create(ścieżka_pliku)?;
 
-        save_rgba_image_with_mipmaps(
+        save_image_to_dds(
             &mut huehuehue,
             refs_to_data,
             width,

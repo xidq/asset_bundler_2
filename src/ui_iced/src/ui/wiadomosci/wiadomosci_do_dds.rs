@@ -1,8 +1,8 @@
 use crate::ui::program::Program;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
-use dds_ops::dds_import::export_dds_array_to_jpg;
-use dds_ops::dds_wczytywanie_zdjec::dds_ogarnij_ze_zdjec_do_paczki;
+use dds_ops::dds_import::dds_to_image;
+use dds_ops::dds_wczytywanie_zdjec::image_to_dds;
 use enumy::inne_ui::ActProces;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
@@ -12,6 +12,7 @@ use enumy::statusy::{LogTxDdsPak, LogTxDdsUnpak};
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
+use enumy::enums_structs_io::FILTERFOTO;
 
 fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
     if let Some(pos) = vec.iter().position(|x| x == element) {
@@ -27,7 +28,7 @@ impl Program {
             DdsMsg::PakowaniePathInFiles => {
 
                 if let Some(path) = rfd::FileDialog::new()
-                    .add_filter("Tekstury DDS", &["dds"])
+                    .add_filter("Obrazy", &FILTERFOTO)
                     .pick_files()
 
                 {
@@ -38,6 +39,8 @@ impl Program {
                             Some(path)
                         };
                 }
+                let _ = self.update(Message::ChckStatus);
+
             }
             DdsMsg::PakowaniePathInFolders => {
 
@@ -52,6 +55,8 @@ impl Program {
                             Some(path)
                         };
                 }
+                let _ = self.update(Message::ChckStatus);
+
             }
 
             DdsMsg::PakowaniePathOutBtn => {
@@ -61,9 +66,13 @@ impl Program {
                 {
                     self.dane_dds_pak.ścieżka_wyjściowa = path;
                 }
+                let _ = self.update(Message::ChckStatus);
+
             }
             DdsMsg::PakowaniePathOut(ścieżka) => {
                 self.dane_dds_pak.ścieżka_wyjściowa = PathBuf::from(ścieżka);
+                let _ = self.update(Message::ChckStatus);
+
             }
 
             DdsMsg::PakowanieFormat(nowy) => {
@@ -79,6 +88,8 @@ impl Program {
             DdsMsg::PakowanieStart => {
                 let dane_do_pakowania_dds = self.dane_dds_pak.clone();
                 self.temat.temp.act_proc = Some(ActProces::DdsPak);
+                let _ = self.update(Message::ChckStatus);
+
                 dbg!(&dane_do_pakowania_dds);
                 // self.status_zmiany_fot_log = Default::default();
                 // println!(
@@ -97,7 +108,7 @@ impl Program {
                         // Zmuszamy funkcję do wejścia w kontekst pobranego uchwytu
                         handle
                             .spawn(async move {
-                                let _ = dds_ogarnij_ze_zdjec_do_paczki(dane_do_pakowania_dds, tx).await;
+                                let _ = image_to_dds(dane_do_pakowania_dds, tx).await;
                             })
                             .await
                     },
@@ -122,29 +133,42 @@ impl Program {
 
 
                     LogTxDdsPak::Finito(czas) => {
+                        self.log_prawe_okno.push(czas.clone());
+
                         // self.status_zmiany_fot_log.msg_end =
                         //     format!("Zakończono w czasie: {}", czas);
                         self.status_dds_pakowanie.koniec = czas;
                         self.temat.temp.act_proc = None;
+                        let _ = self.update(Message::ChckStatus);
+
                     }
                     LogTxDdsPak::Błąd(err) => {
+                        self.log_prawe_okno.push(err.clone());
+
                         self.status_dds_pakowanie.err = err;
                         // self.status_zmiany_fot_log.błąd = format!("Błąd: {}", err);
                         // self.checker_bool_status_zbiorowe_przetwarzanie_zdjęć = false;
                         self.temat.temp.act_proc = None;
+                        let _ = self.update(Message::ChckStatus);
+
                     }
                 }
             }
             DdsMsg::RozpakInPathBtn => {
 
                 if let Some(path) = rfd::FileDialog::new()
+                    .add_filter("dds", &["dds"])
                     .pick_file()
                 {
                     self.dane_dds_rozpak.ścieżka_wejściowa = path;
                 }
+                let _ = self.update(Message::ChckStatus);
+
             }
             DdsMsg::RozpakInPath(ścieżka) => {
                 self.dane_dds_rozpak.ścieżka_wejściowa = PathBuf::from(ścieżka);
+                let _ = self.update(Message::ChckStatus);
+
             }
             DdsMsg::RozpakOutPathBtn => {
 
@@ -153,18 +177,19 @@ impl Program {
                 {
                     self.dane_dds_rozpak.ścieżka_wyjściowa = path;
                 }
+                let _ = self.update(Message::ChckStatus);
+
             }
             DdsMsg::RozpakOutPath(ścieżka) => {
                 self.dane_dds_rozpak.ścieżka_wyjściowa = PathBuf::from(ścieżka);
+                let _ = self.update(Message::ChckStatus);
+
             }
             DdsMsg::Bdepth(rozs, kolor_arc) => {
-                // 1. Dobieramy się do mutowalnej referencji formatu
                 let format = &mut self.dane_dds_rozpak.rozszerzenie;
 
-                // 2. Musimy użyć jako_any(), aby sprawdzić co jest w środku Arc
                 let kolor_any = kolor_arc.jako_any();
 
-                // 3. Matchujemy format i znacznik jednocześnie
                 match (format, &rozs) {
                     (ImgExt::Jpg { bit_depth, .. }, ImgExtTag::Jpg) => {
                                                 if let Some(k) = kolor_any.downcast_ref::<BdepthJpg>() {
@@ -197,7 +222,7 @@ impl Program {
                             toggle_w_vec(bit_depth, k);
                         }
                     }
-                    _ => {} // Formaty bez bit_depth (np. FF) lub niedopasowanie znacznika
+                    _ => {}
                 }
             }
             DdsMsg::RozpakExtDane(huehue) => {
@@ -251,6 +276,8 @@ impl Program {
             DdsMsg::RozpakStart => {
                 let dane_do_rozpakowania_dds = self.dane_dds_rozpak.clone();
                 self.temat.temp.act_proc = Some(ActProces::DdsUnpak);
+                let _ = self.update(Message::ChckStatus);
+
                 dbg!(&dane_do_rozpakowania_dds);
                 // self.status_zmiany_fot_log = Default::default();
                 // println!(
@@ -262,14 +289,13 @@ impl Program {
 
                 let (tx, rx) = mpsc::channel::<LogTxDdsUnpak>(100);
 
-                // Pobieramy uchwyt do działającego runtime'u Tokio
                 let handle = tokio::runtime::Handle::current();
                 let operacja = Task::perform(
                     async move {
                         // Zmuszamy funkcję do wejścia w kontekst pobranego uchwytu
                         handle
                             .spawn(async move {
-                                let _ = export_dds_array_to_jpg(dane_do_rozpakowania_dds, tx).await;
+                                let _ = dds_to_image(dane_do_rozpakowania_dds, tx).await;
                             })
                             .await
                     },
@@ -284,11 +310,15 @@ impl Program {
                 match progress {
                     LogTxDdsUnpak::Start => {}
                     LogTxDdsUnpak::Pending(_) => {}
-                    LogTxDdsUnpak::Finito(_) => {
+                    LogTxDdsUnpak::Finito(fin) => {
                         self.temat.temp.act_proc = None;
+                        let _ = self.update(Message::ChckStatus);
+                        self.log_prawe_okno.push(fin)
                     }
-                    LogTxDdsUnpak::Błąd(_) => {
+                    LogTxDdsUnpak::Błąd(err) => {
                         self.temat.temp.act_proc = None;
+                        let _ = self.update(Message::ChckStatus);
+                        self.log_prawe_okno.push(err)
 
                     }
                     LogTxDdsUnpak::Sprawdzanie(_) => {}

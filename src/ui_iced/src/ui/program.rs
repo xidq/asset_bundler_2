@@ -857,8 +857,14 @@ impl Program {
                         return self.update_message_rozpakowanie_binarki(BinUnpakMsg::Uruchom)
                             .map(Message::RozpakowanieBinarki);
                     }
-                    ActProces::DdsPak => {}
-                    ActProces::DdsUnpak => {}
+                    ActProces::DdsPak => {
+                        return self.update_message_dds(DdsMsg::PakowanieStart)
+                            .map(Message::Dds);
+                    }
+                    ActProces::DdsUnpak => {
+                        return self.update_message_dds(DdsMsg::RozpakStart)
+                            .map(Message::Dds);
+                    }
                     ActProces::Merge => {
                         return self.update_message_łączenie_zdjęć(MergeMsg::Uruchom)
                             .map(Message::ŁączenieZdjęć);
@@ -964,9 +970,9 @@ impl Program {
 
                 // dds pakowanie
                 let check_dds_pakowanie =
-                    self.dane_dds_pak.ścieżka_wejściowa.as_ref().is_some_and(|xx| xx.is_empty()) &&
-                        self.dane_dds_pak.ścieżka_wyjściowa.exists() &&
-                        !self.dane_dds_pak.nazwa.is_empty();
+                    self.dane_dds_pak.ścieżka_wejściowa.as_ref().is_some_and(|xx| !xx.is_empty()) &&
+                    self.dane_dds_pak.ścieżka_wyjściowa.exists() &&
+                    !self.dane_dds_pak.nazwa.is_empty();
 
                 self.temat.temp.start_btn_status.dds_pak = match ( check_dds_pakowanie, self.temat.temp.act_proc.clone()) {
                     (true, None)  => BtnState::Active,
@@ -979,7 +985,8 @@ impl Program {
 
                 let check_dds_rozpakowanie =
                     self.dane_dds_rozpak.ścieżka_wejściowa.is_file() &&
-                        self.dane_dds_rozpak.ścieżka_wyjściowa.exists() ;
+                    self.dane_dds_rozpak.ścieżka_wyjściowa.exists() &&
+                    !self.dane_dds_rozpak.nazwa.is_empty();
 
                 self.temat.temp.start_btn_status.dds_unpak = match ( check_dds_rozpakowanie, self.temat.temp.act_proc.clone()) {
                     (true, None)  => BtnState::Active,

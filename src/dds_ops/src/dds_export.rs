@@ -6,7 +6,7 @@ use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc::Sender;
 use std::fs::File;
 #[allow(clippy::too_many_arguments)]
-pub fn save_rgba_image_with_mipmaps(
+pub fn save_image_to_dds(
     file: &mut File,
     image_data: Vec<&[u8]>,
     width: u32,

@@ -7,7 +7,7 @@ members = [
     "src/szyfrowanie",
     "src/kompresja",
     "src/ui_iced",
-    "src/laczenie_plikow",
+    "src/file_merge",
     "src/enumy",
     "src/pass",
     "src/dds_ops", "src/encodery", "tests",

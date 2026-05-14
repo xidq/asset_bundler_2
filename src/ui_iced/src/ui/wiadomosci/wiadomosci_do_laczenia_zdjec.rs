@@ -10,7 +10,7 @@ use enumy::rozszerzenia::ext::{ImgExtTag, ImgExtSingle};
 use enumy::statusy::LogTxMerge;
 use futures::channel::mpsc;
 use iced::Task;
-use laczenie_plikow::laczenie_fot_struct_enums::fn_do_laczenia_fot;
+use file_merge::merge_main::fn_do_laczenia_fot;
 use std::mem::discriminant;
 use std::path::PathBuf;
 

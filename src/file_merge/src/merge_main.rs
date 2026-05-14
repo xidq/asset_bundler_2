@@ -1,27 +1,23 @@
-use std::sync::Arc;
-// use crate::metody_mielenia::laczenie_ff::laczenie_ff;
-// use crate::metody_mielenia::laczenie_jpg::laczenie_jpg;
-// use crate::metody_mielenia::laczenie_png::laczenie_png;
-// use crate::metody_mielenia::laczenie_qoi::laczenie_qoi;
-// use crate::metody_mielenia::laczenie_tga::laczenie_tga;
-// use crate::metody_mielenia::laczenie_webp::laczenie_webp;
-use enumy::dane_do_przetwarzania::DaneMerge;
-use enumy::rozszerzenia::ext::ImgExtSingle;
-use futures::SinkExt;
-use futures::channel::mpsc;
-use futures::executor::block_on;
-use image::DynamicImage;
-use tokio::sync::Mutex;
-use encodery::halper::merge_sciezki;
+use crate::metody_mielenia::laczenie::laczenie_vac_to_dyn;
 use encodery::wczytaj_foto::wczytaj_zdjęcie;
 use encodery::zapisywanie::generic::zapisywanie_generic;
+use enumy::dane_do_przetwarzania::DaneMerge;
 use enumy::opcje::OptInterpolacja;
 use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
-use enumy::rozszerzenia::bdepth::{BdepthPng, BdepthQoi};
+use enumy::rozszerzenia::bdepth::BdepthQoi;
+use enumy::rozszerzenia::ext::ImgExtSingle;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 pub use enumy::statusy::LogTxMerge;
-use crate::metody_mielenia::laczenie::{laczenie_vac_to_dyn, ogarnij_sciezki_w_koncu};
-// use crate::metody_mielenia::laczenie_avif::laczenie_avif;
+use futures::channel::mpsc;
+use futures::executor::block_on;
+use futures::SinkExt;
+use image::DynamicImage;
+use std::sync::Arc;
+use tokio::sync::Mutex;
+
+
+
+// fn that is entry point for merging images by channels
 
 pub async fn fn_do_laczenia_fot(
     dane: DaneMerge,
@@ -29,6 +25,7 @@ pub async fn fn_do_laczenia_fot(
 ) -> Result<(), tokio::io::Error> {
     
     let _ = tx.send(LogTxMerge::Start).await;
+
 
     let metryka_operacji = Some(3);
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
@@ -46,7 +43,8 @@ pub async fn fn_do_laczenia_fot(
     let mut max_x = 0u32;
     let mut max_y = 0u32;
 
-    // --- ETAP 1: SZUKAMY MAKSYMALNYCH WYMIARÓW ---
+    // Here, we're searching for dimensions, ofc images are optional soo...
+    // taking max dimention from x and y axis and store that in let above
     for (i, opt_p) in sciezki.iter().enumerate() {
         if let Some(p) = opt_p {
             let (img, _) = wczytaj_zdjęcie(p.clone())?;
@@ -60,6 +58,9 @@ pub async fn fn_do_laczenia_fot(
         }
     }
 
+    // When there's no image, so there's a error message ;)
+    // that's second check for images, first is b4 starting this fn in ui
+
     if max_x == 0 || max_y == 0 {
         return Err(std::io::Error::new(
             std::io::ErrorKind::NotFound,
@@ -67,37 +68,22 @@ pub async fn fn_do_laczenia_fot(
         ));
     }
 
-    // --- ETAP 2: PRZYGOTOWANIE KANAŁÓW ---
+    // Channel preparation, if there's no image so we'r making custom ones just to merge.
     let przygotuj_final = |opt_img: Option<DynamicImage>| -> DynamicImage {
         match opt_img {
             Some(img) => {
-                // if img.width() == max_x || img.height() == max_y {
-                //     if img.width() == max_x && img.height() == max_y {
-                //         return img;
-                //     } else {
-                //         img.resize(max_x,max_y,image::imageops::FilterType::Lanczos3);
-                //     }
-                //     let mut tlo = DynamicImage::ImageLuma8(image::ImageBuffer::new(max_x, max_y));
-                //     image::imageops::overlay(&mut tlo, &img, ((max_x - img.width()) / 2) as i64, ((max_y - img.height()) / 2) as i64);
-                //     tlo
-                // } else {
-                //     img
-                // }
 
-                // 1. Jeśli wymiary są idealne, po prostu zwróć
                 if img.width() == max_x && img.height() == max_y {
                     return img;
                 }
 
-                // 2. Skalowanie - MUSISZ przypisać wynik do nowej zmiennej
-                // Używamy .resize, aby zachować proporcje.
+
                 let przeskalowany = img.resize(max_x, max_y, image::imageops::FilterType::Lanczos3);
 
                 // 3. Przygotowanie tła
                 let mut tlo = DynamicImage::ImageLuma8(image::ImageBuffer::new(max_x, max_y));
 
-                // 4. Obliczanie pozycji (centrowanie)
-                // Teraz używamy wymiarów 'przeskalowany', które na pewno są <= max_x/y
+
                 let x_pos = (max_x - przeskalowany.width()) / 2;
                 let y_pos = (max_y - przeskalowany.height()) / 2;
 

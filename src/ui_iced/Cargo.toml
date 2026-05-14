@@ -14,7 +14,7 @@ binarka = { path = "../binarka" }
 sys-locale = { workspace = true }
 rfd = { workspace = true }
 tokio = { workspace = true }
-laczenie_plikow = { path = "../laczenie_plikow" }
+file_merge = { path = "../file_merge" }
 #dds = { workspace = true }
 strum = { workspace = true }
 dds_ops = { path = "../dds_ops" }

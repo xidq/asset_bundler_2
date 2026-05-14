@@ -1,5 +1,5 @@
 [package]
-name = "laczenie_plikow"
+name = "file_merge"
 version = "0.2.1"
 edition = "2024"
 

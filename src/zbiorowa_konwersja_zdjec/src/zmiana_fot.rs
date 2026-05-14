@@ -22,6 +22,7 @@ pub async fn ogarnianie_foto(
     zestaw_danych: DaneKonw,
     mut tx: mpsc::Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
+
     let start_czas = Instant::now();
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
     let saf = sprawdzacz(zestaw_danych, tx.clone()).await?;
