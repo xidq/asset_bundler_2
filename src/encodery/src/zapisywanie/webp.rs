@@ -1,14 +1,14 @@
-use std::fs::create_dir_all;
-use std::sync::Arc;
-use futures::channel::mpsc::Sender;
-use image::DynamicImage;
-use image::imageops::FilterType;
-use tokio::sync::Mutex;
-use enumy::przetwarzanie::{PrzetwarzanieJpg, PrzetwarzanieWebp};
-use enumy::rozszerzenia::bdepth::{BdepthJpg, BdepthWebp};
-use enumy::statusy::Logi;
 use crate::halper::{usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
+use enumy::przetwarzanie::PrzetwarzanieWebp;
+use enumy::rozszerzenia::bdepth::BdepthWebp;
+use enumy::statusy::Logi;
+use futures::channel::mpsc::Sender;
+use image::imageops::FilterType;
+use image::DynamicImage;
+use std::fs::create_dir_all;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub async fn webp_match<T>(
     dane: PrzetwarzanieWebp,

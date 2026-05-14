@@ -1,13 +1,13 @@
-use std::fs::{create_dir_all, File};
-use std::sync::Arc;
-use futures::channel::mpsc::Sender;
-use image::imageops::FilterType;
-use tokio::sync::Mutex;
-use enumy::przetwarzanie::{PrzetwarzanieTga, PrzetwarzanieWebp};
-use enumy::rozszerzenia::bdepth::{BdepthTga, BdepthWebp};
-use enumy::statusy::Logi;
 use crate::halper::{usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
+use enumy::przetwarzanie::PrzetwarzanieTga;
+use enumy::rozszerzenia::bdepth::BdepthTga;
+use enumy::statusy::Logi;
+use futures::channel::mpsc::Sender;
+use image::imageops::FilterType;
+use std::fs::{create_dir_all, File};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub async fn tga_match<T>(
     dane: PrzetwarzanieTga,

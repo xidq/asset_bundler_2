@@ -1,18 +1,17 @@
-use std::fs::{create_dir_all, File};
-use std::sync::Arc;
-use futures::channel::mpsc::Sender;
-use image::DynamicImage;
-use image::imageops::FilterType;
-use tokio::sync::Mutex;
-use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf};
-use enumy::rozszerzenia::bdepth::BdepthAvif;
+use crate::halper::{usun_kanal_alpha, zaszumianie};
+use crate::send::wyslij_status;
+use bzip2::write::BzEncoder;
+use bzip2::Compression;
+use enumy::przetwarzanie::PrzetwarzanieFf;
 use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::statusy::Logi;
-use crate::halper::{usun_kanal_alpha, zaszumianie};
-use bzip2::Compression;
+use futures::channel::mpsc::Sender;
+use image::imageops::FilterType;
+use image::DynamicImage;
+use std::fs::{create_dir_all, File};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 use xz2::write::XzEncoder;
-use bzip2::write::BzEncoder;
-use crate::send::wyslij_status;
 
 pub async fn ff_match<T>(
     dane: PrzetwarzanieFf,

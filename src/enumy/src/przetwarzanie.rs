@@ -1,12 +1,11 @@
-use std::path::PathBuf;
-use image::DynamicImage;
 use crate::opcje::OptInterpolacja;
 use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
-use crate::rozszerzenia::bdepth_impl::BitDepth;
-use crate::rozszerzenia::ext::{ImgExtSingle, ImgExtTag};
+use crate::rozszerzenia::ext::ImgExtTag;
 use crate::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use image::DynamicImage;
+use std::path::PathBuf;
 
 pub trait DaneDoPrzetwarzania<T>{
     fn daj_dane(&self) -> Self;

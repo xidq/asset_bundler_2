@@ -1,6 +1,6 @@
+use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
 use futures::SinkExt;
-use enumy::statusy::{LogTxBinPak, Logi};
 
 // pub async fn wyslij_status<T>(mut tx: Sender<T>)where T:Logi{
 //     tx
@@ -13,7 +13,7 @@ use enumy::statusy::{LogTxBinPak, Logi};
 //
 // }
 pub async fn loguj<T: Logi>(tx: &mut Sender<T>, log: T) {
-    if let Err(_) = tx.send(log).await {
+    if tx.send(log).await.is_err() {
         eprintln!("Odbiorca logów rozłączony.");
     }
 }

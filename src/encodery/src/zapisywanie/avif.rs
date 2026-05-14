@@ -1,18 +1,16 @@
-use std::fs::create_dir_all;
-use std::path::Path;
-use std::sync::Arc;
-use futures::channel::mpsc::Sender;
-use enumy::rozszerzenia::kompresje::ForAvifKompresja;
-use image::{DynamicImage};
-use image::imageops::FilterType;
-use libheif_rs::{Channel, ColorSpace, CompressionFormat, EncoderParameterValue, EncoderQuality, HeifContext, Image, LibHeif, RgbChroma};
-use tokio::sync::Mutex;
-use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieAvif, PrzetwarzanieJpg};
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg};
-use enumy::rozszerzenia::kolor::ForAvifChroma;
-use enumy::statusy::Logi;
 use crate::halper::usun_kanal_alpha;
 use crate::send::wyslij_status;
+use enumy::przetwarzanie::PrzetwarzanieAvif;
+use enumy::rozszerzenia::bdepth::BdepthAvif;
+use enumy::rozszerzenia::kolor::ForAvifChroma;
+use enumy::rozszerzenia::kompresje::ForAvifKompresja;
+use enumy::statusy::Logi;
+use futures::channel::mpsc::Sender;
+use image::imageops::FilterType;
+use libheif_rs::{Channel, ColorSpace, CompressionFormat, EncoderParameterValue, EncoderQuality, HeifContext, Image, LibHeif, RgbChroma};
+use std::fs::create_dir_all;
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub async fn avif_match<T>(
     dane: PrzetwarzanieAvif,

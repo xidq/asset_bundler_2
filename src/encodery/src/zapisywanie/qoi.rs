@@ -1,14 +1,14 @@
-use std::fs::{create_dir_all, File};
-use std::sync::Arc;
-use futures::channel::mpsc::Sender;
-use image::ImageEncoder;
-use image::imageops::FilterType;
-use tokio::sync::Mutex;
-use enumy::przetwarzanie::{PrzetwarzanieQoi, PrzetwarzanieWebp};
-use enumy::rozszerzenia::bdepth::{BdepthQoi, BdepthWebp};
-use enumy::statusy::Logi;
 use crate::halper::{usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
+use enumy::przetwarzanie::PrzetwarzanieQoi;
+use enumy::rozszerzenia::bdepth::BdepthQoi;
+use enumy::statusy::Logi;
+use futures::channel::mpsc::Sender;
+use image::imageops::FilterType;
+use image::ImageEncoder;
+use std::fs::{create_dir_all, File};
+use std::sync::Arc;
+use tokio::sync::Mutex;
 
 pub async fn qoi_match<T>(
     dane: PrzetwarzanieQoi,

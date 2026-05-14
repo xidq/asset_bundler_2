@@ -1,23 +1,21 @@
-
 use encodery::check::sprawdzacz;
 use encodery::halper::merge_sciezki;
+use encodery::send::wyslij_status;
 use encodery::wczytaj_foto::wczytaj_zdjęcie;
+use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::enums_structs_io::FILTERFOTO;
+use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 use enumy::rozszerzenia::ext::ImgExt;
 use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc;
 use futures::executor::block_on;
-use futures::SinkExt;
 use rayon::iter::{IntoParallelRefIterator, ParallelIterator};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
-use encodery::send::wyslij_status;
-use encodery::zapisywanie::generic::zapisywanie_generic;
-use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 
 pub async fn main_fn_konwersja(
     zestaw_danych: DaneKonw,
@@ -28,10 +26,10 @@ pub async fn main_fn_konwersja(
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
     let saf = sprawdzacz(zestaw_danych, tx.clone()).await?;
     let wsio_dane = Arc::new(saf);
-    
+
     wyslij_status(&mut tx, Some(LogTxKonw::Start)).await;
-    
-    
+
+
     // main let here
     let wynik = async {
 
@@ -48,7 +46,7 @@ pub async fn main_fn_konwersja(
 
         let mut suma_wariantow_bit_depth = 0u32;
 
-        
+
         // getting how much types there can be, for tx and counting purposes
         for rozszerzenie in &wsio_dane.rozszerzenia {
             match rozszerzenie {
@@ -81,7 +79,7 @@ pub async fn main_fn_konwersja(
 
 
         let total_operacji = ścieżki_do_zdjęć.len() as u32 * ile_rozdzielczosci * suma_wariantow_bit_depth;
-        
+
         // multiplying according to times tx is called in functions
         let metryka_operacji = Some(total_operacji * 3);
 
@@ -90,7 +88,7 @@ pub async fn main_fn_konwersja(
 
 
         tokio::task::spawn_blocking(move || {
-            
+
             ścieżki_do_zdjęć.par_iter().try_for_each(|p| {
 
 
@@ -114,7 +112,7 @@ pub async fn main_fn_konwersja(
                             .unwrap_or_else(|| "Nieznany".to_string());
 
                         let powod_bledu = e.to_string();
-                        
+
                         // sending report if there's some error within files, ya know..
                         // used 'try_send' bcoz that ain't async block
                         let wynik_wysylki = tx_dla_rayona.clone().try_send(LogTxKonw::Pominięte {
@@ -133,9 +131,9 @@ pub async fn main_fn_konwersja(
                                 }
                             }
                         }
-                        
+
                         // goin' forward without problematic file tho
-                        return Ok::<(), tokio::io::Error>(()); 
+                        return Ok::<(), tokio::io::Error>(());
                     }
                 };
 
@@ -148,12 +146,12 @@ pub async fn main_fn_konwersja(
                         let tx_zadanie = tx_dla_rayona.clone();
 
                         match &r {
-                            ImgExt::Jpg { 
-                                jakosc, 
-                                progresywny, 
-                                bit_depth, 
-                                sampling, 
-                                quant, 
+                            ImgExt::Jpg {
+                                jakosc,
+                                progresywny,
+                                bit_depth,
+                                sampling,
+                                quant,
                                 scans
                             } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
@@ -179,8 +177,8 @@ pub async fn main_fn_konwersja(
                                     tx_zadanie,
                                 ).await?;
                             }
-                            ImgExt::Png { 
-                                kompresja, 
+                            ImgExt::Png {
+                                kompresja,
                                 bit_depth
                             } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
@@ -320,7 +318,7 @@ pub async fn main_fn_konwersja(
     match wynik {
         Ok(_) => {
             let trwanie = start_czas.elapsed();
-            
+
             let czas_napis = format!("{:.2?}", trwanie);
             wyslij_status(&mut tx, Some(LogTxKonw::Finito(czas_napis))).await;
             Ok(())
