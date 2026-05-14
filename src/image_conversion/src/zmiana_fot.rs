@@ -482,6 +482,5 @@ fn czy_sciezka_jest_git(
         }
     }
 
-    // Jak wszystko przeszło, zwracamy ścieżkę z powrotem
     Some(pelna)
 }

@@ -14,25 +14,25 @@ pub async fn sprawdzacz<T>(
 ) -> Result<DaneKonw, std::io::Error>
 where T: Logi{
 
-    wyslij_status(&mut tx, Some(T::status("Odebrano dane, rozpoczynam analizę".to_string()))).await;
+    wyslij_status(&mut tx, Some(T::status(("data_chck_start", String::new())))).await;
 
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
 
     let mut dane = pumpum.clone();
 
     if !pumpum.ścieżka_wejściowa.exists() {
-        let msg = "Wrong input path";
-        wyslij_status(&mut tx, Some(T::status(format!("Ścieżka wejściowa: {}", msg)))).await;
+        let msg = format!("❌ {}",pumpum.ścieżka_wejściowa.to_string_lossy());
+        wyslij_status(&mut tx, Some(T::status(("data_chck_input_path", msg.to_string())))).await;
         return Err(std::io::Error::new(std::io::ErrorKind::NotFound, msg));
     }
-    wyslij_status(&mut tx, Some(T::status("Odebrano dane, rozpoczynam analizę".to_string()))).await;
+    wyslij_status(&mut tx, Some(T::status(("data_chck_input_path", "✓".to_string())))).await;
 
-    if !pumpum.ścieżka_wejściowa.exists() {
-        let msg = "Wrong output path".to_string();
-        wyslij_status(&mut tx, Some(T::status(msg.clone()))).await;
+    if !pumpum.ścieżka_wyjściowa.exists() {
+        let msg = format!("❌ {}",pumpum.ścieżka_wyjściowa.to_string_lossy());
+        wyslij_status(&mut tx, Some(T::status(("data_chck_output_path", msg.clone())))).await;
         return Err(std::io::Error::new(std::io::ErrorKind::NotFound, msg));
     }
-    wyslij_status(&mut tx, Some(T::status("Odebrano dane, rozpoczynam analizę".to_string()))).await;
+    wyslij_status(&mut tx, Some(T::status(("data_chck_output_path", "✓".to_string())))).await;
 
 
     for format in &mut dane.rozszerzenia {
@@ -47,9 +47,8 @@ where T: Logi{
                 let bul = bit_depth.iter().any(|b| !matches!(b, BdepthJpg::Rgb8 | BdepthJpg::Luma8));
 
                 if bul || bit_depth.is_empty() {
-                    wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Jpg: Err".to_string()))).await;
                     wyslij_status(&mut tx, Some(T::blad(
-                        "JPG: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
+                        "data_chck_jpg_bdepth_err".to_string()
                     ))).await;
 
                     return Err(std::io::Error::new(
@@ -61,7 +60,7 @@ where T: Logi{
                 *scans = (*scans).clamp(2_u8,64_u8);
 
 
-                wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Jpg: Git!".to_string()))).await;
+                wyslij_status(&mut tx, Some(T::status(("data_chck_jpg_bdepth",  "✓".to_string())))).await;
             }
 
             ImgExt::Png { kompresja, bit_depth } => {
@@ -82,9 +81,8 @@ where T: Logi{
                 ));
 
                 if bul || bit_depth.is_empty() {
-                    wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Png: Err".to_string()))).await;
                     wyslij_status(&mut tx, Some(T::blad(
-                        "Png: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
+                        "data_chck_png_bdepth_err".to_string()
                     ))).await;
 
                     // PRZERWANIE: Zwracamy błąd, co kończy działanie pętli i całej funkcji
@@ -93,7 +91,7 @@ where T: Logi{
                         format!("Niepoprawny format koloru dla Png: {:?}", bit_depth)
                     ));
                 }
-                wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Png: Git!".to_string()))).await;
+                wyslij_status(&mut tx, Some(T::status(("data_chck_png_bdepth",  "✓".to_string())))).await;
             }
 
             ImgExt::Webp { jakosc, lossless:_, bit_depth } => {
@@ -106,9 +104,8 @@ where T: Logi{
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
-                    wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Webp: Err".to_string()))).await;
                     wyslij_status(&mut tx, Some(T::blad(
-                        "Webp: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
+                        "data_chck_webp_bdepth_err".to_string()
                     ))).await;
 
                     // PRZERWANIE: Zwracamy błąd, co kończy działanie pętli i całej funkcji
@@ -117,7 +114,7 @@ where T: Logi{
                         format!("Niepoprawny format koloru dla Webp: {:?}", bit_depth)
                     ));
                 }
-                wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Webp: Git!".to_string()))).await;
+                wyslij_status(&mut tx, Some(T::status(("data_chck_webp_bdepth",  "✓".to_string())))).await;
             }
             ImgExt::Tga {  bit_depth } => {
                 bit_depth.dedup();
@@ -130,9 +127,8 @@ where T: Logi{
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
-                    wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Tga: Err".to_string()))).await;
                     wyslij_status(&mut tx, Some(T::blad(
-                        "Tga: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
+                        "data_chck_tga_bdepth_err".to_string()
                     ))).await;
 
                     // PRZERWANIE: Zwracamy błąd, co kończy działanie pętli i całej funkcji
@@ -141,7 +137,7 @@ where T: Logi{
                         format!("Niepoprawny format koloru dla Tga: {:?}", bit_depth)
                     ));
                 }
-                wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Tga: Git!".to_string()))).await;
+                wyslij_status(&mut tx, Some(T::status(("data_chck_tga_bdepth",  "✓".to_string())))).await;
             }
             ImgExt::Ff { metoda_kompresji } => {
 
@@ -156,7 +152,6 @@ where T: Logi{
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if !bul {
-                    wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Ff: Err".to_string()))).await;
                     wyslij_status(&mut tx, Some(T::blad(
                         "Ff: Wykryto nieobsługiwaną kompresję".to_string()
                     ))).await;
@@ -173,7 +168,7 @@ where T: Logi{
                     ForFfKompresja::Xz(xx) => {*xx = (*xx).clamp(1_u8, 22_u8);}
                     ForFfKompresja::Brak => {}
                 }
-                wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Ff: Git!".to_string()))).await;
+                wyslij_status(&mut tx, Some(T::status(("data_chck_ff_bdepth",  "✓".to_string())))).await;
             }
 
             ImgExt::Qoi { bit_depth } => {
@@ -187,9 +182,8 @@ where T: Logi{
                 // }
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
-                    wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Qoi: Err".to_string()))).await;
                     wyslij_status(&mut tx, Some(T::blad(
-                        "Qoi: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
+                        "data_chck_qoi_bdepth_err".to_string()
                     ))).await;
 
                     return Err(std::io::Error::new(
@@ -197,7 +191,7 @@ where T: Logi{
                         format!("Niepoprawny format koloru dla Qoi: {:?}", bit_depth)
                     ));
                 }
-                wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Qoi: Git!".to_string()))).await;
+                wyslij_status(&mut tx, Some(T::status(("data_chck_qoi_bdepth",  "✓".to_string())))).await;
             }
 
             ImgExt::Avif { speed, lossy, bit_depth, .. } => {
@@ -211,9 +205,8 @@ where T: Logi{
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!
                 if bul || bit_depth.is_empty() {
-                    wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Avif: Err".to_string()))).await;
                     wyslij_status(&mut tx, Some(T::blad(
-                        "Avif: Wykryto nieobsługiwaną głębię bitową lub brak wyboru!".to_string()
+                        "data_chck_avif_bdepth_err".to_string()
                     ))).await;
 
                     // PRZERWANIE: Zwracamy błąd, co kończy działanie pętli i całej funkcji
@@ -236,7 +229,7 @@ where T: Logi{
                     }
                 };
 
-                wyslij_status(&mut tx, Some(T::status("Sprawdzanie danych Avif: Git!".to_string()))).await;
+                wyslij_status(&mut tx, Some(T::status(("data_chck_avif_bdepth",  "✓".to_string())))).await;
 
 
             }
@@ -267,13 +260,12 @@ where T: Logi{
     });
 
     if !czy_mamy_rozdzielczosc {
-        wyslij_status(&mut tx, Some(T::status("Sprawdzanie rozdzielczości: Err".to_string()))).await;
-        let msg = "Błędna lub brak rozdzielczości";
+        let msg = "data_chck_res_err";
         wyslij_status(&mut tx, Some(T::blad(msg.to_string()))).await;
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, msg));
     }
 
-    wyslij_status(&mut tx, Some(T::status("Sprawdzanie rozdzielczości: Git!".to_string()))).await;
+    wyslij_status(&mut tx, Some(T::status(("data_chck_res",  "✓".to_string())))).await;
 
     dane.alfa_rgb = (dane.alfa_rgb.0.clamp(0_u16,u16::MAX),dane.alfa_rgb.1.clamp(0_u16,u16::MAX),dane.alfa_rgb.2.clamp(0_u16,u16::MAX));
 
@@ -288,14 +280,13 @@ where T: Logi{
     };
 
     if !bbbbb {
-        wyslij_status(&mut tx, Some(T::status("Sprawdzanie interpolacji: Err".to_string()))).await;
         let msg = "Błędna lub brak interpolacji";
         wyslij_status(&mut tx, Some(T::blad(msg.to_string()))).await;
         return Err(std::io::Error::new(std::io::ErrorKind::InvalidInput, msg));
     }
-    wyslij_status(&mut tx, Some(T::status("Sprawdzanie interpolacji: Git!".to_string()))).await;
+    wyslij_status(&mut tx, Some(T::status(("data_chck_inter",  "✓".to_string())))).await;
     tokio::time::sleep(tokio::time::Duration::from_secs(1)).await;
-    wyslij_status(&mut tx, Some(T::status("Dane sprawdzone".to_string()))).await;
+    wyslij_status(&mut tx, Some(T::status(("data_chck_fin","✓".to_string())))).await;
 
     Ok(dane)
 

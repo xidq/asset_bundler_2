@@ -15,4 +15,4 @@ bzip2 = { workspace = true }
 xz2 = { workspace = true }
 rand = "0.10.1"
 encodery = { path = "../encodery" }
-#zbiorowa_konwersja_zdjec = { path = "../zbiorowa_konwersja_zdjec" }
+#image_conversion = { path = "../image_conversion" }

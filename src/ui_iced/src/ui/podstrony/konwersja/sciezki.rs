@@ -106,7 +106,7 @@ pub fn sciezki<'a>(dane: &'a DaneKonw, log: &'a LogPrzetwarzanieFot, kolor: &'a 
             if log.błąd.is_empty() {
                 Column::new()
                     .push(status_text(if let Some(val) = log.plik_początek{format!("Znaleziono {} plikow",val)}else{String::new()}, jezyk))
-                    .push(status_text(log.msg_walidacja.clone(), jezyk))
+                    .push(status_text(format!("{} {}",jezyk.t(log.msg_walidacja.0), log.msg_walidacja.1), jezyk))
                     .push(status_text_bar(log.plik_procent,"zmielono:",kolor,jezyk,temat))
             } else {
 

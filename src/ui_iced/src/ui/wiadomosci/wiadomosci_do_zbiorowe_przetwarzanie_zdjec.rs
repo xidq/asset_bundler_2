@@ -13,7 +13,7 @@ use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
 use strum::IntoEnumIterator;
-use zbiorowa_konwersja_zdjec::zmiana_fot::main_fn_konwersja;
+use image_conversion::zmiana_fot::main_fn_konwersja;
 
 fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
     if let Some(pos) = vec.iter().position(|x| x == element) {

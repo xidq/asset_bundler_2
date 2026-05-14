@@ -1,7 +1,7 @@
 
 [workspace]
 members = [
-    "src/zbiorowa_konwersja_zdjec",
+    "src/image_conversion",
     "src/app",
     "src/binarka",
     "src/szyfrowanie",
@@ -10,7 +10,9 @@ members = [
     "src/file_merge",
     "src/enumy",
     "src/pass",
-    "src/dds_ops", "src/encodery", "tests",
+    "src/dds_ops",
+    "src/encodery",
+    "tests",
 ]
 
 

@@ -2,7 +2,7 @@
 pub trait Logi: Send + 'static {
     // Wspólne dla wszystkich
     fn start() -> Self;
-    fn status(msg: String) -> Self;
+    fn status(msg: (&'static str,String)) -> Self;
     fn blad(msg: String) -> Self;
     fn finito(msg: Option<String>) -> Self;
 
@@ -63,7 +63,7 @@ pub enum LogTxBinUnpak {
 #[derive(Debug, Clone)]
 pub enum LogTxKonw {
     Start,
-    Sprawdzanie(String),
+    Sprawdzanie((&'static str,String)),
     Rozpoczęto(u32, Option<u32>),
     FiltrowaniePlików(Option<u32>),
     Pominięte { sciezka: String, powod: String },
@@ -72,7 +72,7 @@ pub enum LogTxKonw {
 }
 impl Logi for LogTxKonw {
     fn start() -> Self { Self::Start }
-    fn status(msg: String) -> Self { Self::Sprawdzanie(msg) }
+    fn status(msg: (&'static str,String)) -> Self { Self::Sprawdzanie(msg) }
     fn blad(msg: String) -> Self { Self::Błąd(msg) }
     fn finito(msg: Option<String>) -> Self { Self::Finito(msg.unwrap_or_default()) }
 
@@ -93,27 +93,27 @@ pub enum LogTxDdsPak {
 #[derive(Debug, Clone)]
 pub enum LogTxDdsUnpak {
     Start,
-    Sprawdzanie(String),
+    Sprawdzanie((&'static str,String)),
     Pending(u8),
     Finito(String),
     Błąd(String),
 }
 impl Logi for LogTxDdsUnpak {
     fn start() -> Self { Self::Start }
-    fn status(msg: String) -> Self { Self::Sprawdzanie(msg) }
+    fn status(msg: (&'static str,String)) -> Self { Self::Sprawdzanie(msg) }
     fn blad(msg: String) -> Self { Self::Błąd(msg) }
     fn finito(msg: Option<String>) -> Self { Self::Finito(msg.unwrap_or_default()) }
 }
 #[derive(Clone, Debug)]
 pub enum LogTxMerge {
     Start,
-    Sprawdzanie(String),
+    Sprawdzanie((&'static str,String)),
     Finito(String),
     Błąd(String),
 }
 impl Logi for LogTxMerge {
     fn start() -> Self { Self::Start }
-    fn status(msg: String) -> Self { Self::Sprawdzanie(msg) }
+    fn status(msg: (&'static str,String)) -> Self { Self::Sprawdzanie(msg) }
     fn blad(msg: String) -> Self { Self::Błąd(msg) }
     fn finito(msg: Option<String>) -> Self { Self::Finito(msg.unwrap_or_default()) }
 }

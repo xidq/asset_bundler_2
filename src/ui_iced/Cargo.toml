@@ -9,15 +9,13 @@ iced_core = { workspace = true }
 enumy = { path = "../enumy" }
 chrono = { workspace = true }
 futures = { workspace = true }
-zbiorowa_konwersja_zdjec = { path = "../zbiorowa_konwersja_zdjec" }
+image_conversion = { path = "../image_conversion" }
 binarka = { path = "../binarka" }
 sys-locale = { workspace = true }
 rfd = { workspace = true }
 tokio = { workspace = true }
 file_merge = { path = "../file_merge" }
-#dds = { workspace = true }
 strum = { workspace = true }
 dds_ops = { path = "../dds_ops" }
 rand = { workspace = true }
 lazy_static = "1.5.0"
-#noise = { workspace = true }

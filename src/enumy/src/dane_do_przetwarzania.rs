@@ -98,13 +98,13 @@ pub struct DaneProces {
     pub alfa_rgb: (u16, u16, u16),
 }
 
+
 pub trait DaneDoObrbki{
     fn jako_any(&self) -> &dyn Any;
     fn jest_rowny(&self, inny: &dyn Any) -> bool;
-
     fn tag_master(&self) -> Vec<ImgExtTag>;
 
-
+    // fn dane_do_spr(&self) -> ;
 
 }
 
