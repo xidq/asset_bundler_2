@@ -15,10 +15,11 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
+use encodery::send::wyslij_status;
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 
-pub async fn ogarnianie_foto(
+pub async fn main_fn_konwersja(
     zestaw_danych: DaneKonw,
     mut tx: mpsc::Sender<LogTxKonw>,
 ) -> Result<(), tokio::io::Error> {
@@ -27,16 +28,18 @@ pub async fn ogarnianie_foto(
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
     let saf = sprawdzacz(zestaw_danych, tx.clone()).await?;
     let wsio_dane = Arc::new(saf);
-
+    
+    wyslij_status(&mut tx, Some(LogTxKonw::Start)).await;
+    
+    
+    // main let here
     let wynik = async {
 
 
-
+        // checking paths
         let ścieżki_do_zdjęć = if !wsio_dane.ścieżka_wejściowa.is_file() {
-            // println!("to jest na foldery");
             wez_sprawdz_sciezki(wsio_dane.ścieżka_wejściowa.clone(), &mut tx)
         } else {
-            // println!("to jest na pliki");
             zgarnij_dane_z_pliku(wsio_dane.ścieżka_wejściowa.clone(), &mut tx)
         };
 
@@ -45,6 +48,8 @@ pub async fn ogarnianie_foto(
 
         let mut suma_wariantow_bit_depth = 0u32;
 
+        
+        // getting how much types there can be, for tx and counting purposes
         for rozszerzenie in &wsio_dane.rozszerzenia {
             match rozszerzenie {
                 ImgExt::Jpg { bit_depth, .. } => {
@@ -76,17 +81,18 @@ pub async fn ogarnianie_foto(
 
 
         let total_operacji = ścieżki_do_zdjęć.len() as u32 * ile_rozdzielczosci * suma_wariantow_bit_depth;
+        
+        // multiplying according to times tx is called in functions
         let metryka_operacji = Some(total_operacji * 3);
 
-        // let _ = tx.send(LogTxDoBathKonwersjaZdjęć::StatusBathKonwersjaZdjęćFiltrowaniePlików(ścieżki_do_zdjęć.len() as u32)).await;
-
+        // getting another one for rayon bcoz rayon needs it for himself...
         let tx_dla_rayona = tx.clone();
 
-            // for p in ścieżki_do_zdjęć{
-            //     let (bufor, nazwa) = wczytaj_zdjęcie(p.0)?;
+
         tokio::task::spawn_blocking(move || {
+            
             ścieżki_do_zdjęć.par_iter().try_for_each(|p| {
-                // let (bufor, nazwa) = wczytaj_zdjęcie(p.0.clone())?;
+
 
                 let (bufor, nazwa) = match wczytaj_zdjęcie(p.0.clone()) {
                     Ok(dane) => dane,
@@ -108,17 +114,15 @@ pub async fn ogarnianie_foto(
                             .unwrap_or_else(|| "Nieznany".to_string());
 
                         let powod_bledu = e.to_string();
-
-                        // let _ = tx_dla_rayona.clone().send(LogTxDoBathKonwersjaZdjęć::PominiętePliki { sciezka: nazwa_pliku, powod: powod_bledu });
+                        
+                        // sending report if there's some error within files, ya know..
+                        // used 'try_send' bcoz that ain't async block
                         let wynik_wysylki = tx_dla_rayona.clone().try_send(LogTxKonw::Pominięte {
                             sciezka: nazwa_pliku.clone(),
                             powod: powod_bledu
                         });
 
-                        // match wynik_wysylki {
-                        //     Ok(_) => println!("POSZŁO DO KANAŁU: {}", nazwa_pliku),
-                        //     Err(err) => eprintln!("KANAŁ ZAMKNIĘTY LUB PADŁ! Błąd: {}", err),
-                        // }
+
                         match wynik_wysylki {
                             Ok(_) => println!("POSZŁO DO UI: {}", nazwa_pliku),
                             Err(err) => {
@@ -129,20 +133,29 @@ pub async fn ogarnianie_foto(
                                 }
                             }
                         }
-
-                        return Ok::<(), tokio::io::Error>(()); // Kontynuuj pętlę (pomiń ten plik)
+                        
+                        // goin' forward without problematic file tho
+                        return Ok::<(), tokio::io::Error>(()); 
                     }
                 };
 
 
-
+                // For every resolution option there's matching, in my opinion here's better than inside
                 for r in &wsio_dane.rozszerzenia {
 
+                    // 'block_on' is used coz there's external unsafe C libs for avif and webp (for now)
                     block_on(async {
                         let tx_zadanie = tx_dla_rayona.clone();
 
                         match &r {
-                            ImgExt::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans, } => {
+                            ImgExt::Jpg { 
+                                jakosc, 
+                                progresywny, 
+                                bit_depth, 
+                                sampling, 
+                                quant, 
+                                scans
+                            } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzanieJpg{
                                     bufor: bufor.clone(),
@@ -166,7 +179,10 @@ pub async fn ogarnianie_foto(
                                     tx_zadanie,
                                 ).await?;
                             }
-                            ImgExt::Png { kompresja, bit_depth } => {
+                            ImgExt::Png { 
+                                kompresja, 
+                                bit_depth
+                            } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzaniePng{
                                     bufor: bufor.clone(),
@@ -303,22 +319,14 @@ pub async fn ogarnianie_foto(
 
     match wynik {
         Ok(_) => {
-            let trwanie = start_czas.elapsed(); // Zwraca strukturę Duration
-
-            // Formatujemy czas na ładny napis, np. "1.23s" lub "45ms"
-            // Możesz użyć prostego formatowania:
+            let trwanie = start_czas.elapsed();
+            
             let czas_napis = format!("{:.2?}", trwanie);
-            let _ = tx
-                .send(LogTxKonw::Finito(czas_napis))
-                .await;
+            wyslij_status(&mut tx, Some(LogTxKonw::Finito(czas_napis))).await;
             Ok(())
         }
         Err(e) => {
-            // Jeśli cokolwiek powyżej sypnie błędem (przez znak zapytania),
-            // wysyłamy opis błędu do UI zamiast po prostu "padać".
-            let _ = tx
-                .send(LogTxKonw::Błąd(e.to_string()))
-                .await;
+            wyslij_status(&mut tx, Some(LogTxKonw::Błąd(e.to_string()))).await;
             Err(e)
         }
     }

@@ -13,7 +13,7 @@ use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
 use strum::IntoEnumIterator;
-use zbiorowa_konwersja_zdjec::zmiana_fot::ogarnianie_foto;
+use zbiorowa_konwersja_zdjec::zmiana_fot::main_fn_konwersja;
 
 fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
     if let Some(pos) = vec.iter().position(|x| x == element) {
@@ -487,7 +487,7 @@ impl Program {
                         // Zmuszamy funkcję do wejścia w kontekst pobranego uchwytu
                         handle
                             .spawn(async move {
-                                let _ = ogarnianie_foto(dane_do_obrobki, tx).await;
+                                let _ = main_fn_konwersja(dane_do_obrobki, tx).await;
                             })
                             .await
                     },
