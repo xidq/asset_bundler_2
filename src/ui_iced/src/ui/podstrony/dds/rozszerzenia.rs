@@ -19,7 +19,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
         .push(space().height(Length::FillPortion(1)))
         .push(
             ImgExtTag::iter()
-                
+                .filter(|wariant| !wariant.to_string().to_lowercase().contains("unknown"))
                 .fold(
                     Row::new(), |row, wariant| {
                         row.push(

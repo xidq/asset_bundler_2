@@ -2,18 +2,18 @@ use crate::ui::program::Program;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 use enumy::enums_structs_io::FILTERFOTO;
-use enumy::inne_ui::{ActProces, BtnState};
+use enumy::inne_ui::ActProces;
 use enumy::opcje::OptInterpolacja;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc;
 use iced::Task;
+use image_conversion::zmiana_fot::main_fn_konwersja;
 use std::path::PathBuf;
 use strum::IntoEnumIterator;
-use image_conversion::zmiana_fot::main_fn_konwersja;
 
 fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
     if let Some(pos) = vec.iter().position(|x| x == element) {

@@ -20,7 +20,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
 
         .push(
             ImgExtTag::iter()
-                
+                .filter(|wariant| !wariant.to_string().to_lowercase().contains("unknown"))
                 .fold(
                     Row::new(), |row, wariant| {
                         row.push(
