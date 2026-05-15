@@ -341,18 +341,6 @@ impl Program {
                                 if let Some(k) = kolor_any.downcast_ref::<BdepthJpg>() {
                                     toggle_w_vec(bit_depth, k);
 
-
-                                    for xx in BdepthJpg::iter(){
-
-                                        if !bit_depth.contains(&xx) {
-                                            self.temat.btn_state.remove(xx.bath_konwersja_id());
-                                        } else {
-                                            self.temat.btn_state.insert(xx.bath_konwersja_id(), BtnState::Active);
-                                        }
-
-                                    }
-
-
                                 }
                             }
                             ImgExt::Png { bit_depth, .. } => {
@@ -474,15 +462,15 @@ impl Program {
                 let _ = self.update(Message::ChckStatus);
 
                 self.status_zmiany_fot_log = Default::default();
-                dbg!(
-                    "ścieżka przekazywana to: {:?}",
-                    &self.dane_konw
-                );
-
-                dbg!(
-                    "wysyłanko tego struct(rozszerzenia_plików_zdjęciowych): \n {}",
-                    &dane_do_obrobki.rozszerzenia
-                );
+                // dbg!(
+                //     "ścieżka przekazywana to: {:?}",
+                //     &self.dane_konw
+                // );
+                //
+                // dbg!(
+                //     "wysyłanko tego struct(rozszerzenia_plików_zdjęciowych): \n {}",
+                //     &dane_do_obrobki.rozszerzenia
+                // );
                 let (tx, rx) = mpsc::channel::<LogTxKonw>(100);
 
                 // Pobieramy uchwyt do działającego runtime'u Tokio

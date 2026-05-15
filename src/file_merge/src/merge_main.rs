@@ -268,6 +268,8 @@ pub async fn fn_do_laczenia_fot(
                     speed,
                     metoda_kompresji,
                     lossy,
+                    exif: None,
+                    kolor: ColorProfilePhoto::None,
                 };
                 zapisywanie_generic(
                     dane,

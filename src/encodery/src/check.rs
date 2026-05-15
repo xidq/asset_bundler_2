@@ -200,7 +200,9 @@ where T: Logi{
                     BdepthAvif::Rgb8Alpha |
                     BdepthAvif::Rgb10Alpha |
                     BdepthAvif::Rgb10 |
-                    BdepthAvif::Rgb8
+                    BdepthAvif::Rgb8 |
+                    BdepthAvif::Rgb12 |
+                    BdepthAvif::Rgb12Alpha
                 ));
 
                 //WYWAL ERR JAK COŚ NIE TEGES!!!!!!!!!! YAYA!!!!!!!!!!!!!!!!!!

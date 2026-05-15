@@ -91,6 +91,8 @@ pub struct PrzetwarzanieAvif{
     pub speed:i32,
     pub metoda_kompresji: ForAvifKompresja,
     pub lossy:Option<u8>,
+    pub exif: Option<Vec<u8>>,
+    pub kolor: ColorProfilePhoto,
 }
 impl DaneDoPrzetwarzania<BdepthAvif> for PrzetwarzanieAvif{
     fn daj_dane(&self) -> Self {self.clone()}

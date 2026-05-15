@@ -56,10 +56,18 @@ pub fn konwertuj_przestrzen(
 
         _ => return Err(std::io::Error::other("Nienatywny lub nieobsługiwany format w DynamicImage")),
     };
-
+    let flagi = lcms2::Flags::COPY_ALPHA;
     // 4. Inicjalizacja transformacji LCMS2
-    let tr = Transform::new(&p_src, f_src, &p_dst, pixel_format_wyjsciowy, Intent::Perceptual)
-        .map_err(|_| std::io::Error::other("LCMS2: Nie można powiązać formatów lub profili"))?;
+    // let tr = Transform::new(&p_src, f_src, &p_dst, pixel_format_wyjsciowy, Intent::Perceptual)
+    //     .map_err(|_| std::io::Error::other("LCMS2: Nie można powiązać formatów lub profili"))?;
+    let tr = Transform::new_flags(
+        &p_src,
+        f_src,
+        &p_dst,
+        pixel_format_wyjsciowy,
+        Intent::Perceptual,
+        flagi
+    ).map_err(|_| std::io::Error::other("LCMS2: Nie można powiązać formatów lub profili z flagą Alpha"))?;
 
     // 5. Przygotowanie bufora pod format wyjściowy (np. CMYK8)
     let szerokosc = img.width() as usize;

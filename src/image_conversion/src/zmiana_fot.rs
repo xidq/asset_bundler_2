@@ -305,6 +305,8 @@ pub async fn main_fn_konwersja(
                                     speed: *speed,
                                     metoda_kompresji: metoda_kompresji.clone(),
                                     lossy: *lossy,
+                                    exif: bufor.exif.clone(),
+                                    kolor: bufor.kolor.clone(),
                                 };
                                 zapisywanie_generic(
                                     dane,

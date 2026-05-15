@@ -1,6 +1,9 @@
 use image::{ColorType, DynamicImage, ImageBuffer};
 use rand::RngExt;
 use std::path::{Path, PathBuf};
+use lcms2::PixelFormat;
+use enumy::rozszerzenia::kolor::ColorProfilePhoto;
+use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
 
 pub fn zaszumianie(noising: u8, bufor: DynamicImage) -> DynamicImage {
     // let mut xoxo = bufor.clone();
@@ -389,4 +392,24 @@ pub fn merge_sciezki(ścieżka_wyjściowa:&Path, ścieżka_dopełniająca: &Stri
     let mut huehuehue = ścieżka_wyjściowa.to_path_buf();
     huehuehue.push(ścieżka_dopełniająca);
     huehuehue
+}
+
+pub fn ogarnij_icc(kolor: ColorProfilePhoto, img: &DynamicImage, profil: PixelFormat) -> Vec<u8> {
+    if let ColorProfilePhoto::ICC(ref xoxo) = kolor {
+        konwertuj_przestrzen(img, Some(xoxo), profil)
+            .expect("Błąd konwersji ICC")
+
+    } else if let ColorProfilePhoto::NCLX(ref nclx_data) = kolor {
+        // profil z NCLX, do bajtów ICC
+        let wygenerowany_profil = profil_z_nclx(nclx_data).expect("Błąd generowania profilu z NCLX");
+        let icc_bajty = wygenerowany_profil.icc().expect("Błąd serializacji profilu do ICC");
+
+        konwertuj_przestrzen(img, Some(&icc_bajty), profil)
+            .expect("Błąd konwersji z profilu NCLX")
+
+    } else {
+        // Brak profilu (None)
+        konwertuj_przestrzen(img, None, profil)
+            .expect("Błąd konwersji bez profilu")
+    }
 }

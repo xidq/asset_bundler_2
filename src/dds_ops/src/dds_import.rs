@@ -235,6 +235,8 @@ pub async fn dds_to_image(
                                 speed,
                                 metoda_kompresji,
                                 lossy,
+                                exif: None,
+                                kolor: ColorProfilePhoto::None,
                             };
                             zapisywanie_generic(
                                 dane,

@@ -140,6 +140,8 @@ impl BitDepth for BdepthAvif {
         Self::Rgb8Alpha => TrybLączenia::Rgb8Alpha,
         Self::Rgb10 => TrybLączenia::Rgb10,
         Self::Rgb10Alpha => TrybLączenia::Rgb10Alpha,
+        Self::Rgb12Alpha => TrybLączenia::Rgb12,
+        Self::Rgb12 => TrybLączenia::Rgb12Alpha,
     }
 }
     fn jako_any(&self) -> &dyn Any { self }
@@ -203,14 +205,7 @@ impl BitDepth for BdepthQoi {
 }
 
 impl BdepthAvif {
-    pub fn bath_konwersja_id(&self) -> &'static str {
-        match self {
-            Self::Rgb8 => "btn_id_batch_avif_rgb8",
-            Self::Rgb8Alpha => "btn_id_batch_avif_rgb8a",
-            Self::Rgb10 => "btn_id_batch_avif_rgb10",
-            Self::Rgb10Alpha => "btn_id_batch_avif_rgb10a",
-        }
-    }
+
 
     pub fn maly_wariant(&self) -> &'static str {
         match self {
@@ -218,16 +213,13 @@ impl BdepthAvif {
             Self::Rgb8Alpha => "R8a",
             Self::Rgb10 => "R10",
             Self::Rgb10Alpha => "R10a",
+            Self::Rgb12Alpha => "R12",
+            Self::Rgb12 => "R12a",
         }
     }
 }
 impl BdepthJpg {
-    pub fn bath_konwersja_id(&self) -> &'static str {
-        match self {
-            Self::Rgb8 => "btn_id_batch_jpg_rgb8",
-            Self::Luma8 => "btn_id_batch_jpg_luma8",
-        }
-    }
+
     pub fn maly_wariant(&self) -> &'static str {
         match self {
             Self::Rgb8 => "R8",
@@ -236,18 +228,7 @@ impl BdepthJpg {
     }
 }
 impl BdepthPng {
-    pub fn bath_konwersja_id(&self) -> &'static str {
-        match self {
-            Self::Luma8 => "btn_id_batch_png_luma8",
-            Self::Luma8Alpha => "btn_id_batch_png_luma8a",
-            Self::Rgb8 => "btn_id_batch_png_rgb8",
-            Self::Rgb8Alpha => "btn_id_batch_png_rgb8a",
-            Self::Luma16 => "btn_id_batch_png_luma16",
-            Self::Luma16Alpha => "btn_id_batch_png_luma16a",
-            Self::Rgb16 => "btn_id_batch_png_rgb16",
-            Self::Rgb16Alpha => "btn_id_batch_png_rgb16a",
-        }
-    }
+
     pub fn maly_wariant(&self) -> &'static str {
         match self {
             Self::Luma8 => "L8",

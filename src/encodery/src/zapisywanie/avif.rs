@@ -1,4 +1,4 @@
-use crate::halper::usun_kanal_alpha;
+use crate::halper::{ogarnij_icc, usun_kanal_alpha};
 use crate::send::wyslij_status;
 use enumy::przetwarzanie::PrzetwarzanieAvif;
 use enumy::rozszerzenia::bdepth::BdepthAvif;
@@ -36,14 +36,167 @@ where T: Logi,
             )
     };
     let (heif_img, nazwa_bd) = match bit_depth {
-        BdepthAvif::Rgb10Alpha =>
+        BdepthAvif::Rgb12Alpha =>
             {
+
+                let przekonwertowane_bajty_u8 = ogarnij_icc(
+                    dane.kolor.clone(),
+                    &reskalowanie,
+                    lcms2::PixelFormat::RGBA_16 // <--- Wymuszamy 16-bitów na kanał z LCMS2
+                );
                 // dbg!("jestem w B10a");
                 let res = reskalowanie.to_rgba16();
 
                 // dbg!("ogarnięto Rgba16Image");
                 let (w, h) = res.dimensions();
-                let raw_u16 = res.into_raw();
+
+                // let raw_u16 = res.into_raw();
+                let raw_u16: Vec<u16> = przekonwertowane_bajty_u8
+                    .chunks_exact(2)
+                    .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
+                    .collect();
+
+                //obraz RGBA
+                let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
+                    .map_err(std::io::Error::other)?;
+
+                //4 osobne płaszczyzny po 10 bitów każda
+                heif_img.create_plane(Channel::R, w, h, 12).expect("Plane R fail");
+                heif_img.create_plane(Channel::G, w, h, 12).expect("Plane G fail");
+                heif_img.create_plane(Channel::B, w, h, 12).expect("Plane B fail");
+                heif_img.create_plane(Channel::Alpha, w, h, 12).expect("Plane A fail");
+
+                {
+                    let planes = heif_img.planes_mut();
+
+                    let stride = planes.r.as_ref().unwrap().stride;
+                    let data_r = planes.r.unwrap().data;
+                    let data_g = planes.g.unwrap().data;
+                    let data_b = planes.b.unwrap().data;
+                    let data_a = planes.a.unwrap().data;
+
+                    // Przechodzimy przez obraz rząd po rzędzie.
+                    // raw_u16.chunks_exact(w * 4) daje nam dokładnie jeden rząd RGBA na raz.
+                    for (y, row_src) in raw_u16.chunks_exact(w as usize * 4).enumerate() {
+                        let row_offset = y * stride;
+
+                        // Wycinamy dokładny fragment pamięci (slice) dla całego rzędu w danym kanale.
+                        // Dzięki temu kompilator usuwa sprawdzanie zakresów w wewnętrznej pętli.
+                        let row_r = &mut data_r[row_offset .. row_offset + w as usize * 2];
+                        let row_g = &mut data_g[row_offset .. row_offset + w as usize * 2];
+                        let row_b = &mut data_b[row_offset .. row_offset + w as usize * 2];
+                        let row_a = &mut data_a[row_offset .. row_offset + w as usize * 2];
+
+                        // row_src.chunks_exact(4) iteruje po pikselach: [R, G, B, A]
+                        for (x, pixel) in row_src.chunks_exact(4).enumerate() {
+                            let dest_idx = x * 2;
+
+                            // Przesunięcie i konwersja (16-bit -> 12-bit)
+                            let r10 = pixel[0] >> 4;
+                            let g10 = pixel[1] >> 4;
+                            let b10 = pixel[2] >> 4;
+                            let a10 = pixel[3] >> 4;
+
+                            // Zapis do 2 bajtów jako Little Endian (bez ręcznego przesuwania i maskowania)
+                            row_r[dest_idx..dest_idx + 2].copy_from_slice(&r10.to_le_bytes());
+                            row_g[dest_idx..dest_idx + 2].copy_from_slice(&g10.to_le_bytes());
+                            row_b[dest_idx..dest_idx + 2].copy_from_slice(&b10.to_le_bytes());
+                            row_a[dest_idx..dest_idx + 2].copy_from_slice(&a10.to_le_bytes());
+                        }
+                    }
+                    // dbg!("Bufor Planar wypełniony zoptymalizowaną metodą. Przed encode_image");
+                }
+                (heif_img,"_12a")
+            }
+        BdepthAvif::Rgb12 =>
+            {
+                let res = usun_kanal_alpha(reskalowanie, dane.alpha);
+                // dbg!("jestem w B10");
+                let przekonwertowane_bajty_u8 = ogarnij_icc(
+                    dane.kolor.clone(),
+                    &res,
+                    lcms2::PixelFormat::RGB_16 // <--- Wymuszamy 16-bitów na kanał z LCMS2
+                );
+
+
+
+                // dbg!("ogarnięto Rgb16Image");
+                let (w, h) = res.to_rgb16().dimensions();
+                // let raw_u16 = res.into_raw();
+                let raw_u16: Vec<u16> = przekonwertowane_bajty_u8
+                    .chunks_exact(2)
+                    .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
+                    .collect();
+
+                //
+                let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
+                    .map_err(std::io::Error::other)?;
+
+                //4 osobne płaszczyzny po 10 bitów każda
+                heif_img.create_plane(Channel::R, w, h, 12).expect("Plane R fail");
+                heif_img.create_plane(Channel::G, w, h, 12).expect("Plane G fail");
+                heif_img.create_plane(Channel::B, w, h, 12).expect("Plane B fail");
+
+                {
+                    let planes = heif_img.planes_mut();
+
+                    let stride = planes.r.as_ref().unwrap().stride;
+                    let data_r = planes.r.unwrap().data;
+                    let data_g = planes.g.unwrap().data;
+                    let data_b = planes.b.unwrap().data;
+
+                    // Przechodzimy przez obraz rząd po rzędzie.
+                    // raw_u16.chunks_exact(w * 4) daje nam dokładnie jeden rząd RGBA na raz.
+                    for (y, row_src) in raw_u16.chunks_exact(w as usize * 3).enumerate() {
+                        let row_offset = y * stride;
+
+                        // Wycinamy dokładny fragment pamięci (slice) dla całego rzędu w danym kanale.
+                        // Dzięki temu kompilator usuwa sprawdzanie zakresów w wewnętrznej pętli.
+                        let row_r = &mut data_r[row_offset .. row_offset + w as usize * 2];
+                        let row_g = &mut data_g[row_offset .. row_offset + w as usize * 2];
+                        let row_b = &mut data_b[row_offset .. row_offset + w as usize * 2];
+
+                        // row_src.chunks_exact(4) iteruje po pikselach: [R, G, B, A]
+                        for (x, pixel) in row_src.chunks_exact(3).enumerate() {
+                            let dest_idx = x * 2;
+
+                            // Przesunięcie i konwersja (16-bit -> 10-bit)
+                            let r10 = pixel[0] >> 4;
+                            let g10 = pixel[1] >> 4;
+                            let b10 = pixel[2] >> 4;
+
+                            // Zapis do 2 bajtów jako Little Endian (bez ręcznego przesuwania i maskowania)
+                            row_r[dest_idx..dest_idx + 2].copy_from_slice(&r10.to_le_bytes());
+                            row_g[dest_idx..dest_idx + 2].copy_from_slice(&g10.to_le_bytes());
+                            row_b[dest_idx..dest_idx + 2].copy_from_slice(&b10.to_le_bytes());
+                        }
+                    }
+                    // dbg!("Bufor Planar wypełniony zoptymalizowaną metodą. Przed encode_image");
+                }
+                (heif_img, "_12")
+            }
+
+
+
+        BdepthAvif::Rgb10Alpha =>
+            {
+
+                let przekonwertowane_bajty_u8 = ogarnij_icc(
+                    dane.kolor.clone(),
+                    &reskalowanie,
+                    lcms2::PixelFormat::RGBA_16 // <--- Wymuszamy 16-bitów na kanał z LCMS2
+                );
+                // dbg!("jestem w B10a");
+                let res = reskalowanie.to_rgba16();
+
+                // dbg!("ogarnięto Rgba16Image");
+                let (w, h) = res.dimensions();
+
+                // let raw_u16 = res.into_raw();
+                let raw_u16: Vec<u16> = przekonwertowane_bajty_u8
+                    .chunks_exact(2)
+                    .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
+                    .collect();
 
                 //obraz RGBA
                 let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
@@ -55,46 +208,6 @@ where T: Logi,
                 heif_img.create_plane(Channel::B, w, h, 10).expect("Plane B fail");
                 heif_img.create_plane(Channel::Alpha, w, h, 10).expect("Plane A fail");
 
-                // {
-                //     let planes = heif_img.planes_mut();
-                //
-                //     // Pobieramy dane i stride (zakładamy, że stride jest taki sam dla wszystkich kanałów)
-                //     let stride = planes.r.as_ref().unwrap().stride;
-                //
-                //     let data_r = planes.r.unwrap().data;
-                //     let data_g = planes.g.unwrap().data;
-                //     let data_b = planes.b.unwrap().data;
-                //     let data_a = planes.a.unwrap().data;
-                //
-                //     for y in 0..h as usize {
-                //         let row_offset = y * stride;
-                //         for x in 0..w as usize {
-                //             // Indeks w Twoim surowym buforze RGBA16 (4 kanały u16)
-                //             let src_idx = (y * w as usize + x) * 4;
-                //
-                //             // Indeks w buforze heif (x * 2 bajty, bo to 10-bit planar)
-                //             let dest_x_offset = x * 2;
-                //             let final_idx = row_offset + dest_x_offset;
-                //
-                //             // Funkcja pomocnicza do zapisu 10-bit w 2 bajtach (Little Endian)
-                //             let write_10bit = |src_val: u16, target: &mut [u8], pos: usize| {
-                //                 let val10 = src_val >> 6; // Konwersja 16 -> 10 bit
-                //                 target[pos] = (val10 & 0xff) as u8;
-                //                 target[pos + 1] = (val10 >> 8) as u8;
-                //             };
-                //
-                //             write_10bit(raw_u16[src_idx],     data_r, final_idx);
-                //             write_10bit(raw_u16[src_idx + 1], data_g, final_idx);
-                //             write_10bit(raw_u16[src_idx + 2], data_b, final_idx);
-                //             write_10bit(raw_u16[src_idx + 3], data_a, final_idx);
-                //         }
-                //     }
-                //     dbg!("Bufor Planar wypełniony. Przed encode_image");
-                //
-                //
-                //
-                //
-                // }
                 {
                     let planes = heif_img.planes_mut();
 
@@ -139,12 +252,18 @@ where T: Logi,
             }
         BdepthAvif::Rgb8Alpha =>
             {
+                let przekonwertowane_bajty_u8 = ogarnij_icc(
+                    dane.kolor.clone(),
+                    &reskalowanie,
+                    lcms2::PixelFormat::RGBA_8 // <--- Wymuszamy 16-bitów na kanał z LCMS2
+                );
                 // dbg!("jestem w B8a");
-                let res = reskalowanie.to_rgba8();
+                // let res = reskalowanie.to_rgba8();
 
                 // dbg!("ogarnięto Rgba8Image");
-                let (w, h) = res.dimensions();
-                let raw_u8 = res.into_raw();
+                let (w, h) = reskalowanie.to_rgba8().dimensions();
+                // let raw_u8 = res.into_raw();
+                let raw_u8: Vec<u8> = przekonwertowane_bajty_u8;
 
                 //
                 let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
@@ -156,30 +275,6 @@ where T: Logi,
                 heif_img.create_plane(Channel::B, w, h, 8).expect("Plane B fail");
                 heif_img.create_plane(Channel::Alpha, w, h, 8).expect("Plane A fail");
 
-                // {
-                //     let mut planes = heif_img.planes_mut();
-                //     let stride = planes.r.as_ref().unwrap().stride;
-                //
-                //     let data_r = planes.r.unwrap().data;
-                //     let data_g = planes.g.unwrap().data;
-                //     let data_b = planes.b.unwrap().data;
-                //     let data_a = planes.a.unwrap().data;
-                //
-                //     for y in 0..h as usize {
-                //         let row_offset = y * stride;
-                //         for x in 0..w as usize {
-                //             let src_idx = (y * w as usize + x) * 4;
-                //             let final_idx = row_offset + x;
-                //
-                //             // Używamy bezpośredniego przypisania zamiast closure,
-                //             // żeby wykluczyć problemy z typowaniem "ukrytych" argumentów
-                //             data_r[final_idx] = raw_u8[src_idx];
-                //             data_g[final_idx] = raw_u8[src_idx + 1];
-                //             data_b[final_idx] = raw_u8[src_idx + 2];
-                //             data_a[final_idx] = raw_u8[src_idx + 3];
-                //         }
-                //     }
-                // } // <--- Tutaj kończy się Twój blok kopiowania
                 {
                     let planes = heif_img.planes_mut();
 
@@ -214,13 +309,22 @@ where T: Logi,
 
         BdepthAvif::Rgb10 =>
             {
+                let res = usun_kanal_alpha(reskalowanie, dane.alpha);
                 // dbg!("jestem w B10");
+                let przekonwertowane_bajty_u8 = ogarnij_icc(
+                    dane.kolor.clone(),
+                    &res,
+                    lcms2::PixelFormat::RGB_16 // <--- Wymuszamy 16-bitów na kanał z LCMS2
+                );
 
-                let res = usun_kanal_alpha(reskalowanie, dane.alpha).to_rgb16();
 
                 // dbg!("ogarnięto Rgb16Image");
-                let (w, h) = res.dimensions();
-                let raw_u16 = res.into_raw();
+                let (w, h) = res.to_rgb16().dimensions();
+                // let raw_u16 = res.into_raw();
+                let raw_u16: Vec<u16> = przekonwertowane_bajty_u8
+                    .chunks_exact(2)
+                    .map(|chunk| u16::from_be_bytes([chunk[0], chunk[1]]))
+                    .collect();
 
                 //
                 let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
@@ -231,40 +335,6 @@ where T: Logi,
                 heif_img.create_plane(Channel::G, w, h, 10).expect("Plane G fail");
                 heif_img.create_plane(Channel::B, w, h, 10).expect("Plane B fail");
 
-                // {
-                //     let planes = heif_img.planes_mut();
-                //
-                //     // Pobieramy dane i stride (zakładamy, że stride jest taki sam dla wszystkich kanałów)
-                //     let stride = planes.r.as_ref().unwrap().stride;
-                //
-                //     let data_r = planes.r.unwrap().data;
-                //     let data_g = planes.g.unwrap().data;
-                //     let data_b = planes.b.unwrap().data;
-                //
-                //     for y in 0..h as usize {
-                //         let row_offset = y * stride;
-                //         for x in 0..w as usize {
-                //             // Indeks w Twoim surowym buforze RGBA16 (4 kanały u16)
-                //             let src_idx = (y * w as usize + x) * 3;
-                //
-                //             // Indeks w buforze heif (x * 2 bajty, bo to 10-bit planar)
-                //             let dest_x_offset = x * 2;
-                //             let final_idx = row_offset + dest_x_offset;
-                //
-                //             // Funkcja pomocnicza do zapisu 10-bit w 2 bajtach (Little Endian)
-                //             let write_10bit = |src_val: u16, target: &mut [u8], pos: usize| {
-                //                 let val10 = src_val >> 6; // Konwersja 16 -> 10 bit
-                //                 target[pos] = (val10 & 0xff) as u8;
-                //                 target[pos + 1] = (val10 >> 8) as u8;
-                //             };
-                //
-                //             write_10bit(raw_u16[src_idx], data_r, final_idx);
-                //             write_10bit(raw_u16[src_idx + 1], data_g, final_idx);
-                //             write_10bit(raw_u16[src_idx + 2], data_b, final_idx);
-                //         }
-                //     }
-                //     dbg!("Bufor Planar wypełniony. Przed encode_image");
-                // }
                 {
                     let planes = heif_img.planes_mut();
 
@@ -305,13 +375,18 @@ where T: Logi,
             }
         BdepthAvif::Rgb8 =>
             {
+                let res = usun_kanal_alpha(reskalowanie, dane.alpha);
+                let przekonwertowane_bajty_u8 = ogarnij_icc(
+                    dane.kolor.clone(),
+                    &res,
+                    lcms2::PixelFormat::RGB_8 // <--- Wymuszamy 16-bitów na kanał z LCMS2
+                );
                 // dbg!("jestem w B8");
-                let res = usun_kanal_alpha(reskalowanie, dane.alpha).to_rgb8();
 
 
                 // dbg!("ogarnięto Rgb8Image");
-                let (w, h) = res.dimensions();
-                let raw_u8 = res.into_raw();
+                let (w, h) = res.to_rgb8().dimensions();
+                let raw_u8 = przekonwertowane_bajty_u8;
 
                 //
                 let mut heif_img = Image::new(w, h, ColorSpace::Rgb(RgbChroma::C444))
@@ -322,28 +397,6 @@ where T: Logi,
                 heif_img.create_plane(Channel::G, w, h, 8).expect("Plane G fail");
                 heif_img.create_plane(Channel::B, w, h, 8).expect("Plane B fail");
 
-                // {
-                //     let mut planes = heif_img.planes_mut();
-                //     let stride = planes.r.as_ref().unwrap().stride;
-                //
-                //     let data_r = planes.r.unwrap().data;
-                //     let data_g = planes.g.unwrap().data;
-                //     let data_b = planes.b.unwrap().data;
-                //
-                //     for y in 0..h as usize {
-                //         let row_offset = y * stride;
-                //         for x in 0..w as usize {
-                //             let src_idx = (y * w as usize + x) * 3;
-                //             let final_idx = row_offset + x;
-                //
-                //             // Używamy bezpośredniego przypisania zamiast closure,
-                //             // żeby wykluczyć problemy z typowaniem "ukrytych" argumentów
-                //             data_r[final_idx] = raw_u8[src_idx];
-                //             data_g[final_idx] = raw_u8[src_idx + 1];
-                //             data_b[final_idx] = raw_u8[src_idx + 2];
-                //         }
-                //     }
-                // } // <--- Tutaj kończy się Twój blok kopiowania
                 {
                     let planes = heif_img.planes_mut();
 
@@ -423,10 +476,23 @@ where T: Logi,
 
     encoder.set_parameter_value("speed", EncoderParameterValue::Int(dane.speed)).ok(); // 0-10 (wolniej = lepsza kompresja)
     encoder.set_parameter_value("tune", EncoderParameterValue::String("ssim".to_string())).ok(); // Optymalizacja pod jakość wizualną
+    // encoder.set_parameter_value("exif").ok();
 
-    context.encode_image(&heif_img, &mut encoder, None).map_err(std::io::Error::other)?;
+    let handle =context.encode_image(&heif_img, &mut encoder, None).map_err(std::io::Error::other)?;
     // dbg!("Po encode_image");
+    if let Some(ref surowy_exif) = dane.exif {
+        if !surowy_exif.is_empty() {
+            // Specyfikacja HEIF/AVIF wymaga 4 pustych bajtów (offsetu) na początku
+            let mut heif_exif_payload = vec![0u8; 4];
+            heif_exif_payload.extend_from_slice(surowy_exif);
 
+            // Dodajemy metadane bezpośrednio do kontekstu, parując je z naszym `handle`
+            context.add_exif_metadata(
+                &handle,
+                &heif_exif_payload,
+            ).map_err(|e| std::io::Error::other(format!("Błąd zapisu metadanych EXIF: {}", e)))?;
+        }
+    }
 
     let final_bytes = context.write_to_bytes()
         .map_err(std::io::Error::other)?;
