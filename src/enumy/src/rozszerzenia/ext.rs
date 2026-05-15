@@ -146,7 +146,9 @@ pub enum ImgExtTag {
     #[strum(message = "Qoi", detailed_message = "Quite OK Image Format")]
     Qoi,
     #[strum(message = "Avif", detailed_message = "AV1 Image File Format")]
-    Avif
+    Avif,
+    #[strum(message = "Unknown", detailed_message = "Unknown")]
+    Unknown,
 }
 impl ImgExtTag {
     pub fn małe(&self) -> &'static str {
@@ -158,6 +160,7 @@ impl ImgExtTag {
             Self::Ff => "FF",
             Self::Qoi => "Qoi",
             Self::Avif => "Avif",
+            Self::Unknown => "unknown",
         }
     }
     pub fn duże(&self) -> &'static str {
@@ -169,6 +172,8 @@ impl ImgExtTag {
             Self::Ff => "Farbfeld",
             Self::Qoi => "Quite OK Image Format",
             Self::Avif => "AV1 Image File Format",
+            Self::Unknown => "unknown",
+
         }
     }
 }

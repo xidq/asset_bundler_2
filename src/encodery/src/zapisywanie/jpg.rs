@@ -2,7 +2,7 @@ use crate::halper::{usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieJpg};
 use enumy::rozszerzenia::bdepth::BdepthJpg;
-use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kolor::{ColorProfilePhoto, ForJpgQuant, ForJpgSamplingFac};
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
@@ -10,7 +10,9 @@ use image::DynamicImage;
 use jpeg_encoder::{Encoder, QuantizationTableType, SamplingFactor};
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
+use lcms2::{PixelFormat, Profile};
 use tokio::sync::Mutex;
+use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
 
 pub async fn jpg_match<T>(
     dane: PrzetwarzanieJpg,
@@ -24,45 +26,21 @@ pub async fn jpg_match<T>(
 ) -> Result<(), tokio::io::Error>
     where T: Logi,
 {
-    let (final_img, nazwa_bd) = match bit_depth {
-        BdepthJpg::Luma8 => (
-            {
-                if wymiar == 0 {
-                    DynamicImage::ImageLuma8(
-                        usun_kanal_alpha(dane.bufor().clone(), dane.alpha).to_luma8(),
-                    )
-                } else {
-                    DynamicImage::ImageLuma8(
-                        usun_kanal_alpha(dane.bufor().clone(), dane.alpha).to_luma8(),
-                    )
-                        .resize(
-                            wymiar,
-                            wymiar,
-                            filtr,
-                        )
-                }
-            },
-            "_l8b"
-        ),
-        BdepthJpg::Rgb8 => (
-            {
-                if wymiar == 0 {
-                    DynamicImage::ImageRgb8(
-                        usun_kanal_alpha(dane.bufor().clone(), dane.alpha).to_rgb8(),
-                    )
-                } else {
-                    DynamicImage::ImageRgb8(
-                        usun_kanal_alpha(dane.bufor().clone(), dane.alpha).to_rgb8(),
-                    )
-                        .resize(
-                            wymiar,
-                            wymiar,
-                            filtr,
-                        )
-                }
-            },
-            "_8b"
-        ),
+
+    let final_img = if wymiar == 0 {
+        usun_kanal_alpha(dane.bufor().clone(), dane.alpha)
+    } else {
+        usun_kanal_alpha(dane.bufor().clone(), dane.alpha)
+            .resize(
+                wymiar,
+                wymiar,
+                filtr,
+            )
+    };
+
+    let (nazwa_bd, profil, enco) = match bit_depth {
+        BdepthJpg::Luma8 => ("_l8b", PixelFormat::GRAY_8, jpeg_encoder::ColorType::Luma),
+        BdepthJpg::Rgb8 => ("_8b", PixelFormat::RGB_8, jpeg_encoder::ColorType::Rgb),
     };
 
 
@@ -111,19 +89,31 @@ pub async fn jpg_match<T>(
         ForJpgSamplingFac::R444 => {SamplingFactor::R_4_4_4}
         ForJpgSamplingFac::R440 => {SamplingFactor::R_4_4_0}
         ForJpgSamplingFac::R441 => {SamplingFactor::R_4_4_1}
-        ForJpgSamplingFac::R422 => {SamplingFactor::R_4_2_2 }
+        ForJpgSamplingFac::R422 => {SamplingFactor::R_4_2_2}
         ForJpgSamplingFac::R420 => {SamplingFactor::R_4_2_0}
         ForJpgSamplingFac::R421 => {SamplingFactor::R_4_2_1}
         ForJpgSamplingFac::R411 => {SamplingFactor::R_4_1_1}
         ForJpgSamplingFac::R410 => {SamplingFactor::R_4_1_0}
     };
-    let kolorrrr = match final_finalv3_temp_final_ostatecznyv5.color(){
-        image::ColorType::L8 => {jpeg_encoder::ColorType::Luma},
-        _ => {jpeg_encoder::ColorType::Rgb}
 
+
+    let ungabunga = if let ColorProfilePhoto::ICC(ref xoxo) = dane.kolor {
+        konwertuj_przestrzen(&final_finalv3_temp_final_ostatecznyv5, Some(xoxo), profil)
+            .expect("Błąd konwersji ICC")
+
+    } else if let ColorProfilePhoto::NCLX(ref nclx_data) = dane.kolor {
+        // profil z NCLX, do bajtów ICC
+        let wygenerowany_profil = profil_z_nclx(nclx_data).expect("Błąd generowania profilu z NCLX");
+        let icc_bajty = wygenerowany_profil.icc().expect("Błąd serializacji profilu do ICC");
+
+        konwertuj_przestrzen(&final_finalv3_temp_final_ostatecznyv5, Some(&icc_bajty), profil)
+            .expect("Błąd konwersji z profilu NCLX")
+
+    } else {
+        // Brak profilu (None)
+        konwertuj_przestrzen(&final_finalv3_temp_final_ostatecznyv5, None, profil)
+            .expect("Błąd konwersji bez profilu")
     };
-
-
 
 
     let mut encoder = Encoder::new(&mut output_file, dane.jakosc);
@@ -132,15 +122,20 @@ pub async fn jpg_match<T>(
     encoder.set_progressive(dane.progresywny);
     encoder.set_progressive_scans(dane.skany ); //Number of scans must be between 2 and 64. There is at least one scan for the DC coefficients and one for the remaining 63 AC coefficients.
     encoder.set_optimized_huffman_tables(dane.progresywny);
+    match dane.exif{
+        None => {}
+        Some(xxx) => { encoder.add_exif_metadata(&*xxx).expect("Err jpg exif data");}
+    }
+    
 
 
 
     encoder
         .encode(
-            final_finalv3_temp_final_ostatecznyv5.as_bytes(),
+            &*ungabunga,
             width,
             height,
-            kolorrrr,
+            enco,
         )
         .map_err(std::io::Error::other)?;
 

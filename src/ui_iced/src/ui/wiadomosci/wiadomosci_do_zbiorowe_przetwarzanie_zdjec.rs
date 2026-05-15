@@ -414,7 +414,6 @@ impl Program {
                 });
                 if let Some(idx) = pozycja_tag {
                     self.dane_konw.tag.remove(idx);
-                    self.temat.btn_state.insert(gwiazdek.bath_konwersja_id(), BtnState::Active);
                 }
 
                 if let Some(index) = pozycja {
@@ -454,7 +453,10 @@ impl Program {
                             metoda_kompresji: ForAvifKompresja::Av1,
                             lossy: Some(90),
                             bit_depth: Vec::from([BdepthAvif::Rgb10])
-                        }, ImgExtTag::Avif)
+                        }, ImgExtTag::Avif),
+                        ImgExtTag::Unknown => (ImgExt::Ff{
+                            metoda_kompresji: ForFfKompresja::Brak
+                        }, ImgExtTag::Ff),
                     };
 
                     self.dane_konw.rozszerzenia.push(nowy_format);

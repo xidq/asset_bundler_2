@@ -1,41 +1,33 @@
 use crate::dds_halper::oblicz_ilosc_mipmap;
+use crate::strukt::DaneDoZapisu;
 use dds::header::{Dx10Header, DxgiFormat, Header};
 use dds::*;
 use enumy::rozszerzenia::kompresje::ForDds;
 use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc::Sender;
-use std::fs::File;
+
 #[allow(clippy::too_many_arguments)]
 pub fn save_image_to_dds(
-    file: &mut File,
-    image_data: Vec<&[u8]>,
-    width: u32,
-    height: u32,
-    format: &ForDds,
-    kompresja: CompressionQuality,
-    przerób: &mut f32,
-    max_plikow:usize,
-    percent:&mut u8,
+    dane: DaneDoZapisu,
     mut tx: Sender<LogTxDdsPak>,
 ) -> Result<(), EncodingError> {
-    dbg!("jestem w save_rgba_image_with_mipmaps");
+    let mut przerób: u32 = 0;
+    // dbg!("jestem w save_rgba_image_with_mipmaps");
 
     let mut wywoływacz = ||{
-        *przerób += 1.;
-        dbg!(&przerób);
-        if *percent < (*przerób / max_plikow as f32 * 100.).round() as u8 {
-            *percent = (*przerób / max_plikow as f32 * 100.).round() as u8;
-            let _ = tx.try_send(LogTxDdsPak::Pending(*percent));
-        }
+        przerób += 1;
+        // dbg!(&przerób, (dane.image_data.len() as u32 * 2) + 4);
+
+            let _ = tx.try_send(LogTxDdsPak::PostępSkładania(przerób,Some((dane.image_data.len() as u32 * 2) + 4)));
+
     };
 
-    // let mut licznik_w_pętli:u32 = 0;
 
     wywoływacz();
 
 
 
-    let (formatowanko_dxgi, formatowanko_format) = match format {
+    let (formatowanko_dxgi, formatowanko_format) = match dane.format {
         ForDds::DxgiFormatBc1Unorm => (DxgiFormat::BC1_UNORM, Format::BC1_UNORM),
         ForDds::DxgiFormatBc1UnormSrgb => (DxgiFormat::BC1_UNORM_SRGB, Format::BC1_UNORM),
         ForDds::DxgiFormatBc1Typeless => (DxgiFormat::BC1_TYPELESS, Format::BC1_UNORM),
@@ -64,36 +56,40 @@ pub fn save_image_to_dds(
         ForDds::DxgiFormatBc7UnormSrgb => (DxgiFormat::BC7_UNORM_SRGB, Format::BC7_UNORM),
         ForDds::DxgiFormatBc7Typeless => (DxgiFormat::BC7_TYPELESS, Format::BC7_UNORM),
     };
+
+    wywoływacz();
+
     // dbg!(&formatowanko_dxgi, &formatowanko_format);
     // let x: dds::Format = dds::Format::;
     let format = formatowanko_dxgi; // BC5, BC7
-    let ilosc_tekstur = image_data.len() as u32;
+    let ilosc_tekstur = dane.image_data.len() as u32;
     // let header = Header::new_image(width, height, format);
-    let mut dx10_header = Dx10Header::new_image(width, height, format)
-        .with_mipmap_count(oblicz_ilosc_mipmap(width, height));
+    let mut dx10_header = Dx10Header::new_image(dane.width, dane.height, format)
+        .with_mipmap_count(oblicz_ilosc_mipmap(dane.width, dane.height));
     dx10_header.array_size = ilosc_tekstur;
 
     let header: Header = dx10_header.into();
 
-    let mut encoder = Encoder::new(file, formatowanko_format, &header)?;
-    encoder.encoding.quality = kompresja; // CompressionQuality::Fast
-    encoder.mipmaps.generate = true;
+    let mut encoder = Encoder::new(dane.file, formatowanko_format, &header)?;
+    encoder.encoding.quality = dane.kompresja; // CompressionQuality::Fast
+    encoder.mipmaps.generate = dane.minimaps;
 
     wywoływacz();
 
-    dbg!(&image_data.len());
 
 
 
 
-    for data in image_data.iter() {
-        let view = ImageView::new(data, Size::new(width, height), ColorFormat::RGBA_U8)
+    for data in dane.image_data.iter() {
+        let view = ImageView::new(data, Size::new(dane.width, dane.height), ColorFormat::RGBA_U8)
             .expect("Błąd danych obrazka");
+
+        wywoływacz();
 
         encoder.write_surface(view)?;
 
 
-            wywoływacz();
+        wywoływacz();
         
     }
     wywoływacz();

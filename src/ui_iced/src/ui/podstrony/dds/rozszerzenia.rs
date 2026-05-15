@@ -391,6 +391,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                             )
                     ).style(styl_kontenera(true,RodzajeContainer::Oba, kolor, temat))
                 }
+                ImgExtTag::Unknown => {container(space())}
             }
         )
         .push(
@@ -402,6 +403,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                 ImgExtTag::Ff => {space().height(200.)}
                 ImgExtTag::Qoi => {space().height(200.)}
                 ImgExtTag::Avif => {space()}
+                ImgExtTag::Unknown => {space()}
             }
         )
         .push(space().height(Length::FillPortion(1)))

@@ -9,6 +9,7 @@ use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use enumy::rozszerzenia::kolor::DaneDodatkoweZdjec;
 use crate::zapisywanie::avif::avif_match;
 use crate::zapisywanie::ff::ff_match;
 use crate::zapisywanie::png::png_match;
@@ -26,6 +27,8 @@ where T: Logi,
       F: DaneDoPrzetwarzania<G> + std::clone::Clone,
 G: BitDepth + std::clone::Clone,
 {
+    
+    
 
 
     let filtr = match &dane.interpolacja() {

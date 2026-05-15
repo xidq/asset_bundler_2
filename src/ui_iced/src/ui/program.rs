@@ -164,6 +164,7 @@ impl Program {
                     tag: Vec::from([ImgExtTag::Jpg]),
                     inter: OptInterpolacja::Nearest,
                     alfa_rgb: (0, 0, 0),
+                    exif: true,
                 } ,
                 do_nothing: false,
                 startowy_jezyk: locale.clone(),

@@ -6,7 +6,7 @@ use enumy::inne_ui::ActProces;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::ext::{ImgExtTag, ImgExtSingle};
+use enumy::rozszerzenia::ext::{ImgExtTag, ImgExtSingle, ImgExt};
 use enumy::statusy::LogTxMerge;
 use futures::channel::mpsc;
 use iced::Task;
@@ -165,6 +165,7 @@ impl Program {
                         self.dane_merge.tag = huehue;
                     }
                 }
+                ImgExtTag::Unknown => {}
             },
             MergeMsg::Bdepth(rozs, kolor_rc) => {
                 // dbg!("bdepth", &rozs, &kolor_rc);
@@ -278,7 +279,10 @@ impl Program {
                             metoda_kompresji: ForAvifKompresja::Av1,
                             lossy: Some(90),
                             bit_depth: BdepthAvif::Rgb10
-                        }, ImgExtTag::Avif)
+                        }, ImgExtTag::Avif),
+                        ImgExtTag::Unknown => (ImgExtSingle::Ff{
+                            metoda_kompresji: ForFfKompresja::Brak
+                        }, ImgExtTag::Unknown),
                     };
                     self.dane_merge.rozszerzenie = nowy_format;
                     self.dane_merge.tag = nowy_tag;

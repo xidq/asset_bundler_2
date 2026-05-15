@@ -3,7 +3,7 @@ pub mod dds_halper;
 pub mod dds_import;
 pub mod dds_wczytywanie_zdjec;
 pub mod zapisy;
-
+mod strukt;
 // #[cfg(test)]
 // mod tests {
 //     use super::*;

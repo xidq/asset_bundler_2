@@ -175,6 +175,8 @@ impl ImgExtTag {
             Self::Tga => "TGA",
             Self::Ff => "FF",
             Self::Qoi => "QOI",
+            Self::Unknown => "unknown",
+
         }
     }
     pub fn długa(&self) -> &'static str {
@@ -186,6 +188,8 @@ impl ImgExtTag {
             Self::Tga => "Truevision TGA",
             Self::Ff => "Farbfeld",
             Self::Qoi => "Quite OK Image Format",
+            Self::Unknown => "unknown",
+
         }
     }
 
@@ -227,50 +231,3 @@ impl fmt::Display for RozszerzeniaMidDisplay<'_> {
     }
 }
 
-impl ForFfKompresja {
-    pub fn bath_konwersja_id(&self) -> &'static str {
-        match self {
-            Self::Zstd(_) => "btn_id_batch_ff_zstd",
-            Self::Xz(_) => "btn_id_batch_ff_xz",
-            Self::Bzip2(_) => "btn_id_batch_ff_bzip2",
-            Self::Brak => "btn_id_batch_ff_brak",
-        }
-    }
-
-}
-
-impl ImgExtTag {
-    pub fn bath_konwersja_id(&self) -> &'static str {
-        match self {
-            Self::Jpg => "btn_id_batch_jpg_ext",
-            Self::Png => "btn_id_batch_png_ext",
-            Self::Webp => "btn_id_batch_webp_ext",
-            Self::Tga => "btn_id_batch_tga_ext",
-            Self::Ff => "btn_id_batch_ff_ext",
-            Self::Qoi => "btn_id_batch_qoi_ext",
-            Self::Avif => "btn_id_batch_avif_ext",
-        }
-    }
-    pub fn dds_id(&self) -> &'static str {
-        match self {
-            Self::Jpg => "btn_id_dds_jpg_ext",
-            Self::Png => "btn_id_dds_png_ext",
-            Self::Webp => "btn_id_dds_webp_ext",
-            Self::Tga => "btn_id_dds_tga_ext",
-            Self::Ff => "btn_id_dds_ff_ext",
-            Self::Qoi => "btn_id_dds_qoi_ext",
-            Self::Avif => "btn_id_dds_avif_ext",
-        }
-    }
-    pub fn laczenie_id(&self) -> &'static str {
-        match self {
-            Self::Jpg => "btn_id_laczenie_jpg_ext",
-            Self::Png => "btn_id_laczenie_png_ext",
-            Self::Webp => "btn_id_laczenie_webp_ext",
-            Self::Tga => "btn_id_laczenie_tga_ext",
-            Self::Ff => "btn_id_laczenie_ff_ext",
-            Self::Qoi => "btn_id_laczenie_qoi_ext",
-            Self::Avif => "btn_id_laczenie_avif_ext",
-        }
-    }
-}

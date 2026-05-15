@@ -14,9 +14,7 @@ use futures::SinkExt;
 use image::DynamicImage;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
-
-
+use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 // fn that is entry point for merging images by channels
 
 pub async fn fn_do_laczenia_fot(
@@ -142,7 +140,10 @@ pub async fn fn_do_laczenia_fot(
             ImgExtSingle::Jpg {
                 jakosc,
                 progresywny,
-                bit_depth, sampling: _, quant: _, scans: _,
+                bit_depth,
+                sampling, 
+                quant, 
+                scans,
             } => {
                 let dane = PrzetwarzanieJpg {
                     bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
@@ -152,12 +153,14 @@ pub async fn fn_do_laczenia_fot(
                     interpolacja: OptInterpolacja::Lanczos3,
                     jakosc,
                     bdepth: vec![bit_depth],
-                    sampling: Default::default(),
-                    quant: Default::default(),
-                    skany: 4,
+                    sampling,
+                    quant,
+                    skany: scans,
                     alpha: (0, 0, 0),
                     zaszumienie: None,
-                    progresywny
+                    exif: None,
+                    progresywny,
+                    kolor: ColorProfilePhoto::None,
                 };
                 zapisywanie_generic(
                     dane,

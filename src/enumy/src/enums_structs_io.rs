@@ -50,7 +50,8 @@ pub struct LogPrzetwarzanieFot {
 #[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct LogPakowaniaDds{
-    pub w_trakcie: u8,
+    pub pre: (u32, Option<u32>),
+    pub post: (u32, Option<u32>),
     pub koniec:String,
     pub err:String,
     

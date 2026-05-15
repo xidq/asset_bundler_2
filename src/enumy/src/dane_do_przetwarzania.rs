@@ -5,6 +5,7 @@ use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use std::any::Any;
 use std::cmp::PartialEq;
 use std::path::PathBuf;
+use image::ColorType;
 use image::imageops::FilterType;
 
 #[allow(dead_code)]
@@ -41,6 +42,7 @@ pub struct DaneKonw {
     pub tag:Vec<ImgExtTag>,
     pub inter: OptInterpolacja,
     pub alfa_rgb: (u16, u16, u16),
+    pub exif: bool,
 }
 impl Default for DaneKonw {
     fn default() -> Self {
@@ -53,6 +55,7 @@ impl Default for DaneKonw {
             tag: Vec::from([ ImgExtTag::Jpg ]),
             inter: OptInterpolacja::Nearest,
             alfa_rgb: (0, 0, 0),
+            exif: false,
         }
     }
 }

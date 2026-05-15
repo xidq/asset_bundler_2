@@ -127,11 +127,12 @@ impl Program {
                     LogTxDdsPak::Start => {
                         // self.status_zmiany_fot_log.msg_start = "Rozpoczęto".to_string();
                     }
-                    LogTxDdsPak::Pending(procent) => {
-                        self.status_dds_pakowanie.w_trakcie = procent;
+                    LogTxDdsPak::PostępPreOperacji(x,y) => {
+                        self.status_dds_pakowanie.pre = (x,y)
                     }
-
-
+                    LogTxDdsPak::PostępSkładania(x,y) => {
+                        self.status_dds_pakowanie.post = (x,y)
+                    }
                     LogTxDdsPak::Finito(czas) => {
                         self.log_prawe_okno.push(czas.clone());
 
@@ -392,6 +393,9 @@ impl Program {
                             metoda_kompresji: ForAvifKompresja::Av1,
                             lossy: Some(90),
                             bit_depth: Vec::from([BdepthAvif::Rgb10])
+                        },
+                        ImgExtTag::Unknown => ImgExt::Ff{
+                            metoda_kompresji: ForFfKompresja::Brak
                         }
                     };
 

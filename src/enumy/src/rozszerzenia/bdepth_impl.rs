@@ -27,6 +27,8 @@ pub trait BitDepth: std::fmt::Debug + Any + Send + Sync{
     }
     fn format(&self) -> ImgExtTag;
     fn jako_enum(self) -> BdepthEnum;
+    fn obsługa_exif(&self) -> bool;
+    fn obsługa_profilu(&self) -> bool;
 }
 
 
@@ -50,6 +52,10 @@ impl BitDepth for BdepthJpg {
     // }
     fn format(&self) -> ImgExtTag { ImgExtTag::Jpg}
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Jpg(self)}
+
+    fn obsługa_exif(&self) -> bool {true}
+
+    fn obsługa_profilu(&self) -> bool {true}
 }
 impl BitDepth for BdepthPng {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Png")}
@@ -75,7 +81,9 @@ impl BitDepth for BdepthPng {
     // }
     fn format(&self) -> ImgExtTag { ImgExtTag::Png}
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Png(self)}
+    fn obsługa_exif(&self) -> bool {true}
 
+    fn obsługa_profilu(&self) -> bool {true}
 }
 impl BitDepth for ForFfKompresja {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Png")}
@@ -97,7 +105,9 @@ impl BitDepth for ForFfKompresja {
     // }
     fn format(&self) -> ImgExtTag { ImgExtTag::Ff}
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Ff(self)}
+    fn obsługa_exif(&self) -> bool {false}
 
+    fn obsługa_profilu(&self) -> bool {false}
 }
 impl BitDepth for BdepthWebp {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Webp")}
@@ -117,7 +127,9 @@ impl BitDepth for BdepthWebp {
     //     false
     // }
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Webp(self)}
+    fn obsługa_exif(&self) -> bool {true}
 
+    fn obsługa_profilu(&self) -> bool {true}
 }
 impl BitDepth for BdepthAvif {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Avif")}
@@ -139,7 +151,9 @@ impl BitDepth for BdepthAvif {
     //     false
     // }
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Avif(self)}
+    fn obsługa_exif(&self) -> bool {true}
 
+    fn obsługa_profilu(&self) -> bool {true}
 }
 impl BitDepth for BdepthTga {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Tga")}
@@ -161,7 +175,9 @@ impl BitDepth for BdepthTga {
     //     false
     // }
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Tga(self)}
+    fn obsługa_exif(&self) -> bool {false}
 
+    fn obsługa_profilu(&self) -> bool {false}
 }
 impl BitDepth for BdepthQoi {
     fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Qoi")}
@@ -181,6 +197,9 @@ impl BitDepth for BdepthQoi {
     //     false
     // }
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Qoi(self)}
+    fn obsługa_exif(&self) -> bool {false}
+
+    fn obsługa_profilu(&self) -> bool {false}
 }
 
 impl BdepthAvif {

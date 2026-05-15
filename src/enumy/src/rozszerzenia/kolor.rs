@@ -47,3 +47,23 @@ pub enum ForAvifChroma {
     C420,
 
 }
+pub struct DaneDodatkoweZdjec{
+    pub exif: Option<Vec<u8>>,
+    pub kolor: ColorProfilePhoto,
+}
+
+#[derive(Clone, Debug)]
+pub enum ColorProfilePhoto {
+    ICC(Vec<u8>),
+    NCLX(ColorNclx),
+    None,
+}
+
+#[derive(Debug)]
+#[derive(Clone)]
+pub struct ColorNclx {
+    pub primaries: libheif_rs::ColorPrimaries,
+    pub transfer: libheif_rs::TransferCharacteristics,
+    pub matrix: libheif_rs::MatrixCoefficients,
+    pub full_range: bool,
+}

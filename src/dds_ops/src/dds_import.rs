@@ -14,6 +14,7 @@ use std::fs::File;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
+use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 
 pub async fn dds_to_image(
     dane: DaneDdsUnpak,
@@ -117,6 +118,8 @@ pub async fn dds_to_image(
                                 skany: scans,
                                 alpha: (0, 0, 0),
                                 zaszumienie: None,
+                                exif: None,
+                                kolor: ColorProfilePhoto::None,
                             };
                             zapisywanie_generic(
                                 dane,

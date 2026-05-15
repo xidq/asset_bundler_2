@@ -12,6 +12,7 @@ use std::path::PathBuf;
 use std::time::Instant;
 use image::imageops::FilterType;
 use walkdir::WalkDir;
+use crate::strukt::DaneDoZapisu;
 
 pub async fn image_to_dds(
     dane: DaneDdsPak,
@@ -25,10 +26,20 @@ pub async fn image_to_dds(
         ForDdsKompresja::High => {dds::CompressionQuality::High}
         ForDdsKompresja::Unreasonable => {dds::CompressionQuality::Unreasonable}
     };
-    let mut przerób: f32 = 0.;
+    let dlugosc = dane.ścieżka_wejściowa.clone();
+    let mut przerób = 0;
+    let mut tx_dla_wywolywacza = tx.clone();
+    let mut wywoływacz = move ||{
+        przerób += 1;
+        // dbg!(&przerób, (dane.ścieżka_wejściowa.clone().unwrap_or_default().len() as u32 * 4) + 3);
+
+        let _ = tx_dla_wywolywacza.try_send(LogTxDdsPak::PostępPreOperacji(przerób,Some((dane.ścieżka_wejściowa.clone().unwrap_or_default().len() as u32 * 4) + 3)));
+
+    };
+
+
     let allow_diff_sizes = true;
 
-    let mut percent: u8 = 0;
 
     let wynik: Result<(), std::io::Error> = async {
         let mut images_data = Vec::new();
@@ -36,17 +47,22 @@ pub async fn image_to_dds(
         let mut height = 0;
         let mut first_image = true;
         let max_plikow = images_data.len() + 3;
-        let lololo = match dane.ścieżka_wejściowa{
+        let lololo = match dlugosc{
             None => {Vec::from([PathBuf::from("")])}
             Some(xxx) => {xxx}
         };
-        
+
+
 
 
 
             lololo.iter().try_for_each(|e| -> Result<(), std::io::Error > {
+
+
+
                 match e.is_file() {
                     true => {
+                        wywoływacz();
                         // LOGIKA DLA POJEDYNCZEGO PLIKU
                         let path = e;
                         let rozszerzenie = path
@@ -79,10 +95,14 @@ pub async fn image_to_dds(
                             _ => bajty,
                         };
 
+                        wywoływacz();
+
                         let cursor = std::io::Cursor::new(&dane_obrazu);
                         let reader = image::ImageReader::new(cursor).with_guessed_format()?;
                         let decoder = reader.into_decoder().map_err(std::io::Error::other)?;
                         let img = image::DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
+
+                        wywoływacz();
 
                         match (first_image, allow_diff_sizes) {
                             (true, _) => {
@@ -109,6 +129,8 @@ pub async fn image_to_dds(
 
                         }
 
+                        wywoływacz();
+
                         images_data.push(img);
 
                         Ok(())
@@ -116,12 +138,14 @@ pub async fn image_to_dds(
 
 
                     false => {
+
+
                         for entry in WalkDir::new(e)
                             .into_iter()
                             .filter_map(|e| e.ok())
                             .filter(|e| e.file_type().is_file())
                         {
-                            dbg!("pętla w dds_wczytywanie_zdjec");
+                            // dbg!("pętla w dds_wczytywanie_zdjec");
                             let rozszerzenie = entry
                                 .path()
                                 .extension()
@@ -130,40 +154,40 @@ pub async fn image_to_dds(
                                 .to_lowercase();
                             let path = entry.path();
                             let bajty = std::fs::read(path)?;
-
+                            wywoływacz();
                             let dane_obrazu = match rozszerzenie.as_str() {
                                 "zst" => {
-                                    dbg!("dekompresowanie zstd");
+                                    // dbg!("dekompresowanie zstd");
                                     let mut decoder = zstd::stream::read::Decoder::new(&bajty[..])?;
                                     let mut rozpakowane = Vec::new();
                                     decoder.read_to_end(&mut rozpakowane)?;
                                     rozpakowane
                                 }
                                 "bz2" => {
-                                    dbg!("dekompresowanie bz2");
+                                    // dbg!("dekompresowanie bz2");
                                     let mut decoder = bzip2::read::BzDecoder::new(&bajty[..]);
                                     let mut rozpakowane = Vec::new();
                                     decoder.read_to_end(&mut rozpakowane)?;
                                     rozpakowane
                                 }
                                 "xz" => {
-                                    dbg!("dekompresowanie xz");
+                                    // dbg!("dekompresowanie xz");
                                     let mut decoder = xz2::read::XzDecoder::new(&bajty[..]);
                                     let mut rozpakowane = Vec::new();
                                     decoder.read_to_end(&mut rozpakowane)?;
                                     rozpakowane
                                 }
                                 _ => {
-                                    dbg!("nie trzeba dekompresować");
+                                    // dbg!("nie trzeba dekompresować");
                                     bajty
                                 },
                             };
-
+                            wywoływacz();
                             let cursor = std::io::Cursor::new(&dane_obrazu);
                             let reader = image::ImageReader::new(cursor).with_guessed_format()?;
                             let decoder = reader.into_decoder().map_err(std::io::Error::other)?;
                             let img = image::DynamicImage::from_decoder(decoder).map_err(std::io::Error::other)?;
-
+                            wywoływacz();
                             match (first_image, allow_diff_sizes) {
                                 (true, _) => {
                                     (width, height) = img.dimensions();
@@ -188,6 +212,7 @@ pub async fn image_to_dds(
                                 }
 
                             }
+                            wywoływacz();
                             images_data.push(img);
 
                         } Ok(())
@@ -195,8 +220,8 @@ pub async fn image_to_dds(
                 }
             }
         )?;
-
-        dbg!(&max_plikow);
+        wywoływacz();
+        // dbg!(&max_plikow);
         let obrazki_zmiana_rozmiaru: Vec<Vec<u8>> =
             images_data.iter().map(|xoxo| {
                 if allow_diff_sizes {
@@ -223,7 +248,7 @@ pub async fn image_to_dds(
 
 
 
-
+        wywoływacz();
 
         let refs_to_data: Vec<&[u8]> = obrazki_zmiana_rozmiaru.iter().map(|v| v.as_slice()).collect();
 
@@ -235,17 +260,19 @@ pub async fn image_to_dds(
         }
         ścieżka_pliku.push(finalna_nazwa);
         let mut huehuehue = fs::File::create(ścieżka_pliku)?;
-
-        save_image_to_dds(
-            &mut huehuehue,
-            refs_to_data,
+        let dane = DaneDoZapisu{
+            file: &mut huehuehue,
+            image_data: refs_to_data,
             width,
             height,
-            &dane.format,
+            format: &dane.format,
             kompresja,
-            &mut przerób,
-            max_plikow,
-            &mut percent,
+            minimaps: true,
+        };
+        wywoływacz();
+
+        save_image_to_dds(
+            dane,
             tx.clone(),
         )
         .unwrap_or(());

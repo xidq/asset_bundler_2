@@ -1,7 +1,7 @@
 use crate::opcje::OptInterpolacja;
 use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use crate::rozszerzenia::ext::ImgExtTag;
-use crate::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use crate::rozszerzenia::kolor::{ColorProfilePhoto, ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use image::DynamicImage;
@@ -41,6 +41,8 @@ pub struct PrzetwarzanieJpg{
     pub skany: u8,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
+    pub exif: Option<Vec<u8>>,
+    pub kolor: ColorProfilePhoto,
 }
 impl DaneDoPrzetwarzania<BdepthJpg> for PrzetwarzanieJpg{
     fn daj_dane(&self) -> Self {self.clone()}

@@ -16,6 +16,8 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
+use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
+use enumy::rozszerzenia::kolor::DaneDodatkoweZdjec;
 
 pub async fn main_fn_konwersja(
     zestaw_danych: DaneKonw,
@@ -92,7 +94,7 @@ pub async fn main_fn_konwersja(
             ścieżki_do_zdjęć.par_iter().try_for_each(|p| {
 
 
-                let (bufor, nazwa) = match wczytaj_zdjęcie(p.0.clone()) {
+                let (bufor, nazwa) = match wczytaj_pliki(p.0.clone()) {
                     Ok(dane) => dane,
                     Err(e) => {
                         eprintln!("Pomijam uszkodzony plik {:?}: {}", p.0, e);
@@ -135,7 +137,12 @@ pub async fn main_fn_konwersja(
                         // goin' forward without problematic file tho
                         return Ok::<(), tokio::io::Error>(());
                     }
-                };
+                };      
+                
+                // let dane_dodatkowe = DaneDodatkoweZdjec{
+                //     exif: bufor.exif,
+                //     kolor: bufor.kolor,
+                // };
 
 
                 // For every resolution option there's matching, in my opinion here's better than inside
@@ -156,7 +163,7 @@ pub async fn main_fn_konwersja(
                             } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzanieJpg{
-                                    bufor: bufor.clone(),
+                                    bufor: bufor.dane.clone(),
                                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
                                     sciezka_wyjsciowa: sciezka,
                                     nazwa: nazwa.clone(),
@@ -169,6 +176,8 @@ pub async fn main_fn_konwersja(
                                     skany: *scans,
                                     alpha: wsio_dane.alfa_rgb,
                                     zaszumienie: wsio_dane.noising,
+                                    exif: bufor.exif.clone(),
+                                    kolor: bufor.kolor.clone(),
                                 };
                                 zapisywanie_generic(
                                     dane,
@@ -183,7 +192,7 @@ pub async fn main_fn_konwersja(
                             } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzaniePng{
-                                    bufor: bufor.clone(),
+                                    bufor: bufor.dane.clone(),
                                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
                                     sciezka_wyjsciowa: sciezka,
                                     nazwa: nazwa.clone(),
@@ -203,7 +212,7 @@ pub async fn main_fn_konwersja(
                             ImgExt::Webp { jakosc , lossless, bit_depth} => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzanieWebp{
-                                    bufor: bufor.clone(),
+                                    bufor: bufor.dane.clone(),
                                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
                                     sciezka_wyjsciowa: sciezka,
                                     nazwa: nazwa.clone(),
@@ -223,7 +232,7 @@ pub async fn main_fn_konwersja(
                             ImgExt::Tga { bit_depth } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzanieTga{
-                                    bufor: bufor.clone(),
+                                    bufor: bufor.dane.clone(),
                                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
                                     sciezka_wyjsciowa: sciezka,
                                     nazwa: nazwa.clone(),
@@ -242,7 +251,7 @@ pub async fn main_fn_konwersja(
                             ImgExt::Ff { metoda_kompresji } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzanieFf{
-                                    bufor: bufor.clone(),
+                                    bufor: bufor.dane.clone(),
                                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
                                     sciezka_wyjsciowa: sciezka,
                                     nazwa: nazwa.clone(),
@@ -261,7 +270,7 @@ pub async fn main_fn_konwersja(
                             ImgExt::Qoi { bit_depth } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzanieQoi{
-                                    bufor: bufor.clone(),
+                                    bufor: bufor.dane.clone(),
                                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
                                     sciezka_wyjsciowa: sciezka,
                                     nazwa: nazwa.clone(),
@@ -286,7 +295,7 @@ pub async fn main_fn_konwersja(
                             } => {
                                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
                                 let dane = PrzetwarzanieAvif{
-                                    bufor: bufor.clone(),
+                                    bufor: bufor.dane.clone(),
                                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
                                     sciezka_wyjsciowa: sciezka,
                                     nazwa: nazwa.clone(),

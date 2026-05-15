@@ -85,7 +85,8 @@ impl Logi for LogTxKonw {
 #[derive(Debug, Clone)]
 pub enum LogTxDdsPak {
     Start,
-    Pending(u8),
+    PostępPreOperacji(u32,Option<u32>),
+    PostępSkładania(u32,Option<u32>),
     Finito(String),
     Błąd(String),
 }
