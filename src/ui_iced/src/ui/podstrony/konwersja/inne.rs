@@ -1,12 +1,12 @@
 use iced::widget::{container, slider, space, text, Column, Row};
 use iced_core::{Border, Color, Length};
 use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::{SliderType, UstawieniaThemeWsio};
+use enumy::inne_ui::{BtnState, ButtonType, SliderType, UstawieniaThemeWsio};
 use enumy::opcje::OptInterpolacja;
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_ui::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
-use crate::widget::button::pole_tekstowe_przycisku;
+use crate::widget::button::{pole_tekstowe_przycisku, przycisk};
 use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
@@ -227,6 +227,8 @@ pub fn reszta<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka
                 .push(slajderr(dane.noising.unwrap_or(0) as i32, (0,100), &SliderType::KonwersjaNoising, kolor, temat, Length::FillPortion(2)  ))
                 .push(space().width(15.))
         )
+        .push(przycisk("mgt_exif_data", ButtonType::KonwExifToggle,Length::FillPortion(1), Length::Fixed(50.),kolor,if dane.exif { &BtnState::Active } else { &BtnState::Disabled },jezyk,temat))
+
 
 
 }

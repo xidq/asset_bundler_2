@@ -4,13 +4,13 @@ use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::ActProces;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::ext::{ImgExtSingle, ImgExtTag};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::ext::{ImgExtTag, ImgExtSingle, ImgExt};
 use enumy::statusy::LogTxMerge;
+use file_merge::merge_main::fn_do_laczenia_fot;
 use futures::channel::mpsc;
 use iced::Task;
-use file_merge::merge_main::fn_do_laczenia_fot;
 use std::mem::discriminant;
 use std::path::PathBuf;
 

@@ -40,4 +40,5 @@ pub enum KonwMsg {
     PathOutFolder,
     Interpolacja(String),
     StabilizacjaDanychRozszerzen,
+    ExifToggle,
 }

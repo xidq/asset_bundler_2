@@ -40,7 +40,7 @@ pub fn konwertuj_przestrzen(
         _ => Profile::new_srgb(),
     };
 
-    // 3. DYNAMICZNE mapowanie formatu z DynamicImage na LCMS2
+    // DYNAMICZNE mapowanie formatu z DynamicImage na LCMS2
     // To zapobiega niszczeniu danych przy Luma8 czy Rgb16
     let f_src = match img {
         DynamicImage::ImageLuma8(_) => PixelFormat::GRAY_8,

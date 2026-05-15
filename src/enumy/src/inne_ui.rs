@@ -189,6 +189,7 @@ pub enum ButtonType{
     DdsWebpLoss,
     #[strum(message = "hint_conversion_avif_lossless")]
     DdsAvifLoss,
+    KonwExifToggle,
 }
 pub struct StartBtnStatus{
     pub bin_pak: BtnState,

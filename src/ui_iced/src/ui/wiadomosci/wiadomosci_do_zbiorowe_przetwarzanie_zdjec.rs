@@ -465,6 +465,9 @@ impl Program {
                 }
                 let _ = self.update(Message::ChckStatus);
             }
+            KonwMsg::ExifToggle => {
+                self.dane_konw.exif = !self.dane_konw.exif;
+            }
             KonwMsg::Uruchom => {
                 let dane_do_obrobki = self.dane_konw.clone();
                 self.temat.temp.act_proc = Some(ActProces::Konw);

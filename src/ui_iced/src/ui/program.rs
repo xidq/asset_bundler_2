@@ -164,7 +164,7 @@ impl Program {
                     tag: Vec::from([ImgExtTag::Jpg]),
                     inter: OptInterpolacja::Nearest,
                     alfa_rgb: (0, 0, 0),
-                    exif: true,
+                    exif: false,
                 } ,
                 do_nothing: false,
                 startowy_jezyk: locale.clone(),
@@ -657,6 +657,10 @@ impl Program {
                     ButtonType::DdsAvifLoss => {
                         self.update_message_dds(DdsMsg::AvifLoss)
                             .map(Message::Dds)
+                    }
+                    ButtonType::KonwExifToggle => {
+                        self.update_message_zbiorowe_przetwarzanie_zdjec(KonwMsg::ExifToggle)
+                            .map(Message::ZbiorowePrzetwarzanieZdjęć)
                     }
                 }
             }

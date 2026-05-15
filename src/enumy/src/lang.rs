@@ -184,6 +184,7 @@ impl WybórJęzyka {
                 "mgt_more" => "więcej",
                 "mgt_and" => "i",
                 "msg_no_folder_nor_file" => "Nie wybrano plików bądź folderów",
+                "mgt_exif_data" => "Dane EXIF",
 
                 "ui_main_btn_binary" => "Binarka",
                 "ui_main_btn_conversion" => "Konwersja",
