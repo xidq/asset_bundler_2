@@ -36,7 +36,7 @@ pub fn konwertuj_przestrzen(
 
     // 2. Profil docelowy (np. sRGB)
     let p_dst = match pixel_format_wyjsciowy {
-        PixelFormat::GRAY_8 | PixelFormat::GRAY_16 => Profile::new_gray(&wp_d65, &curve_22).unwrap(),
+        PixelFormat::GRAY_8 | PixelFormat::GRAY_16 | PixelFormat::GRAYA_8 | PixelFormat::GRAYA_16 => Profile::new_gray(&wp_d65, &curve_22).unwrap(),
         _ => Profile::new_srgb(),
     };
 
@@ -56,18 +56,45 @@ pub fn konwertuj_przestrzen(
 
         _ => return Err(std::io::Error::other("Nienatywny lub nieobsługiwany format w DynamicImage")),
     };
-    let flagi = lcms2::Flags::COPY_ALPHA;
+
+    let zrodlo_ma_alpha = match f_src {
+        lcms2::PixelFormat::RGBA_8 | lcms2::PixelFormat::RGBA_16 |
+        lcms2::PixelFormat::GRAYA_8 | lcms2::PixelFormat::GRAYA_16 => true,
+        _ => false,
+    };
+
+    let cel_wymaga_alpha = match pixel_format_wyjsciowy {
+        lcms2::PixelFormat::RGBA_8 | lcms2::PixelFormat::RGBA_16 |
+        lcms2::PixelFormat::GRAYA_8 | lcms2::PixelFormat::GRAYA_16 => true,
+        _ => false,
+    };
+
+
+    // let flagi = lcms2::Flags::COPY_ALPHA;
     // 4. Inicjalizacja transformacji LCMS2
     // let tr = Transform::new(&p_src, f_src, &p_dst, pixel_format_wyjsciowy, Intent::Perceptual)
     //     .map_err(|_| std::io::Error::other("LCMS2: Nie można powiązać formatów lub profili"))?;
-    let tr = Transform::new_flags(
-        &p_src,
-        f_src,
-        &p_dst,
-        pixel_format_wyjsciowy,
-        Intent::Perceptual,
-        flagi
-    ).map_err(|_| std::io::Error::other("LCMS2: Nie można powiązać formatów lub profili z flagą Alpha"))?;
+    let tr = if zrodlo_ma_alpha && cel_wymaga_alpha {
+        // Jeśli oba mają Alphę, jawnie odpalamy wersję z flagą COPY_ALPHA
+        Transform::new_flags(
+            &p_src,
+            f_src,
+            &p_dst,
+            pixel_format_wyjsciowy,
+            Intent::Perceptual,
+            lcms2::Flags::COPY_ALPHA
+        )
+    } else {
+        // Jeśli źródło nie ma Alphy (lub cel jej nie chce), używamy standardowego konstruktora.
+        // Pod maską lcms2 przekaże do biblioteki C wartość 0 jako flagi.
+        Transform::new(
+            &p_src,
+            f_src,
+            &p_dst,
+            pixel_format_wyjsciowy,
+            Intent::Perceptual
+        )
+    }.map_err(|e| std::io::Error::other(format!("LCMS2: Nie można powiązać formatów lub profili: {}", e)))?;
 
     // 5. Przygotowanie bufora pod format wyjściowy (np. CMYK8)
     let szerokosc = img.width() as usize;

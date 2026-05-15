@@ -157,7 +157,9 @@ pub async fn dds_to_image(
                                 bdepth: bit_depth.clone(),
                                 alpha: (0, 0, 0),
                                 zaszumienie: None,
+                                exif: None,
                                 kompresja,
+                                kolor: ColorProfilePhoto::None,
                             };
                             zapisywanie_generic(
                                 dane,

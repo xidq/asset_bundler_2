@@ -417,7 +417,7 @@ impl Program {
                             scans: 4,
                         }, ImgExtTag::Jpg),
                         ImgExtTag::Png => (ImgExt::Png {
-                            kompresja: 3,
+                            kompresja: 0,
                             bit_depth: Vec::from([BdepthPng::Rgb8]),
                         }, ImgExtTag::Png),
 

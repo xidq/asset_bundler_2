@@ -65,6 +65,8 @@ pub struct PrzetwarzaniePng{
     pub bdepth:  Vec<BdepthPng>,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
+    pub exif: Option<Vec<u8>>,
+    pub kolor: ColorProfilePhoto,
 }
 impl DaneDoPrzetwarzania<BdepthPng> for PrzetwarzaniePng{
     fn daj_dane(&self) -> Self {self.clone()}

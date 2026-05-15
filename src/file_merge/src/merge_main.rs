@@ -129,6 +129,8 @@ pub async fn fn_do_laczenia_fot(
                     bdepth: vec![bit_depth],
                     alpha: (0, 0, 0),
                     zaszumienie: None,
+                    exif: None,
+                    kolor: ColorProfilePhoto::None,
                 };
                 zapisywanie_generic(
                     dane,

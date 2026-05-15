@@ -458,9 +458,7 @@ where T: Logi,
         ForAvifChroma::C420 => {"420".to_string()}
     };
 
-
-
-
+    
     let lib = LibHeif::new();
     let mut context = HeifContext::new()
         .map_err(std::io::Error::other)?;

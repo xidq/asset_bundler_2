@@ -30,7 +30,7 @@ pub fn png<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                 .push(
                                     Row::new().spacing(15).height(50.)
                                         .push(pole_tekstowe_przycisku(format!("C: {}", kompresja), jezyk, temat))
-                                        .push(slajderr(*kompresja as i32, (0, 9), &SliderType::KonwersjaPngKompresja, kolor, temat, Length::FillPortion(2)))
+                                        .push(slajderr(*kompresja as i32, (0, 4), &SliderType::KonwersjaPngKompresja, kolor, temat, Length::FillPortion(2)))
                                         .push(space().width(15.))
                                 )
                                 .push(

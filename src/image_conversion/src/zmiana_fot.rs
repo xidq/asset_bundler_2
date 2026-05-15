@@ -199,6 +199,8 @@ pub async fn main_fn_konwersja(
                                     bdepth: bit_depth.clone(),
                                     alpha: wsio_dane.alfa_rgb,
                                     zaszumienie: wsio_dane.noising,
+                                    exif: bufor.exif.clone(),
+                                    kolor: bufor.kolor.clone(),
                                 };
                                 zapisywanie_generic(
                                     dane,
