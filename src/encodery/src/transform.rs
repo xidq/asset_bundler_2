@@ -9,17 +9,36 @@ pub fn konwertuj_przestrzen(
     pixel_format_wyjsciowy: PixelFormat,
 ) -> Result<Vec<u8>, std::io::Error> {
 
-    let profil = match icc_wejscie {
-        None => {Profile::new_srgb()}
-        Some(xxx) => {Profile::new_icc(xxx)
-            .map_err(|_| std::io::Error::other("Błąd parsera profilu wejściowego ICC"))?}
+    // let profil = match icc_wejscie {
+    //     None => {Profile::new_srgb()}
+    //     Some(xxx) => {Profile::new_icc(xxx)
+    //         .map_err(|_| std::io::Error::other("Błąd parsera profilu wejściowego ICC"))?}
+    // };
+    let wp_d65 = lcms2::CIExyY { x: 0.3127, y: 0.3290, Y: 1.0 };
+    let curve_22 = lcms2::ToneCurve::new(2.2);
+    // 1. Profil wejściowy z pliku (np. AdobeRGB)
+    let p_src = match icc_wejscie {
+        Some(bajty) => Profile::new_icc(bajty)
+            .map_err(|_| std::io::Error::other("Błąd parsera profilu wejściowego ICC"))?,
+        None => {
+            // BRAK PROFILU: Sprawdzamy, czy wejściowy plik to szarość czy RGB
+            match img {
+                DynamicImage::ImageLuma8(_) | DynamicImage::ImageLumaA8(_) |
+                DynamicImage::ImageLuma16(_) | DynamicImage::ImageLumaA16(_) => {
+                    // Jeśli wejście to szarość, profil źródłowy TEŻ musi być szarością
+                    Profile::new_gray(&wp_d65, &curve_22)
+                        .map_err(|_| std::io::Error::other("LCMS2: Błąd profilu Gray dla źródła"))?
+                },
+                _ => Profile::new_srgb(), // W przeciwnym wypadku standardowe sRGB
+            }
+        }
     };
 
-    // 1. Profil wejściowy z pliku (np. AdobeRGB)
-    let p_src = profil;
-
     // 2. Profil docelowy (np. sRGB)
-    let p_dst = Profile::new_srgb();
+    let p_dst = match pixel_format_wyjsciowy {
+        PixelFormat::GRAY_8 | PixelFormat::GRAY_16 => Profile::new_gray(&wp_d65, &curve_22).unwrap(),
+        _ => Profile::new_srgb(),
+    };
 
     // 3. DYNAMICZNE mapowanie formatu z DynamicImage na LCMS2
     // To zapobiega niszczeniu danych przy Luma8 czy Rgb16
@@ -64,7 +83,7 @@ pub fn profil_z_nclx(nclx: &ColorNclx) -> Result<Profile, std::io::Error> {
     //  Mapowanie Primaries (Współrzędne kolorów) oraz Punktu Bieli
     let (bialy_i_kolory, punkt_bieli) = match nclx.primaries {
 
-        // BT.709_5 / sRGB 
+        // BT.709_5 / sRGB
         ColorPrimaries::ITU_R_BT_709_5 | ColorPrimaries::Unspecified => {
             let triple = CIExyYTRIPLE {
                 Red:   CIExyY { x: 0.640, y: 0.330, Y: 1.0 },
