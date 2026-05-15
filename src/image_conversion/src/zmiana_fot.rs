@@ -24,7 +24,7 @@ pub async fn main_fn_konwersja(
 
     let start_czas = Instant::now();
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
-    let saf = sprawdzacz(zestaw_danych, tx.clone()).await?;
+    let saf = sprawdzacz(zestaw_danych.clone(), tx.clone()).await?;
     let wsio_dane = Arc::new(saf);
 
     wyslij_status(&mut tx, Some(LogTxKonw::Start)).await;
@@ -141,6 +141,10 @@ pub async fn main_fn_konwersja(
                 //     exif: bufor.exif,
                 //     kolor: bufor.kolor,
                 // };
+                let exif = match zestaw_danych.exif.clone(){
+                    true => {bufor.exif}
+                    false => {None}
+                };
 
 
                 // For every resolution option there's matching, in my opinion here's better than inside
@@ -174,7 +178,7 @@ pub async fn main_fn_konwersja(
                                     skany: *scans,
                                     alpha: wsio_dane.alfa_rgb,
                                     zaszumienie: wsio_dane.noising,
-                                    exif: bufor.exif.clone(),
+                                    exif: exif.clone(),
                                     kolor: bufor.kolor.clone(),
                                 };
                                 zapisywanie_generic(
@@ -199,7 +203,7 @@ pub async fn main_fn_konwersja(
                                     bdepth: bit_depth.clone(),
                                     alpha: wsio_dane.alfa_rgb,
                                     zaszumienie: wsio_dane.noising,
-                                    exif: bufor.exif.clone(),
+                                    exif: exif.clone(),
                                     kolor: bufor.kolor.clone(),
                                 };
                                 zapisywanie_generic(
@@ -307,7 +311,7 @@ pub async fn main_fn_konwersja(
                                     speed: *speed,
                                     metoda_kompresji: metoda_kompresji.clone(),
                                     lossy: *lossy,
-                                    exif: bufor.exif.clone(),
+                                    exif: exif.clone(),
                                     kolor: bufor.kolor.clone(),
                                 };
                                 zapisywanie_generic(
