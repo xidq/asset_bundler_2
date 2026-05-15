@@ -72,9 +72,9 @@ pub enum BdepthAvif{
     #[strum(default_with = "R10a",message = "Rgb10a", detailed_message = "Rgb 10 bit + Alpha (Color/w Alpha)")]
     Rgb10Alpha,
     #[strum(default_with = "R12",message = "Rgb12", detailed_message = "Rgb 12 bit (Color)")]
-    Rgb12Alpha,
-    #[strum(default_with = "R12a",message = "Rgb12a", detailed_message = "Rgb 12 bit + Alpha (Color/w Alpha)")]
     Rgb12,
+    #[strum(default_with = "R12a",message = "Rgb12a", detailed_message = "Rgb 12 bit + Alpha (Color/w Alpha)")]
+    Rgb12Alpha,
 }
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter, EnumMessage, Display)]
 pub enum BdepthQoi{
