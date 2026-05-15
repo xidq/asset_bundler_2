@@ -1,7 +1,7 @@
 use encodery::check::sprawdzacz;
 use encodery::halper::merge_sciezki;
 use encodery::send::wyslij_status;
-use encodery::wczytaj_foto::wczytaj_zdjęcie;
+use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::enums_structs_io::FILTERFOTO;
@@ -16,8 +16,6 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
 use walkdir::WalkDir;
-use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
-use enumy::rozszerzenia::kolor::DaneDodatkoweZdjec;
 
 pub async fn main_fn_konwersja(
     zestaw_danych: DaneKonw,

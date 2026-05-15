@@ -46,7 +46,6 @@ pub async fn image_to_dds(
         let mut width = 0;
         let mut height = 0;
         let mut first_image = true;
-        let max_plikow = images_data.len() + 3;
         let lololo = match dlugosc{
             None => {Vec::from([PathBuf::from("")])}
             Some(xxx) => {xxx}

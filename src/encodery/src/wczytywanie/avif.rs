@@ -5,7 +5,7 @@ use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
 pub fn avif(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error>{ //dodać exif jeżeli jest oraz dane odnośnie color space
     let mut exif_out: Option<Vec<u8>> = None;
     let lib_heif = LibHeif::new();
-    let ctx = HeifContext::read_from_bytes(&bajty)
+    let ctx = HeifContext::read_from_bytes(bajty)
         .map_err(std::io::Error::other)?;
     let handle = ctx.primary_image_handle()
         .map_err(std::io::Error::other)?;
@@ -15,13 +15,13 @@ pub fn avif(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error>{ //dod
     let exif_fourcc = four_cc::FourCC(*b"Exif");
     let count = handle.metadata_block_ids(&mut metadata_ids, exif_fourcc);
 
-    if count > 0 {
-        if let Ok(exif_data) = handle.metadata(metadata_ids[0]) {
+    if count > 0 &&
+        let Ok(exif_data) = handle.metadata(metadata_ids[0]) {
             // Bardzo ważne: EXIF w HEIF/AVIF często ma 4-bajtowy
             // prefix (offset), który trzeba pominąć dla niektórych parserów.
             // Ale na razie kopiujemy całość:
             exif_out = Some(exif_data);
-        }
+
     }
     let mut typ_koloru = ColorProfilePhoto::None;
     let color_profile_opt = handle.color_profile_raw();
@@ -106,7 +106,7 @@ pub fn avif(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error>{ //dod
         DaneDoWczytywania{
             dane: obraz,
             exif: exif_out,
-            kolor: ColorProfilePhoto::None,
+            kolor: typ_koloru,
         }
     )
 }

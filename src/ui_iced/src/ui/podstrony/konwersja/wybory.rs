@@ -314,7 +314,7 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
         .push(info_male("|".to_string(), true, temat))
         .push(info_male("Exif".to_string(), dane.exif, temat))
         .push(info_male("|".to_string(), true, temat))
-        .push(info_male(format!("Noise: {}", dane.noising.unwrap_or_else(|| 0)), dane.noising.is_some(), temat))
+        .push(info_male(format!("Noise: {}", dane.noising.unwrap_or( 0)), dane.noising.is_some(), temat))
         .push(info_male("|".to_string(), true, temat));
 
 

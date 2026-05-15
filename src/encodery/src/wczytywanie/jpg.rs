@@ -1,11 +1,10 @@
-use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use crate::wczytywanie::strukty::DaneDoWczytywania;
-use jpeg_decoder::Decoder;
-use jpeg_encoder::{Encoder, ColorType};
+use enumy::rozszerzenia::kolor::ColorProfilePhoto;
+use image::{DynamicImage, ImageBuffer};
 use img_parts::jpeg::Jpeg;
 use img_parts::{ImageEXIF, ImageICC};
+use jpeg_decoder::Decoder;
 use std::io::Cursor;
-use image::{DynamicImage, ImageBuffer};
 
 pub fn jpeg(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
 

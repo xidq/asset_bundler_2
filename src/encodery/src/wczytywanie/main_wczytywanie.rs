@@ -49,7 +49,7 @@ pub fn wczytaj_pliki(
         _ => {bajty}
     };
     
-    let fotu= match rozpoznaj_format(&*sprawdzanie_kompresji){
+    let fotu= match rozpoznaj_format(&sprawdzanie_kompresji){
         ImgExtTag::Avif => {avif(&sprawdzanie_kompresji)}
         ImgExtTag::Jpg => {jpeg(&sprawdzanie_kompresji)}
         ImgExtTag::Png => {png(&sprawdzanie_kompresji)}

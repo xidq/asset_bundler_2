@@ -1,12 +1,11 @@
 use crate::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
-use crate::rozszerzenia::ext::{ImgExt, ImgExtTag, ImgExtSingle};
+use crate::rozszerzenia::ext::{ImgExt, ImgExtSingle, ImgExtTag};
 use crate::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use image::imageops::FilterType;
 use std::any::Any;
 use std::cmp::PartialEq;
 use std::path::PathBuf;
-use image::ColorType;
-use image::imageops::FilterType;
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]

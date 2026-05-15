@@ -1,7 +1,6 @@
-use std::io::Read;
-use image::{DynamicImage, ImageBuffer, Rgba};
-use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use crate::wczytywanie::strukty::DaneDoWczytywania;
+use enumy::rozszerzenia::kolor::ColorProfilePhoto;
+use image::{DynamicImage, ImageBuffer, Rgba};
 
 pub fn ff(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error> {
     // 1. Sprawdzenie nagłówka "farbfeld" (8 bajtów)

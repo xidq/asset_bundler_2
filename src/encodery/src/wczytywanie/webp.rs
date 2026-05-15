@@ -3,7 +3,7 @@ use webp::Decoder;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 // Safe wrapper, który już masz
 
-pub fn webp(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
+pub fn webp(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error> {
 
     let decoder = Decoder::new(bajty);
     // let webp_img = decoder.decode()

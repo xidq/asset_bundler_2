@@ -1,5 +1,11 @@
-use crate::zapisywanie::jpg::jpg_match;
 use crate::send::wyslij_status;
+use crate::zapisywanie::avif::avif_match;
+use crate::zapisywanie::ff::ff_match;
+use crate::zapisywanie::jpg::jpg_match;
+use crate::zapisywanie::png::png_match;
+use crate::zapisywanie::qoi::qoi_match;
+use crate::zapisywanie::tga::tga_match;
+use crate::zapisywanie::webp::webp_match;
 use enumy::opcje::OptInterpolacja;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, TypyPrzetwarzania};
 use enumy::rozszerzenia::bdepth_impl::{BdepthEnum, BitDepth};
@@ -9,13 +15,6 @@ use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use enumy::rozszerzenia::kolor::DaneDodatkoweZdjec;
-use crate::zapisywanie::avif::avif_match;
-use crate::zapisywanie::ff::ff_match;
-use crate::zapisywanie::png::png_match;
-use crate::zapisywanie::qoi::qoi_match;
-use crate::zapisywanie::tga::tga_match;
-use crate::zapisywanie::webp::webp_match;
 
 pub async fn zapisywanie_generic<T, F, G>(
     dane: F,

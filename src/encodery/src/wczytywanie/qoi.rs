@@ -9,7 +9,7 @@ pub fn qoi(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
 
     // Inicjalizacja dekodera QOI
     let decoder = QoiDecoder::new(cursor)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        .map_err(|e| std::io::Error::other(e))?;
 
     let (width, height) = decoder.dimensions();
     let color_type = decoder.color_type();
@@ -17,7 +17,7 @@ pub fn qoi(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     // Alokujemy bufor na surowe dane pikseli
     let mut pixels = vec![0u8; decoder.total_bytes() as usize];
     decoder.read_image(&mut pixels)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        .map_err(|e| std::io::Error::other(e))?;
 
     // Mapowanie na DynamicImage
     let obraz = match color_type {

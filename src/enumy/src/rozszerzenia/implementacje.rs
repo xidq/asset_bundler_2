@@ -1,7 +1,6 @@
 use crate::opcje::{OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
 use crate::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use crate::rozszerzenia::kolor::ForAvifChroma;
-use crate::rozszerzenia::kompresje::ForFfKompresja;
 use std::fmt;
 
 // impl fmt::Display for RozszerzeniaBdepth {

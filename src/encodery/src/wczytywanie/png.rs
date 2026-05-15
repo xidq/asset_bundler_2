@@ -6,7 +6,7 @@ use crate::wczytywanie::strukty::DaneDoWczytywania;
 
 pub fn png(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     let cursor = Cursor::new(bajty);
-    let mut decoder = Decoder::new(cursor);
+    let decoder = Decoder::new(cursor);
 
 
     // decoder.set_transformations(png::Transformations::EXPAND);
@@ -14,11 +14,11 @@ pub fn png(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     // Ważne: musimy poinstruować dekoder, aby czytał metadane, 
     // bo domyślnie może je zignorować dla oszczędności pamięci.
     let mut reader = decoder.read_info()
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        .map_err(|e| std::io::Error::other(e))?;
 
     let mut pixels = vec![0; reader.output_buffer_size().expect("nie ma pikseli w png")];
     let info = reader.next_frame(&mut pixels)
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        .map_err(|e| std::io::Error::other(e))?;
 
     // --- 1. Wyciąganie ICC Profile ---
     let mut typ_koloru = ColorProfilePhoto::None;
@@ -34,10 +34,10 @@ pub fn png(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     let mut exif_out = None;
     // W nowszych standardach PNG EXIF jest w chunku 'eXIf'.
     // Starsze PNG mogły go mieć w 'zTXt' lub 'iTXt', ale trzymamy się standardu.
-    if let Some(exif_chunk) = &reader.info().exif_metadata {
-        if !exif_chunk.is_empty() {
+    if let Some(exif_chunk) = &reader.info().exif_metadata &&
+         !exif_chunk.is_empty() {
             exif_out = Some(exif_chunk.to_vec());
-        }
+
     }
 
     // --- 3. Mapowanie na DynamicImage ---

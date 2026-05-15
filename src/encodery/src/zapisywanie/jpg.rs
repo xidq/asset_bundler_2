@@ -1,18 +1,17 @@
 use crate::halper::{usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
+use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieJpg};
 use enumy::rozszerzenia::bdepth::BdepthJpg;
 use enumy::rozszerzenia::kolor::{ColorProfilePhoto, ForJpgQuant, ForJpgSamplingFac};
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
-use image::DynamicImage;
 use jpeg_encoder::{Encoder, QuantizationTableType, SamplingFactor};
+use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
-use lcms2::{PixelFormat, Profile};
 use tokio::sync::Mutex;
-use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
 
 pub async fn jpg_match<T>(
     dane: PrzetwarzanieJpg,
@@ -126,7 +125,7 @@ pub async fn jpg_match<T>(
         None => {}
         Some(xxx) => { encoder.add_exif_metadata(&*xxx).expect("Err jpg exif data");}
     }
-    
+
 
 
 

@@ -21,7 +21,7 @@ pub fn unknown(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error> {
 
     // 3. Dekodowanie do DynamicImage
     let obraz = reader.decode()
-        .map_err(|e| std::io::Error::new(std::io::ErrorKind::Other, e))?;
+        .map_err(|e| std::io::Error::other(e))?;
 
     // Dla nieznanych formatów trudno o generyczne wyciąganie ICC/EXIF bez matchowania,
     // więc zwracamy None.
