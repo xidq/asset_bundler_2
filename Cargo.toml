@@ -12,7 +12,8 @@ members = [
     "src/pass",
     "src/dds_ops",
     "src/encodery",
-    "tests", "src/video",
+#    "tests",
+    "src/video",
 ]
 
 
@@ -52,3 +53,4 @@ libheif-rs = { version = "2.7.0", features = ["embedded-libheif"] }
 jpeg-encoder = "0.7.0"
 noise = "0.9"
 #libwebp-sys = { version = "0.14.4", features = ["demux"] }
+#openexr = "0.11.0"

@@ -1,7 +1,7 @@
 use crate::ui::podstrony::binarka::lewa::strona_wyboru;
 use crate::ui::podstrony::binarka::pakowanie::binarka_pak;
 use crate::ui::podstrony::binarka::rozpakowanie::binarka_rozpakowanie;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::oddzielacze::oddzielacz_pionowy;
 use enumy::dane_do_przetwarzania::{DaneBinPak, DaneBinUnpak};
 use enumy::enums_structs_io::{LogPakowanie, LogRozpakowywanie};

@@ -1,4 +1,4 @@
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use enumy::inne_ui::UstawieniaThemeWsio;
 use iced::widget::text;
 use iced::Element;

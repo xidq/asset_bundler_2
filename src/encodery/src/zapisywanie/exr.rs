@@ -1,3 +1,4 @@
+use std::path::Path;
 use std::sync::Arc;
 use exr::compression::Compression;
 use exr::math::Vec2;
@@ -35,15 +36,17 @@ where T: Logi,
     };
 
     let fotu = if wymiar == 0 {
-        usun_kanal_alpha(ghgh, dane.alpha)
+        ghgh
     } else {
-        usun_kanal_alpha(ghgh, dane.alpha)
+        ghgh
             .resize(
                 wymiar,
                 wymiar,
                 filtr,
             )
     };
+
+
 
 
     // 2. Uzyskaj bufor f32 RGBA
@@ -99,16 +102,16 @@ where T: Logi,
             blocks: Blocks::ScanLines,
             line_order: LineOrder::Increasing,
         },
-        ForExrKompresja::Dwaa(level)     => Encoding {
-            compression: Compression::DWAA(*level),
-            blocks: Blocks::ScanLines,         // DWAA operuje na liniach
-            line_order: LineOrder::Increasing,
-        },
-        ForExrKompresja::Dwab(level)     => Encoding {
-            compression: Compression::DWAB(*level),
-            blocks: Blocks::Tiles(Vec2(256, 256)), // DWAB używa bloków 256 linii → mapujemy na duże kafle
-            line_order: LineOrder::Increasing,
-        },
+        // ForExrKompresja::Dwaa(level)     => Encoding {
+        //     compression: Compression::DWAA(*level),
+        //     blocks: Blocks::ScanLines,         // DWAA operuje na liniach
+        //     line_order: LineOrder::Increasing,
+        // },
+        // ForExrKompresja::Dwab(level)     => Encoding {
+        //     compression: Compression::DWAB(*level),
+        //     blocks: Blocks::Tiles(Vec2(256, 256)), // DWAB używa bloków 256 linii → mapujemy na duże kafle
+        //     line_order: LineOrder::Increasing,
+        // },
     };
 
     // 5. Wybór typu próbek (f16 / f32) na podstawie `bit_depth`
@@ -116,7 +119,7 @@ where T: Logi,
         BdepthExr::F16Half => true,   // odpowiedniki BdepthExr
         BdepthExr::F32 => false,
         BdepthExr::F32Half => true,   // jeśli to half w kontenerze 32-bit
-        _ => false,                   // domyślnie f32
+        BdepthExr::F16 => false,
     };
 
     // 6. Informacja o chromatycznościach z profilu
@@ -194,16 +197,98 @@ where T: Logi,
 
     let image = Image::new(image_attributes, layer);
 
-    // ---------- 7. Ścieżka zapisu ----------
+
     let output_path = dane.sciezka_wyjsciowa.join(&nazwa_wariantu).with_extension("exr");
 
-    // ---------- 8. Zapis ----------
+
     image.write()
         .to_file(&output_path)
         .map_err(|e| tokio::io::Error::other(format!("Błąd zapisu EXR: {}", e)))?;
         // .map_err(|e| tokio::io::Error::new(tokio::io::ErrorKind::Other, format!("Błąd zapisu EXR: {e}")))?;
 
 
+    // if matches!(dane.kompresja, ForExrKompresja::Dwaa(_) | ForExrKompresja::Dwab(_)) {
+    //     // ---------- Zapis przez natywny koder C ----------
+    //     zapisz_exr_dwa_natywnie(
+    //         &output_path,
+    //         width,
+    //         height,
+    //         &pixels,
+    //         &dane.kompresja,
+    //         chromaticities,
+    //     )
+    //         .map_err(|e| tokio::io::Error::other(format!("Błąd zapisu EXR (DWAA/DWAB): {e}")))?;
+    // } else {
+    //     // ---------- Dotychczasowy zapis dla innych kompresji ----------
+    //     image.write()
+    //         .to_file(&output_path)
+    //         .map_err(|e| tokio::io::Error::other(format!("Błąd zapisu EXR: {}", e)))?;
+    // }
+
 
     Ok(())
 }
+// use openexr::prelude::*;
+//
+// use half::f16;
+//
+// fn zapisz_exr_dwa_natywnie(
+//     sciezka: &Path,
+//     width: u32,
+//     height: u32,
+//     pixels: &[f32],                // liniowy RGBA
+//     kompresja: &ForExrKompresja,
+//     chromaticities: Option<Chromaticities>,
+// ) -> Result<(), Box<dyn std::error::Error>> {
+//
+//     let level = match kompresja {
+//         ForExrKompresja::Dwaa(lvl) => lvl,
+//         ForExrKompresja::Dwab(lvl) => lvl,
+//         _ => unreachable!(),
+//     };
+//     let compression = match kompresja {
+//         ForExrKompresja::Dwaa(_) => Compression::DWAA(*level),
+//         ForExrKompresja::Dwab(_) => Compression::DWAB(*level),
+//         _ => unreachable!(),
+//     };
+//
+//     // 1. Piksele → Rgba (pola f16)
+//     let rgba_pixels: Vec<Rgba> = pixels
+//         .chunks(4)
+//         .map(|chunk| Rgba {
+//             r: half::f16::from_f32(chunk[0]),
+//             g: f16::from_f32(chunk[1]),
+//             b: f16::from_f32(chunk[2]),
+//             a: f16::from_f32(chunk[3]),
+//         })
+//         .collect();
+//
+//     // 2. Nagłówek – prosty konstruktor
+//     let mut header = Header::from_dimensions(width as i32, height as i32);
+//     header.compression = compression;
+//
+//     // 3. Chromatyczności
+//     if let Some(c) = chromaticities {
+//         header.chromaticities = Some(openexr::Chromaticities {
+//             red:   [c.red.x(),   c.red.y()],
+//             green: [c.green.x(), c.green.y()],
+//             blue:  [c.blue.x(),  c.blue.y()],
+//             white: [c.white.x(), c.white.y()],
+//         });
+//     }
+//
+//     // 4. Zapis przez RgbaOutputFile
+//     let mut file = RgbaOutputFile::new(
+//         &sciezka.to_string_lossy(),   // Path → &str
+//         &header,
+//         RgbaChannels::WriteRgba,
+//         1,                            // jedna warstwa
+//     )?;
+//
+//     file.set_frame_buffer(&rgba_pixels, 1, width as usize)?;
+//     unsafe {
+//         file.write_pixels(height as i32)?;
+//     }
+//
+//     Ok(())
+// }

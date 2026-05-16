@@ -1,4 +1,4 @@
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::styles::{styl_menu_pick, styl_pick_list};
 use enumy::implementacje::{DaneDropdown, ElementyDropdown};
 use enumy::inne_ui::UstawieniaThemeWsio;

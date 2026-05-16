@@ -4,7 +4,7 @@ use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::{BtnState, ButtonType, SliderType, UstawieniaThemeWsio};
 use enumy::opcje::OptInterpolacja;
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 use crate::widget::button::{pole_tekstowe_przycisku, przycisk};
 use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;

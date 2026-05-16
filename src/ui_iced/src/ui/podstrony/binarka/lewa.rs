@@ -1,4 +1,4 @@
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::przycisk_podmenu;
 use enumy::inne_ui::{UiPods, UstawieniaThemeWsio};
 use enumy::wybranie_jezykowe::WybórJęzyka;

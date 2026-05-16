@@ -216,7 +216,7 @@ impl BitDepth for BdepthExr {
         }
     }
     fn jako_any(&self) -> &dyn Any { self }
-    fn format(&self) -> ImgExtTag { ImgExtTag::Qoi}
+    fn format(&self) -> ImgExtTag { ImgExtTag::Exr}
 
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Exr(self)}
     fn obsługa_exif(&self) -> bool {false}

@@ -4,7 +4,7 @@ use iced_core::Color;
 use enumy::enums_structs_io::LogRozpakowywanie;
 use enumy::inne_ui::UstawieniaThemeWsio;
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::status::{status_text, status_text_bar};
 
 pub fn status_rozpakowanie<'a>(dane: &'a LogRozpakowywanie, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a,Message>{

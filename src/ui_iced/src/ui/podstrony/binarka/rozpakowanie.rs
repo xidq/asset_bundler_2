@@ -1,5 +1,5 @@
 use crate::ui::podstrony::binarka::rozpakowanie_status::status_rozpakowanie;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::{przycisk, przycisk_startu};
 use crate::widget::text_place::tekstowe_pole_wypelniane;
 use enumy::dane_do_przetwarzania::DaneBinUnpak;

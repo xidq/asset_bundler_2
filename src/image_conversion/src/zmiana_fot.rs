@@ -5,7 +5,7 @@ use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::enums_structs_io::FILTERFOTO;
-use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
+use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieExr, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 use enumy::rozszerzenia::ext::ImgExt;
 use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc;
@@ -326,7 +326,27 @@ pub async fn main_fn_konwersja(
                                     tx_zadanie,
                                 ).await?;
                             }
-                            ImgExt::Exr { .. } => {}
+                            ImgExt::Exr { bit_depth, kompresja } => {
+                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                                let dane = PrzetwarzanieExr{
+                                    bufor: bufor.dane.clone(),
+                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                                    sciezka_wyjsciowa: sciezka,
+                                    nazwa: nazwa.clone(),
+                                    interpolacja: wsio_dane.inter,
+                                    kompresja: *kompresja,
+                                    bdepth: bit_depth.clone(),
+                                    alpha: wsio_dane.alfa_rgb,
+                                    zaszumienie: wsio_dane.noising,
+                                    kolor: bufor.kolor.clone(),
+                                };
+                                zapisywanie_generic(
+                                    dane,
+                                    metryka_operacji,
+                                    obecna_operacja.clone(),
+                                    tx_zadanie,
+                                ).await?;
+                            }
                         }
                         Ok::<(), tokio::io::Error>(())
                     })?;
@@ -355,7 +375,7 @@ fn wez_sprawdz_sciezki(
     sciezka: PathBuf,
     tx: &mut mpsc::Sender<LogTxKonw>,
 ) -> Vec<(PathBuf, String, String)> {
-    let opt_rozszerzenia_plików_zdjęciowych: [&str; 16] =
+    let opt_rozszerzenia_plików_zdjęciowych: [&str; 17] =
         FILTERFOTO.map(|item| item.strip_prefix("ff.").unwrap_or(item));
     // FILTERFOTO
     let mut przetworzone_pliki: u32 = 0;
@@ -410,9 +430,9 @@ fn zgarnij_dane_z_pliku(
     // println!("jestem w zgarnij dane z pliku!!!!!");
     let mut przetworzone_pliki: u32 = 0;
     let mut do_wyjscia = Vec::new();
-    let opt_rozszerzenia_plików_zdjęciowych: [&str; 16] =
+    let opt_rozszerzenia_plików_zdjęciowych: [&str; 17] =
         FILTERFOTO.map(|item| item.strip_prefix("ff.").unwrap_or(item));
-    println!("jestem w zgarnij_dane_z_pliku");
+    // println!("jestem w zgarnij_dane_z_pliku");
 
 
     for entry in WalkDir::new(&ścieżka).into_iter().flatten() {

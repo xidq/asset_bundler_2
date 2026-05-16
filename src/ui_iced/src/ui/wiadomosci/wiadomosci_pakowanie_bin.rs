@@ -1,5 +1,5 @@
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::BinPakMsg;
 use binarka::pakowanie_plikow::ogarnianie_eksportu;
 use chrono::Local;

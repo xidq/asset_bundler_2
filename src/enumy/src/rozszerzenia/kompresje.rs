@@ -22,8 +22,8 @@ pub enum ForExrKompresja{
     Pxr24,
     B44,
     B44a,
-    Dwaa(Option<f32>),
-    Dwab(Option<f32>),
+    // Dwaa(Option<f32>),
+    // Dwab(Option<f32>),
 }
 
 #[allow(dead_code)]

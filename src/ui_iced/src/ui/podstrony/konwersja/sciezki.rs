@@ -1,4 +1,4 @@
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::{przycisk, przycisk_startu};
 use crate::widget::status::{status_text, status_text_bar};
 use crate::widget::text_place::tekstowe_pole_wypelniane;

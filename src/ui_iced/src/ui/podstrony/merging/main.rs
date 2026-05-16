@@ -1,7 +1,7 @@
 use crate::ui::podstrony::merging::lewy::strona_wyboru;
 use crate::ui::podstrony::merging::rozszerzenia::rozszerzenia;
 use crate::ui::podstrony::merging::sciezki::sciezki;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::oddzielacze::oddzielacz_pionowy;
 use enumy::dane_do_przetwarzania::DaneMerge;
 use enumy::inne_ui::{UiPods, UstawieniaThemeWsio};

@@ -15,6 +15,7 @@ pub fn rozpoznaj_format(bajty: &[u8]) -> ImgExtTag {
         [b'R', b'I', b'F', b'F', _, _, _, _, b'W', b'E', b'B', b'P'] => ImgExtTag::Webp,
 
         [_, _, _, _, b'f', b't', b'y', b'p', b'a', b'v', b'i', b'f'] => ImgExtTag::Avif,
+        [0x76, 0x2F, 0x31, 0x01, ..] => ImgExtTag::Exr,
         _ => ImgExtTag::Unknown,
     };
     

@@ -1,5 +1,5 @@
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::ActProces;

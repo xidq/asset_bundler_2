@@ -165,6 +165,8 @@ pub enum SliderType{
     DdsAvifSpeed,
     DdsAvifQuality,
     DdsPngKompresja,
+    // KonwExrCompDwaa,
+    // KonwExrCompDwab,
 }
 #[derive(Clone, Debug)]
 pub enum DropdownType{
@@ -188,6 +190,7 @@ pub enum DropdownType{
     DdsAvifChroma,
     DdsJpgQuant,
     DdsJpgSample,
+    KonwersjaExrKompresja,
 }
 #[derive(Clone, Debug)]
 

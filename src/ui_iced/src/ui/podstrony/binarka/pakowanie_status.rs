@@ -1,4 +1,4 @@
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::status::{status_text, status_text_bar};
 use enumy::enums_structs_io::LogPakowanie;
 use enumy::inne_ui::UstawieniaThemeWsio;

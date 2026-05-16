@@ -1,4 +1,4 @@
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::btn_rozdzielczosci;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::{BtnState, UstawieniaThemeWsio};

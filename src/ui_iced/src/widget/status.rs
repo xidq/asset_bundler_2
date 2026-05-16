@@ -4,7 +4,7 @@ use iced_core::{Color, Length};
 use enumy::inne_ui::UstawieniaThemeWsio;
 use enumy::lang::odmiana_liczbowa;
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
 use crate::widget::styles::styl_progress_bar;
 

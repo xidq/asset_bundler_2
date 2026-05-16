@@ -1,4 +1,4 @@
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::styles::styl_text_input;
 use enumy::inne_ui::{TextInputType, UstawieniaThemeWsio};
 use enumy::wybranie_jezykowe::WybórJęzyka;

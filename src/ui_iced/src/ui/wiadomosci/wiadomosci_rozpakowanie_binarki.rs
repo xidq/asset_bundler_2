@@ -1,5 +1,5 @@
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
 use binarka::rozpakowywanie_plikow::ogarnianie_dekompresji;
 use enumy::inne_ui::ActProces;

@@ -5,7 +5,7 @@ use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth::BdepthJpg;
+use enumy::rozszerzenia::bdepth::{BdepthExr, BdepthJpg};
 use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use enumy::wybranie_jezykowe::WybórJęzyka;
@@ -13,36 +13,44 @@ use iced::widget::{container, space, Column, Row};
 use iced::Element;
 use iced_core::{Color, Length};
 use strum::IntoEnumIterator;
+use enumy::rozszerzenia::kompresje::ForExrKompresja;
 
-pub fn jpg<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
+pub fn exr<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
-        .push(przycisk_rozszerzenia(ImgExtTag::Jpg, ButtonType::KonwRozszerzenia, kolor, if dane.tag.contains(&ImgExtTag::Jpg){ &BtnState::Active } else { &BtnState::Disabled }, jezyk, temat))
+        .push(przycisk_rozszerzenia(ImgExtTag::Exr, ButtonType::KonwRozszerzenia, kolor, if dane.tag.contains(&ImgExtTag::Exr){ &BtnState::Active } else { &BtnState::Disabled }, jezyk, temat))
         .push(
             container(
                 Row::new()
                     .push(
                         if let Some(
-                            ImgExt::Jpg {
-                                jakosc,
-                                progresywny,
+                            ImgExt::Exr {
                                 bit_depth,
-                                sampling: _,
-                                quant: _,
-                                scans,
+                                kompresja
                             }) = dane.rozszerzenia
                             .iter()
-                            .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                            .find(|f| matches!(f, ImgExt::Exr { .. }))
                         {
                             Column::new()
                                 .push(
-                                    Row::new().spacing(15).height(50.)
-                                        .push(pole_tekstowe_przycisku(format!("Q: {}%", jakosc), jezyk, temat))
-                                        .push(slajderr(*jakosc as i32, (0,100), &SliderType::KonwJpgQuality, kolor, temat, Length::FillPortion(2)  ))
-                                        .push(space().width(15.))
+                                    match kompresja{
+                                        // ForExrKompresja::Dwaa(Some(pp)) => {
+                                        //     Row::new().spacing(15).height(50.)
+                                        //         .push(pole_tekstowe_przycisku(format!("Q: {}", pp), jezyk, temat))
+                                        //         .push(slajderr(*pp as i32, (0,100), &SliderType::KonwExrCompDwaa, kolor, temat, Length::FillPortion(2)))
+                                        //         .push(space().width(15.))
+                                        // }
+                                        // ForExrKompresja::Dwab(Some(pp)) => {
+                                        //     Row::new().spacing(15).height(50.)
+                                        //         .push(pole_tekstowe_przycisku(format!("Q: {}", pp), jezyk, temat))
+                                        //         .push(slajderr(*pp as i32, (0,100), &SliderType::KonwExrCompDwab, kolor, temat, Length::FillPortion(2)))
+                                        //         .push(space().width(15.))
+                                        // }
+                                        // Wszystkie warianty z None oraz każdy inny rodzaj kompresji wpadną tutaj:
+                                        _ => Row::new().height(50.)
+                                    }
                                 )
                                 .push(
-                                    BdepthJpg::iter()
-                                        
+                                    BdepthExr::iter()
                                         .fold(
                                             Row::new(), |row, wariant| {
                                                 row.push(
@@ -57,25 +65,13 @@ pub fn jpg<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                             }
                                         )
                                 )
-                                .push(przycisk("conversion_jpg_prog", ButtonType::KonwJpgProg,Length::FillPortion(1), Length::Fixed(50.),kolor,if *progresywny { &BtnState::Processing } else { &BtnState::Disabled },jezyk,temat))
-                                .push(
-                                    Row::new().spacing(15)
-                                        .push(pole_tekstowe_przycisku(format!("scans: {}", scans), jezyk, temat))
-                                        .push(slajderr(*scans as i32, (2,64), &SliderType::KonwersjaJpgScans, kolor, temat, Length::FillPortion(2)  ))
-                                        .push(space().width(15.))
-                                )
                                 .push(
                                     Row::new().spacing(15)
                                         .push(pole_tekstowe_przycisku("conversion_jpg_sampling", jezyk, temat))
-                                        .push(dropdown::<ForJpgSamplingFac, _>(dane, kolor, temat))
+                                        .push(dropdown::<ForExrKompresja, _>(dane, kolor, temat))
                                         .push(space().width(15.))
                                 )
-                                .push(
-                                    Row::new().spacing(15)
-                                        .push(pole_tekstowe_przycisku("conversion_jpg_qua", jezyk, temat))
-                                        .push(dropdown::<ForJpgQuant, _>(dane, kolor, temat))
-                                        .push(space().width(15.))
-                                )
+
                                 .push(space().height(25.))
                         } else {
                             Column::new().push(space())

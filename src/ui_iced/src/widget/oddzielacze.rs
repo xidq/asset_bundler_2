@@ -1,6 +1,6 @@
 use iced::widget::{container, Container};
 use iced::Element;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use iced_core::gradient::{ColorStop, Linear};
 use iced_core::{Background, Color, Length, Radians};
 

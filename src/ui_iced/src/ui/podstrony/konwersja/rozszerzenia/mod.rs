@@ -6,3 +6,4 @@ mod tga;
 mod qoi;
 mod ff;
 mod webp;
+mod exr;

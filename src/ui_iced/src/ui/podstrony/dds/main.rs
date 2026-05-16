@@ -8,7 +8,7 @@ use crate::ui::podstrony::dds::lewy::strona_wyboru;
 use crate::ui::podstrony::dds::pakowanie::pakowanie;
 use crate::ui::podstrony::dds::rozpakowywanie::rozpakowywanie;
 use crate::ui::podstrony::dds::rozszerzenia::rozszerzenia;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::oddzielacze::oddzielacz_pionowy;
 
 pub fn dds_view<'a>(dane_p: &'a DaneDdsPak, dane_d: &'a DaneDdsUnpak, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {

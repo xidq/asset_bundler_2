@@ -3,7 +3,7 @@ use iced::widget::{pick_list, text, Column};
 use strum::IntoEnumIterator;
 use enumy::inne_ui::UstawieniaThemeWsio;
 use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::styles::{styl_menu_pick, styl_pick_list};
 
 pub fn ustawienia_view<'a>(opcje: &UstawieniaMenu, temat:&'a UstawieniaThemeWsio) -> Element<'a, Message> {

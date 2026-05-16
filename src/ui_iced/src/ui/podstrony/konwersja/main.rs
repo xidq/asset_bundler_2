@@ -10,7 +10,7 @@ use crate::ui::podstrony::konwersja::lewa::strona_wyboru;
 use crate::ui::podstrony::konwersja::rozdzielczosci::rozdzielczosci;
 use crate::ui::podstrony::konwersja::rozszerzenia::main::rozszerzenia;
 use crate::ui::podstrony::konwersja::sciezki::sciezki;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::oddzielacze::oddzielacz_pionowy;
 
 pub fn konwersja_view<'a>(

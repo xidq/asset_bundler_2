@@ -1,5 +1,5 @@
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
 use dds_ops::dds_import::dds_to_image;
 use dds_ops::dds_wczytywanie_zdjec::image_to_dds;

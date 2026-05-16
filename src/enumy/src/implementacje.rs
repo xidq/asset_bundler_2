@@ -3,7 +3,7 @@ use crate::inne_ui::{ActProces, DropdownType};
 use crate::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
 use crate::rozszerzenia::ext::{ImgExt, ImgExtSingle};
 use crate::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForFfKompresja};
+use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForExrKompresja, ForFfKompresja};
 use std::any::Any;
 use std::fmt::Debug;
 use strum::IntoEnumIterator;
@@ -35,6 +35,9 @@ impl ElementyDropdown for ForJpgSamplingFac {
     }
 }
 impl ElementyDropdown for ForJpgQuant {
+    fn as_any(&self) -> &dyn Any {self}
+}
+impl ElementyDropdown for ForExrKompresja{
     fn as_any(&self) -> &dyn Any {self}
 }
 
@@ -485,6 +488,30 @@ impl DaneDropdown<OptKompresjaPlikówPoziomKompresjiZstd> for DaneBinPak {
     fn get_proces_name() -> ActProces {ActProces::BinPak }
 
 
+}
+// -------------------------------------------------------------------------------------------------
+impl DaneDropdown<ForExrKompresja> for DaneKonw {
+
+    type Opcja = Vec<ForExrKompresja>;
+
+    fn get_data(&self) -> Option<ForExrKompresja> {
+        self.rozszerzenia
+            .iter()
+            .find_map(|f| {
+                if let ImgExt::Exr { kompresja, .. } = f {
+                    Some(*kompresja)
+                } else {
+                    None
+                }
+            })
+
+    }
+
+    fn get_dropdown_type() -> DropdownType {
+        DropdownType::KonwersjaExrKompresja
+    }
+
+    fn get_proces_name() -> ActProces {ActProces::Konw }
 }
 
 

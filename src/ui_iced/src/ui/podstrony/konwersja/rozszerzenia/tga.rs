@@ -1,4 +1,4 @@
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::{btn_bdepth_konwersja, przycisk_rozszerzenia};
 use crate::widget::styles::styl_kontenera;
 use enumy::dane_do_przetwarzania::DaneKonw;

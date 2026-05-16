@@ -1,10 +1,10 @@
 use crate::ui::program::Program;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::ActProces;
 use enumy::opcje::OptInterpolacja;
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
@@ -372,6 +372,11 @@ impl Program {
                                 if let Some(k) = kolor_any.downcast_ref::<BdepthTga>() {
                                     toggle_w_vec(bit_depth, k);
 
+                                }
+                            }
+                            ImgExt::Exr { bit_depth, .. } => {
+                                if let Some(k) = kolor_any.downcast_ref::<BdepthExr>() {
+                                    toggle_w_vec(bit_depth, k);
                                 }
                             }
                             _ => {}

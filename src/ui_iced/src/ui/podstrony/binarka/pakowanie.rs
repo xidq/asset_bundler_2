@@ -1,5 +1,5 @@
 use crate::ui::podstrony::binarka::pakowanie_status::status_pakowanie;
-use crate::ui::wiadomosci::message_ui::Message;
+use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::{pole_tekstowe_przycisku, przycisk, przycisk_startu};
 use crate::widget::dropdown::dropdown;
 use crate::widget::text_place::tekstowe_pole_wypelniane;
