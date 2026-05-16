@@ -11,3 +11,4 @@ pub mod inne_ui;
 pub mod fn_ogolne_przeliczeniowe;
 pub mod rozszerzenia;
 pub mod przetwarzanie;
+mod def;

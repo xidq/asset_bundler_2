@@ -15,6 +15,7 @@ use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use crate::zapisywanie::exr::exr_match;
 
 pub async fn zapisywanie_generic<T, F, G>(
     dane: F,
@@ -155,6 +156,20 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzFf(danee) => {
                     if let BdepthEnum::Ff(bdepth) = wybór.clone().jako_enum(){
                         ff_match(
+                            danee,
+                            docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu.to_string(),
+                            filtr,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx.clone()
+                        ).await?
+                    }
+                }
+                TypyPrzetwarzania::PrzExr(danee) => {
+                    if let BdepthEnum::Exr(bdepth) = wybór.clone().jako_enum(){
+                        exr_match(
                             danee,
                             docelowy_wymiar,
                             bdepth,

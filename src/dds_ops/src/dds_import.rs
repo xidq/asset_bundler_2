@@ -2,7 +2,7 @@ use dds::{ColorFormat, DataLayout, Decoder, ImageViewMut};
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneDdsUnpak;
 use enumy::opcje::OptInterpolacja;
-use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
+use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieExr, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 use enumy::rozszerzenia::ext::ImgExt;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use enumy::statusy::LogTxDdsUnpak;
@@ -179,6 +179,8 @@ pub async fn dds_to_image(
                                 alpha: (0, 0, 0),
                                 zaszumienie: None,
                                 lossy: if lossless { None } else { Some(jakosc) },
+                                exif: None,
+                                kolor: ColorProfilePhoto::None,
                             };
                             zapisywanie_generic(
                                 dane,
@@ -238,6 +240,26 @@ pub async fn dds_to_image(
                                 metoda_kompresji,
                                 lossy,
                                 exif: None,
+                                kolor: ColorProfilePhoto::None,
+                            };
+                            zapisywanie_generic(
+                                dane,
+                                metryka_operacji,
+                                obecna_operacja.clone(),
+                                tx.clone(),
+                            ).await
+                        }
+                        ImgExt::Exr { bit_depth, kompresja } => {
+                            let dane = PrzetwarzanieExr{
+                                bufor: Default::default(),
+                                rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                                sciezka_wyjsciowa: Default::default(),
+                                nazwa: nazawawawa.clone(),
+                                interpolacja: OptInterpolacja::Lanczos3,
+                                kompresja,
+                                bdepth: bit_depth,
+                                alpha: (0, 0, 0),
+                                zaszumienie: None,
                                 kolor: ColorProfilePhoto::None,
                             };
                             zapisywanie_generic(

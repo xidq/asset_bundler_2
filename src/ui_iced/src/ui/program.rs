@@ -110,35 +110,9 @@ impl Program {
                 ui_ustawienia: UstawieniaMenu::UstawieniaJęzyka {
                     jezyk: startowy_jezyk,
                 },
-                dane_merge: DaneMerge {
-                    sciezka_r: None,
-                    sciezka_g: None,
-                    sciezka_b: None,
-                    sciezka_a: None,
-                    sciezka_out: PathBuf::new(),
-                    rozszerzenie: ImgExtSingle::Jpg {
-                        jakosc: 90,
-                        bit_depth: BdepthJpg::Rgb8,
-                        sampling: ForJpgSamplingFac::R444,
-                        progresywny: false,
-                        quant: ForJpgQuant::Default,
-                        scans:4,
-                    },
-                    tag: ImgExtTag::Jpg,
-                    nazwa: String::new(),
-                },
-                dane_bin_pak: DaneBinPak {
-                    ścieżka_in: PathBuf::new(),
-                    ścieżka_out: PathBuf::new(),
-                    kompresja: OptKompresjaPlikówPoziomKompresjiZstd::Standard,
-                    nazwa: String::new(),
-                    foldery: true,
-                    filtracja: OptKompresjaPlikówFiltracjaPlików::Wszystkie,
-                },
-                dane_bin_unpak: DaneBinUnpak {
-                    ścieżka_pliku: PathBuf::new(),
-                    ścieżka_docelowa: PathBuf::new(),
-                },
+                dane_merge: DaneMerge::default(),
+                dane_bin_pak: DaneBinPak::default(),
+                dane_bin_unpak: DaneBinUnpak::default(),
                 log_prawe_okno: Vec::new(),
                 status_pakowanie_log:  Default::default(),
                 status_rozpakowywania_log:  Default::default(),
@@ -148,96 +122,14 @@ impl Program {
                 zdjecia_edycja_co_jest_wybrane: (false, false),
                 zdjecia_edycja_co_jest_na_out: false,
 
-                dane_konw:  DaneKonw {
-                    ścieżka_wejściowa: Default::default(),
-                    ścieżka_wyjściowa: Default::default(),
-                    opcje_rozdzielczości: Vec::from([Rozdzielczości::R2k]),
-                    noising: None,
-                    rozszerzenia:  Vec::from([ImgExt::Jpg {
-                        jakosc: 90,
-                        progresywny: false,
-                        bit_depth: Vec::from([BdepthJpg::Rgb8]),
-                        sampling: Default::default(),
-                        quant: Default::default(),
-                        scans: 4,
-                    }]),
-                    tag: Vec::from([ImgExtTag::Jpg]),
-                    inter: OptInterpolacja::Lanczos3,
-                    alfa_rgb: (0, 0, 0),
-                    exif: false,
-                } ,
+                dane_konw:  DaneKonw::default(),
                 do_nothing: false,
                 startowy_jezyk: locale.clone(),
 
-                dane_dds_pak: DaneDdsPak {
-                    ścieżka_wejściowa: None,
-                    ścieżka_wyjściowa: PathBuf::new(),
-                    nazwa: String::new(),
-                    format: ForDds::DxgiFormatBc7Unorm,
-                    kompresja: ForDdsKompresja::Normal,
-                },
-                dane_dds_rozpak: DaneDdsUnpak {
-                    ścieżka_wejściowa: PathBuf::new(),
-                    ścieżka_wyjściowa: PathBuf::new(),
-                    nazwa: String::new(),
-                    rozszerzenie: ImgExt::Jpg {
-                        jakosc: 90,
-                        progresywny: false,
-                        bit_depth: vec![BdepthJpg::Rgb8],
-                        sampling: ForJpgSamplingFac::R420,
-                        quant: ForJpgQuant::Default,
-                        scans: 4,
-                    },
-                    tag: ImgExtTag::Jpg,
-                },
+                dane_dds_pak: DaneDdsPak::default(),
+                dane_dds_rozpak: DaneDdsUnpak::default(),
                 uchwyt_szumu: generuj_ziarno(),
-                temat: UstawieniaThemeWsio {
-                    kolory: ObecnyColorTheme {
-                        binarka: KOLOR_BRILIANT_CRIMSON,
-                        konwersja: KOLOR_SPANISH_ORANGE,
-                        laczenie: KOLOR_PEACH_PUFF,
-                        dds: KOLOR_COTTON_CANDY,
-                        ustawienia: KOLOR_CRIMSON_GLORY,
-                        hint: KOLOR_LIGHT_PINK,
-                    },
-                    obecny_theme: ObecnyColorThemePrzezroczystosci {
-                        max: 0.9,
-                        hi: 0.7,
-                        mid: 0.5,
-                        low: 0.2,
-                        min: 0.0,
-                        kolor: Color::WHITE,
-                        err_font: Color::from_rgba(1.,0.5,0.5,0.8),
-                        bground: KOLOR_TŁA,
-                        bground_lewy: Color::from_rgb(0.1, 0.11, 0.13),
-                    },
-                    tekst: ObecnyColorCzcionkiPrzezroczystosci {
-                        max: 0.9,
-                        hi: 0.7,
-                        mid: 0.5,
-                        low: 0.3,
-                        min: 0.0,
-                        kolor: Color::WHITE,
-                    },
-                    ustawienia: Ustawienia { 
-                        halp_menu: false,
-                        debug_menu: false,
-                    },
-                    temp: Temp { 
-                        act_proc: None,
-                        act_window: UiPods::BinPak,
-                        start_btn_status: StartBtnStatus{
-                            bin_pak: BtnState::LackData,
-                            bin_unpak: BtnState::LackData,
-                            konwersja: BtnState::LackData,
-                            dds_pak: BtnState::LackData,
-                            dds_unpak: BtnState::LackData,
-                            laczenie: BtnState::LackData,
-                        },
-                    },
-                    btn_state: HashMap::new()
-                    /*BUTTON_IDS.iter().map(|&id| (id, BtnState::Active)).collect() */,
-                },
+                temat: UstawieniaThemeWsio::default(),
             },
             Task::batch(Vec::from([
                 Task::done(Message::InitLogStartowy),
@@ -249,8 +141,7 @@ impl Program {
         )
     }
 
-    // 2. POPRAWKA: Sygnatura UPDATE (Iced 0.13+ oczekuje 2 argumentów: &mut self i Message)
-    // Usunąłem trzeci argument, który generował błąd E0593
+
     pub fn update(&mut self, message: Message) -> Task<Message> {
         let aktualny_jezyk = match self.ui_ustawienia {
             UstawieniaMenu::UstawieniaJęzyka { jezyk } => jezyk,

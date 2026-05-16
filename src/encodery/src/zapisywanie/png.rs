@@ -1,6 +1,6 @@
-use crate::halper::{ogarnij_icc, usun_kanal_alpha, zaszumianie};
+use crate::halper::{konwersja_float_na_mniejsze, ogarnij_icc, usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
-use enumy::przetwarzanie::PrzetwarzaniePng;
+use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzaniePng};
 use enumy::rozszerzenia::bdepth::BdepthPng;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
@@ -10,6 +10,7 @@ use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use lcms2::PixelFormat;
 use tokio::sync::Mutex;
+use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 
 pub async fn png_match<T>(
     dane: PrzetwarzaniePng,
@@ -23,11 +24,18 @@ pub async fn png_match<T>(
 ) -> Result<(), tokio::io::Error>
 where T: Logi,
 {
+    let (fotu, icc) = match &dane.kolor {
+        ColorProfilePhoto::Exr(xxx) => {
+            let obraz = dane.bufor().clone();
+            konwersja_float_na_mniejsze(obraz, xxx.clone())
+        },
+        _ => (dane.bufor().clone(), dane.kolor.clone()),
+    };
     let obrazek =
         if wymiar == 0 {
-            dane.bufor
+            fotu
         } else {
-            dane.bufor
+            fotu
                 .resize(
                     wymiar,
                     wymiar,
@@ -57,7 +65,7 @@ where T: Logi,
         None => final_img,
     };
     let mut plikkk = ogarnij_icc(
-        dane.kolor.clone(),
+        icc,
         &final_final_final_v3_xd,
         profil
     );

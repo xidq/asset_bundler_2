@@ -272,6 +272,7 @@ impl Program {
                             ImgExt::Qoi{ bit_depth }
                     }
                     ImgExt::Avif { .. } => {}
+                    ImgExt::Exr { .. } => {}
                 };
             }
             DdsMsg::RozpakStart => {
@@ -360,43 +361,15 @@ impl Program {
 
                 self.dane_dds_rozpak.rozszerzenie =
                     match gwiazdek {
-                        ImgExtTag::Jpg => ImgExt::Jpg {
-                            jakosc: 90,
-                            progresywny: false,
-                            bit_depth: Vec::from([BdepthJpg::Rgb8]),
-                            sampling: ForJpgSamplingFac::R420,
-                            quant: ForJpgQuant::Default,
-                            scans: 4,
-                        },
-                        ImgExtTag::Png => ImgExt::Png {
-                            kompresja: 3,
-                            bit_depth: Vec::from([BdepthPng::Rgb8]),
-                        },
-
-                        ImgExtTag::Webp => ImgExt::Webp{
-                            jakosc: 90,
-                            lossless: false,
-                            bit_depth: Vec::from([BdepthWebp::Rgb8]),
-                        },
-                        ImgExtTag::Tga => ImgExt::Tga{
-                            bit_depth: Vec::from([BdepthTga::TrueColor24])
-                        },
-                        ImgExtTag::Ff => ImgExt::Ff{
-                            metoda_kompresji: ForFfKompresja::Brak
-                        },
-                        ImgExtTag::Qoi => ImgExt::Qoi{
-                            bit_depth: Vec::from([BdepthQoi::Color24])
-                        },
-                        ImgExtTag::Avif => ImgExt::Avif {
-                            chroma: ForAvifChroma::C420,
-                            speed: 3,
-                            metoda_kompresji: ForAvifKompresja::Av1,
-                            lossy: Some(90),
-                            bit_depth: Vec::from([BdepthAvif::Rgb10])
-                        },
-                        ImgExtTag::Unknown => ImgExt::Ff{
-                            metoda_kompresji: ForFfKompresja::Brak
-                        }
+                        ImgExtTag::Jpg => ImgExt::def_jpg(),
+                        ImgExtTag::Png => ImgExt::def_png(),
+                        ImgExtTag::Webp => ImgExt::def_webp(),
+                        ImgExtTag::Tga => ImgExt::def_tga(),
+                        ImgExtTag::Ff => ImgExt::def_ff(),
+                        ImgExtTag::Qoi => ImgExt::def_qoi(),
+                        ImgExtTag::Avif => ImgExt::def_avif(),
+                        ImgExtTag::Unknown => ImgExt::def_ff(),
+                        ImgExtTag::Exr => ImgExt::def_exr()
                     };
 
 

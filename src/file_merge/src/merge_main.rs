@@ -3,7 +3,7 @@ use encodery::wczytaj_foto::wczytaj_zdjęcie;
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneMerge;
 use enumy::opcje::OptInterpolacja;
-use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
+use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieExr, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 use enumy::rozszerzenia::bdepth::BdepthQoi;
 use enumy::rozszerzenia::ext::ImgExtSingle;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
@@ -186,6 +186,8 @@ pub async fn fn_do_laczenia_fot(
                     alpha: (0, 0, 0),
                     zaszumienie: None,
                     lossy: if lossless { None } else { Some(jakosc) },
+                    exif: None,
+                    kolor: ColorProfilePhoto::None,
                 };
                 zapisywanie_generic(
                     dane,
@@ -271,6 +273,26 @@ pub async fn fn_do_laczenia_fot(
                     metoda_kompresji,
                     lossy,
                     exif: None,
+                    kolor: ColorProfilePhoto::None,
+                };
+                zapisywanie_generic(
+                    dane,
+                    metryka_operacji,
+                    obecna_operacja.clone(),
+                    tx.clone(),
+                ).await
+            }
+            ImgExtSingle::Exr { bit_depth, kompresja } => {
+                let dane = PrzetwarzanieExr {
+                    bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
+                    rozdzielczosci: vec![Rozdzielczości::Oryginalna],
+                    sciezka_wyjsciowa: dane.sciezka_out,
+                    nazwa: dane.nazwa,
+                    interpolacja: OptInterpolacja::Lanczos3,
+                    kompresja,
+                    bdepth: vec![bit_depth],
+                    alpha: (0, 0, 0),
+                    zaszumienie: None,
                     kolor: ColorProfilePhoto::None,
                 };
                 zapisywanie_generic(

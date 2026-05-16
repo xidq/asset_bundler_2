@@ -1,7 +1,7 @@
-use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use crate::rozszerzenia::ext::ImgExt::Jpg;
 use crate::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForExrKompresja, ForFfKompresja};
 use strum::{Display, EnumIter, EnumMessage};
 
 // pub const OPTFORMATDDS: &[OptFormatDds] = &[
@@ -62,6 +62,10 @@ pub enum ImgExt {
         metoda_kompresji: ForAvifKompresja,
         lossy:Option<u8>,
         bit_depth: Vec<BdepthAvif>,
+    },
+    Exr{
+        bit_depth: Vec<BdepthExr>,
+        kompresja: ForExrKompresja,
     }
 }
 impl ImgExt {
@@ -76,6 +80,7 @@ impl ImgExt {
             Self::Avif { bit_depth, .. } => !bit_depth.is_empty(),
             // Warianty bez bit_depth (FF) uznajemy za "zawsze poprawne" w tym kontekście
             Self::Ff { .. } => true,
+            Self::Exr { bit_depth, .. } => !bit_depth.is_empty(),
         }
     }
 }
@@ -127,6 +132,10 @@ pub enum ImgExtSingle {
         metoda_kompresji: ForAvifKompresja,
         lossy:Option<u8>,
         bit_depth: BdepthAvif,
+    },
+    Exr{
+        bit_depth: BdepthExr,
+        kompresja: ForExrKompresja,
     }
 }
 
@@ -147,6 +156,8 @@ pub enum ImgExtTag {
     Qoi,
     #[strum(message = "Avif", detailed_message = "AV1 Image File Format")]
     Avif,
+    #[strum(message = "Exr", detailed_message = "OpenEXR")]
+    Exr,
     #[strum(message = "Unknown", detailed_message = "Unknown")]
     Unknown,
 }
@@ -160,6 +171,7 @@ impl ImgExtTag {
             Self::Ff => "FF",
             Self::Qoi => "Qoi",
             Self::Avif => "Avif",
+            Self::Exr => "Exr",
             Self::Unknown => "unknown",
         }
     }
@@ -172,6 +184,7 @@ impl ImgExtTag {
             Self::Ff => "Farbfeld",
             Self::Qoi => "Quite OK Image Format",
             Self::Avif => "AV1 Image File Format",
+            Self::Exr => "OpenExr",
             Self::Unknown => "unknown",
 
         }

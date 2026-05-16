@@ -174,6 +174,7 @@ impl ImgExtTag {
             Self::Tga => "TGA",
             Self::Ff => "FF",
             Self::Qoi => "QOI",
+            Self::Exr => "Exr",
             Self::Unknown => "unknown",
 
         }
@@ -187,6 +188,7 @@ impl ImgExtTag {
             Self::Tga => "Truevision TGA",
             Self::Ff => "Farbfeld",
             Self::Qoi => "Quite OK Image Format",
+            Self::Exr => "OpenExr",
             Self::Unknown => "unknown",
 
         }
@@ -203,6 +205,7 @@ impl ImgExt {
             Self::Tga { .. } => ("TGA", "Truevision TGA"),
             Self::Ff { .. } => ("FF", "Farbfeld"),
             Self::Qoi { .. } => ("QOI", "Quite OK Image Format"),
+            Self::Exr { .. } => ("Exr", "OpenExr"),
         }
     }
 

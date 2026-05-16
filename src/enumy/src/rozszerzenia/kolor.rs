@@ -56,7 +56,13 @@ pub struct DaneDodatkoweZdjec{
 pub enum ColorProfilePhoto {
     ICC(Vec<u8>),
     NCLX(ColorNclx),
+    Exr(PrzestrzeńExr),
     None,
+}
+#[derive(Clone, Debug)]
+pub enum PrzestrzeńExr {
+    LinearSRGB,
+    LinearCustom([f32; 8]),
 }
 
 #[derive(Debug)]

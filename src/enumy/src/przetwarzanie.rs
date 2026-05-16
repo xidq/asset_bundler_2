@@ -1,8 +1,8 @@
 use crate::opcje::OptInterpolacja;
-use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use crate::rozszerzenia::ext::ImgExtTag;
 use crate::rozszerzenia::kolor::{ColorProfilePhoto, ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForExrKompresja, ForFfKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use image::DynamicImage;
 use std::path::PathBuf;
@@ -25,6 +25,7 @@ pub enum TypyPrzetwarzania{
     PrzQoi(PrzetwarzanieQoi),
     PrzTga(PrzetwarzanieTga),
     PrzFf(PrzetwarzanieFf),
+    PrzExr(PrzetwarzanieExr),
 }
 #[derive(Debug, Clone)]
 pub struct PrzetwarzanieJpg{
@@ -118,7 +119,9 @@ pub struct PrzetwarzanieWebp{
     pub bdepth:  Vec<BdepthWebp>,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
-    pub lossy:Option<u8>,
+    pub lossy: Option<u8>,
+    pub exif: Option<Vec<u8>>,
+    pub kolor: ColorProfilePhoto,
 }
 impl DaneDoPrzetwarzania<BdepthWebp> for PrzetwarzanieWebp{
     fn daj_dane(&self) -> Self {self.clone()}
@@ -196,4 +199,27 @@ impl DaneDoPrzetwarzania<ForFfKompresja> for PrzetwarzanieFf{
     fn bdepth(&self) -> &Vec<ForFfKompresja> {&self.kompresja}
     fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzFf(self)}
 
+}
+#[derive(Debug, Clone)]
+pub struct PrzetwarzanieExr{
+    pub bufor: DynamicImage,
+    pub rozdzielczosci:  Vec<Rozdzielczości>,
+    pub sciezka_wyjsciowa: PathBuf,
+    pub nazwa: String,
+    pub interpolacja: OptInterpolacja,
+    pub kompresja: ForExrKompresja,
+    pub bdepth:  Vec<BdepthExr>,
+    pub alpha: (u16, u16, u16),
+    pub zaszumienie: Option<u8>,
+    pub kolor: ColorProfilePhoto,
+}
+impl DaneDoPrzetwarzania<BdepthExr> for PrzetwarzanieExr{
+    fn daj_dane(&self) -> Self {self.clone()}
+    fn czym_jestem(&self) -> ImgExtTag {ImgExtTag::Exr}
+    fn bufor(&self) -> &DynamicImage {&self.bufor}
+    fn rozdzielczosci(&self) -> &Vec<Rozdzielczości> {&self.rozdzielczosci}
+    fn sciezka_wejsciowa(&self) -> PathBuf {self.sciezka_wyjsciowa.clone()}
+    fn interpolacja(&self) -> &OptInterpolacja {&self.interpolacja}
+    fn bdepth(&self) -> &Vec<BdepthExr> {&self.bdepth}
+    fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzExr(self)}
 }

@@ -91,81 +91,56 @@ impl Program {
             }
             MergeMsg::ZdjeciaLaczenieZmianaWybraneRozszerzenie(huehue) => match huehue {
                 ImgExtTag::Jpg  => {
-                    let piksidipsi = ImgExtSingle::Jpg {
-                        jakosc:90,
-                        progresywny:false,
-                        bit_depth: BdepthJpg::Rgb8,
-                        sampling: ForJpgSamplingFac::R420,
-                        quant: ForJpgQuant::Default,
-                        scans: 4,
-                    };
+                    let piksidipsi = ImgExtSingle::def_jpg();
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
                         self.dane_merge.rozszerzenie = piksidipsi;
                         self.dane_merge.tag = huehue;
                     };
                 }
                 ImgExtTag::Png  => {
-                    let piksidipsi = ImgExtSingle::Png {
-                        kompresja:3,
-                        bit_depth: BdepthPng::Rgb8,
-                    };
+                    let piksidipsi = ImgExtSingle::def_png();
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
                         self.dane_merge.rozszerzenie = piksidipsi;
                         self.dane_merge.tag = huehue;
                     }
                 }
                 ImgExtTag::Webp  => {
-                    let piksidipsi = ImgExtSingle::Webp {
-                        jakosc: 90,
-                        bit_depth: BdepthWebp::Rgb8,
-                        lossless: false,
-                    };
+                    let piksidipsi = ImgExtSingle::def_webp();
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
                         self.dane_merge.rozszerzenie = piksidipsi;
                         self.dane_merge.tag = huehue;
                     }
                 }
                 ImgExtTag::Tga  => {
-                    let piksidipsi = ImgExtSingle::Tga {
-                        bit_depth: BdepthTga::TrueColor24,
-                    };
+                    let piksidipsi = ImgExtSingle::def_tga();
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
                         self.dane_merge.rozszerzenie = piksidipsi;
                         self.dane_merge.tag = huehue;
                     }
                 }
                 ImgExtTag::Ff  => {
-                    let piksidipsi = ImgExtSingle::Ff {
-                        metoda_kompresji: ForFfKompresja::Brak,
-                    };
+                    let piksidipsi = ImgExtSingle::def_ff();
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
                         self.dane_merge.rozszerzenie = piksidipsi;
                         self.dane_merge.tag = huehue;
                     }
                 }
                 ImgExtTag::Qoi  => {
-                    let piksidipsi = ImgExtSingle::Qoi {
-                        bit_depth: BdepthQoi::Color24,
-                    };
+                    let piksidipsi = ImgExtSingle::def_qoi();
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
                         self.dane_merge.rozszerzenie = piksidipsi;
                         self.dane_merge.tag = huehue;
                     }
                 }
                 ImgExtTag::Avif => {
-                    let piksidipsi = ImgExtSingle::Avif {
-                        chroma: ForAvifChroma::C420,
-                        speed: 0,
-                        metoda_kompresji: ForAvifKompresja::Av1,
-                        lossy: Some(90),
-                        bit_depth: BdepthAvif::Rgb10,
-                    };
+                    let piksidipsi = ImgExtSingle::def_avif();
                     if discriminant(&self.dane_merge.rozszerzenie) != discriminant(&piksidipsi) {
                         self.dane_merge.rozszerzenie = piksidipsi;
                         self.dane_merge.tag = huehue;
                     }
                 }
                 ImgExtTag::Unknown => {}
+                ImgExtTag::Exr => {}
             },
             MergeMsg::Bdepth(rozs, kolor_rc) => {
                 // dbg!("bdepth", &rozs, &kolor_rc);
@@ -245,47 +220,20 @@ impl Program {
 
             MergeMsg::Rozszerzenia(gwiazdek) => {
                 // dbg!("rozszerzenia", &gwiazdek);
-                    let (nowy_format, nowy_tag) = match gwiazdek {
-                        ImgExtTag::Jpg => (ImgExtSingle::Jpg {
-                            jakosc: 90,
-                            progresywny: false,
-                            bit_depth: BdepthJpg::Rgb8,
-                            sampling: ForJpgSamplingFac::R420,
-                            quant: ForJpgQuant::Default,
-                            scans: 4,
-                        }, ImgExtTag::Jpg),
-                        ImgExtTag::Png => (ImgExtSingle::Png {
-                            kompresja: 3,
-                            bit_depth: BdepthPng::Rgb8,
-                        }, ImgExtTag::Png),
+                    let nowy_format = match gwiazdek {
+                        ImgExtTag::Jpg => (ImgExtSingle::def_jpg()),
+                        ImgExtTag::Png => (ImgExtSingle::def_png()),
 
-                        ImgExtTag::Webp => (ImgExtSingle::Webp{
-                            jakosc: 90,
-                            lossless: false,
-                            bit_depth:  BdepthWebp::Rgb8,
-                        }, ImgExtTag::Webp),
-                        ImgExtTag::Tga => (ImgExtSingle::Tga{
-                            bit_depth: BdepthTga::TrueColor24
-                        }, ImgExtTag::Tga),
-                        ImgExtTag::Ff => (ImgExtSingle::Ff{
-                            metoda_kompresji: ForFfKompresja::Brak
-                        }, ImgExtTag::Ff),
-                        ImgExtTag::Qoi => (ImgExtSingle::Qoi{
-                            bit_depth: BdepthQoi::Color24
-                        }, ImgExtTag::Qoi),
-                        ImgExtTag::Avif => (ImgExtSingle::Avif {
-                            chroma: ForAvifChroma::C420,
-                            speed: 3,
-                            metoda_kompresji: ForAvifKompresja::Av1,
-                            lossy: Some(90),
-                            bit_depth: BdepthAvif::Rgb10
-                        }, ImgExtTag::Avif),
-                        ImgExtTag::Unknown => (ImgExtSingle::Ff{
-                            metoda_kompresji: ForFfKompresja::Brak
-                        }, ImgExtTag::Unknown),
+                        ImgExtTag::Webp => (ImgExtSingle::def_webp()),
+                        ImgExtTag::Tga => (ImgExtSingle::def_tga()),
+                        ImgExtTag::Ff => (ImgExtSingle::def_ff()),
+                        ImgExtTag::Qoi => (ImgExtSingle::def_qoi()),
+                        ImgExtTag::Avif => (ImgExtSingle::def_avif()),
+                        ImgExtTag::Unknown => (ImgExtSingle::def_jpg()),
+                        ImgExtTag::Exr => ImgExtSingle::def_exr()
                     };
                     self.dane_merge.rozszerzenie = nowy_format;
-                    self.dane_merge.tag = nowy_tag;
+                    self.dane_merge.tag = gwiazdek;
 
             }
             MergeMsg::ZdjeciaLaczenieZmianaKompresjiPng(procent) => {

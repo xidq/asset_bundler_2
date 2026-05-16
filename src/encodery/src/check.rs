@@ -235,6 +235,8 @@ where T: Logi{
 
 
             }
+
+            ImgExt::Exr { .. } => {}
         }
     }
     if !dane.opcje_rozdzielczości.iter().any(|_| true) {

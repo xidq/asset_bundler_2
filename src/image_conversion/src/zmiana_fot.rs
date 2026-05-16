@@ -74,6 +74,9 @@ pub async fn main_fn_konwersja(
                 ImgExt::Avif { bit_depth,.. } => {
                     suma_wariantow_bit_depth += bit_depth.len() as u32;
                 }
+                ImgExt::Exr { bit_depth, .. } => {
+                    suma_wariantow_bit_depth += bit_depth.len() as u32;
+                }
             }
         }
 
@@ -225,6 +228,8 @@ pub async fn main_fn_konwersja(
                                     alpha: wsio_dane.alfa_rgb,
                                     zaszumienie: wsio_dane.noising,
                                     lossy: if *lossless { None } else { Some(*jakosc) },
+                                    exif: exif.clone(),
+                                    kolor: bufor.kolor.clone(),
                                 };
                                 zapisywanie_generic(
                                     dane,
@@ -321,6 +326,7 @@ pub async fn main_fn_konwersja(
                                     tx_zadanie,
                                 ).await?;
                             }
+                            ImgExt::Exr { .. } => {}
                         }
                         Ok::<(), tokio::io::Error>(())
                     })?;

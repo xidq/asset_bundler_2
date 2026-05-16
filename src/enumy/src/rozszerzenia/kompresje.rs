@@ -11,6 +11,21 @@ pub enum ForDdsKompresja {
     Unreasonable,
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, EnumIter, EnumMessage, Display,Default)]
+pub enum ForExrKompresja{
+    #[default]
+    Brak,
+    Rle,
+    Zip1,
+    Zip16,
+    Piz,
+    Pxr24,
+    B44,
+    B44a,
+    Dwaa(Option<f32>),
+    Dwab(Option<f32>),
+}
+
 #[allow(dead_code)]
 #[derive(Debug, Copy, Clone, PartialEq, EnumIter, EnumMessage, Display,Default)]
 pub enum ForFfKompresja {

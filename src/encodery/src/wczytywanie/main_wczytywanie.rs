@@ -11,6 +11,7 @@ use crate::wczytywanie::webp::webp;
 use enumy::rozszerzenia::ext::ImgExtTag;
 use std::io::Read;
 use std::path::PathBuf;
+use crate::wczytywanie::exr::exr_loading;
 
 pub fn wczytaj_pliki(
     ścieżka: PathBuf
@@ -58,6 +59,7 @@ pub fn wczytaj_pliki(
         ImgExtTag::Ff => {ff(&sprawdzanie_kompresji)}
         ImgExtTag::Qoi => {qoi(&sprawdzanie_kompresji)}
         ImgExtTag::Unknown => {unknown(&sprawdzanie_kompresji)}
+        ImgExtTag::Exr => {exr_loading(&sprawdzanie_kompresji)}
     }?;
     
     Ok((fotu, nazwa))

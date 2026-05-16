@@ -407,48 +407,20 @@ impl Program {
                 if let Some(index) = pozycja {
                     self.dane_konw.rozszerzenia.remove(index);
                 } else {
-                    let (nowy_format, nowy_tag) = match gwiazdek {
-                        ImgExtTag::Jpg => (ImgExt::Jpg {
-                            jakosc: 90,
-                            progresywny: false,
-                            bit_depth: Vec::from([BdepthJpg::Rgb8]),
-                            sampling: ForJpgSamplingFac::R420,
-                            quant: ForJpgQuant::Default,
-                            scans: 4,
-                        }, ImgExtTag::Jpg),
-                        ImgExtTag::Png => (ImgExt::Png {
-                            kompresja: 0,
-                            bit_depth: Vec::from([BdepthPng::Rgb8]),
-                        }, ImgExtTag::Png),
-
-                        ImgExtTag::Webp => (ImgExt::Webp{
-                            jakosc: 90,
-                            lossless: false,
-                            bit_depth: Vec::from([BdepthWebp::Rgb8]),
-                        }, ImgExtTag::Webp),
-                        ImgExtTag::Tga => (ImgExt::Tga{
-                            bit_depth: Vec::from([BdepthTga::TrueColor24])
-                        }, ImgExtTag::Tga),
-                        ImgExtTag::Ff => (ImgExt::Ff{
-                            metoda_kompresji: ForFfKompresja::Brak
-                        }, ImgExtTag::Ff),
-                        ImgExtTag::Qoi => (ImgExt::Qoi{
-                            bit_depth: Vec::from([BdepthQoi::Color24])
-                        }, ImgExtTag::Qoi),
-                        ImgExtTag::Avif => (ImgExt::Avif {
-                            chroma: ForAvifChroma::C420,
-                            speed: 3,
-                            metoda_kompresji: ForAvifKompresja::Av1,
-                            lossy: Some(90),
-                            bit_depth: Vec::from([BdepthAvif::Rgb10])
-                        }, ImgExtTag::Avif),
-                        ImgExtTag::Unknown => (ImgExt::Ff{
-                            metoda_kompresji: ForFfKompresja::Brak
-                        }, ImgExtTag::Ff),
+                    let nowy_format = match gwiazdek {
+                        ImgExtTag::Jpg => ImgExt::def_jpg(),
+                        ImgExtTag::Png => ImgExt::def_png(),
+                        ImgExtTag::Webp => ImgExt::def_webp(),
+                        ImgExtTag::Tga => ImgExt::def_tga(),
+                        ImgExtTag::Ff => ImgExt::def_ff(),
+                        ImgExtTag::Qoi => ImgExt::def_qoi(),
+                        ImgExtTag::Avif => ImgExt::def_avif(),
+                        ImgExtTag::Unknown => ImgExt::def_exr(),
+                        ImgExtTag::Exr => ImgExt::def_exr()
                     };
 
                     self.dane_konw.rozszerzenia.push(nowy_format);
-                    self.dane_konw.tag.push(nowy_tag.clone());
+                    self.dane_konw.tag.push(gwiazdek.clone());
 
                 }
                 let _ = self.update(Message::ChckStatus);

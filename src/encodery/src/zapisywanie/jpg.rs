@@ -1,4 +1,4 @@
-use crate::halper::{usun_kanal_alpha, zaszumianie};
+use crate::halper::{konwersja_float_na_mniejsze, usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
 use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieJpg};
@@ -11,6 +11,7 @@ use jpeg_encoder::{Encoder, QuantizationTableType, SamplingFactor};
 use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
+use image::DynamicImage;
 use tokio::sync::Mutex;
 
 pub async fn jpg_match<T>(
@@ -26,10 +27,18 @@ pub async fn jpg_match<T>(
     where T: Logi,
 {
 
+    let (fotu, icc) = match &dane.kolor {
+        ColorProfilePhoto::Exr(xxx) => {
+            let obraz = dane.bufor().clone(); 
+            konwersja_float_na_mniejsze(obraz, xxx.clone()) 
+        },
+        _ => (dane.bufor().clone(), dane.kolor.clone()),
+    };
+
     let final_img = if wymiar == 0 {
-        usun_kanal_alpha(dane.bufor().clone(), dane.alpha)
+        usun_kanal_alpha(fotu, dane.alpha)
     } else {
-        usun_kanal_alpha(dane.bufor().clone(), dane.alpha)
+        usun_kanal_alpha(fotu, dane.alpha)
             .resize(
                 wymiar,
                 wymiar,
@@ -96,11 +105,11 @@ pub async fn jpg_match<T>(
     };
 
 
-    let ungabunga = if let ColorProfilePhoto::ICC(ref xoxo) = dane.kolor {
+    let ungabunga = if let ColorProfilePhoto::ICC(ref xoxo) = icc {
         konwertuj_przestrzen(&final_finalv3_temp_final_ostatecznyv5, Some(xoxo), profil)
             .expect("Błąd konwersji ICC")
 
-    } else if let ColorProfilePhoto::NCLX(ref nclx_data) = dane.kolor {
+    } else if let ColorProfilePhoto::NCLX(ref nclx_data) = icc {
         // profil z NCLX, do bajtów ICC
         let wygenerowany_profil = profil_z_nclx(nclx_data).expect("Błąd generowania profilu z NCLX");
         let icc_bajty = wygenerowany_profil.icc().expect("Błąd serializacji profilu do ICC");

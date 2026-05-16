@@ -1,4 +1,4 @@
-use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp, TrybLączenia};
+use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp, TrybLączenia};
 use crate::rozszerzenia::ext::ImgExtTag;
 use std::any::Any;
 use strum::EnumMessage;
@@ -12,6 +12,7 @@ pub enum BdepthEnum{
     Tga(BdepthTga),
     Qoi(BdepthQoi),
     Ff(ForFfKompresja),
+    Exr(BdepthExr),
 }
 pub trait BitDepth: std::fmt::Debug + Any + Send + Sync{
     fn label_min(&self) -> &'static str;
@@ -199,6 +200,25 @@ impl BitDepth for BdepthQoi {
     //     false
     // }
     fn jako_enum(self) -> BdepthEnum {BdepthEnum::Qoi(self)}
+    fn obsługa_exif(&self) -> bool {false}
+
+    fn obsługa_profilu(&self) -> bool {false}
+}
+impl BitDepth for BdepthExr {
+    fn label_min(&self) -> &'static str {self.get_message().unwrap_or("brak danych bdepth msg Qoi")}
+    fn label_max(&self) -> &'static str {self.get_detailed_message().unwrap_or("brak danych bdepth detailded msg Qoi")}
+    fn tryb_laczenia(&self) -> TrybLączenia {
+        match self {
+            BdepthExr::F16 => TrybLączenia::F16,
+            BdepthExr::F32 => TrybLączenia::F32,
+            BdepthExr::F16Half => TrybLączenia::F16Half,
+            BdepthExr::F32Half => TrybLączenia::F32Half,
+        }
+    }
+    fn jako_any(&self) -> &dyn Any { self }
+    fn format(&self) -> ImgExtTag { ImgExtTag::Qoi}
+
+    fn jako_enum(self) -> BdepthEnum {BdepthEnum::Exr(self)}
     fn obsługa_exif(&self) -> bool {false}
 
     fn obsługa_profilu(&self) -> bool {false}

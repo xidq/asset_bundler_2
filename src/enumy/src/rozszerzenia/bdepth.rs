@@ -17,14 +17,16 @@ pub enum TrybLączenia {
     TrueColor24,
     Color32,
     TrueColorA32,
-    F32,
-    F32Alpha,
     Zstd,
     Bzip2,
     Xz,
     Brak,
     Rgb12,
     Rgb12Alpha,
+    F16,
+    F32,
+    F16Half,
+    F32Half,
 }
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter, EnumMessage, Display)]
 pub enum BdepthJpg{
@@ -94,5 +96,16 @@ pub enum BdepthTga{
     TrueColor24,
     #[strum(default_with = "TC32",message = "Color32", detailed_message = "True Color 32 = Rgb 8 bit + Alpha (Color/w Alpha)")]
     TrueColorA32,
+}
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter, EnumMessage, Display)]
+pub enum BdepthExr{
+    #[strum(default_with = "F16",message = "F16", detailed_message = "F16")]
+    F16,
+    #[strum(default_with = "F32",message = "F32", detailed_message = "F32")]
+    F32,
+    #[strum(default_with = "F16H",message = "F16H", detailed_message = "F16Half")]
+    F16Half,
+    #[strum(default_with = "F32H",message = "F32H", detailed_message = "F32Half")]
+    F32Half,
 }
 

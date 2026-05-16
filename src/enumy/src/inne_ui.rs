@@ -2,6 +2,22 @@ use iced::Color;
 use std::collections::HashMap;
 use strum::{EnumIter, EnumMessage};
 
+pub const KOLOR_TŁA: Color = Color::from_rgb(0.11, 0.11, 0.1);
+// pub const KOLOR_FLIRT: Color = Color::from_rgb(162. / 255., 0., 109. / 255.);
+pub const KOLOR_BRILIANT_CRIMSON: Color = Color::from_rgb(231. / 255., 81. / 255., 119. / 255.);
+pub const KOLOR_PEACH_PUFF: Color = Color::from_rgb(1., 218. / 255., 185. / 255.);
+pub const KOLOR_CRIMSON_GLORY: Color = Color::from_rgb(190. / 255., 0., 50. / 255.);
+pub const KOLOR_SPANISH_ORANGE: Color = Color::from_rgb(232. / 255., 97. / 255., 0.);
+pub const KOLOR_COTTON_CANDY: Color = Color::from_rgb(1., 188. / 255., 217. / 255.);
+pub const KOLOR_LIGHT_PINK: Color = Color::from_rgb(1.,182. / 255.,193. / 255.);
+
+pub const KOLOR_ERROR: Color = Color::from_rgb(1., 20. / 255., 20. / 255.);
+
+pub const KOLOR_CZCIONKI_SREDNI: Color = Color::from_rgba(1., 1., 1., 0.6);
+pub const KOLOR_CZCIONKI_JASNY: Color = Color::from_rgba(1., 1., 1., 0.8);
+pub const KOLOR_OBRAMOWANIA_NIE_AKTYWNY: Color = Color::from_rgba(1., 1., 1., 0.2);
+
+pub const WYSOKOSC_CZCIONEK_PRZYCISKI: f32 = 40.;
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter, Eq)]
 pub enum UiPods {
     BinPak,
@@ -24,6 +40,56 @@ pub struct UstawieniaThemeWsio{
     pub ustawienia: Ustawienia,
     pub temp: Temp,
     pub btn_state:HashMap<&'static str,BtnState>,
+}
+impl Default for UstawieniaThemeWsio {
+    fn default() -> Self {
+        Self{
+            kolory: ObecnyColorTheme {
+                binarka: KOLOR_BRILIANT_CRIMSON,
+                konwersja: KOLOR_SPANISH_ORANGE,
+                laczenie: KOLOR_PEACH_PUFF,
+                dds: KOLOR_COTTON_CANDY,
+                ustawienia: KOLOR_CRIMSON_GLORY,
+                hint: KOLOR_LIGHT_PINK,
+            },
+            obecny_theme: ObecnyColorThemePrzezroczystosci {
+                max: 0.9,
+                hi: 0.7,
+                mid: 0.5,
+                low: 0.2,
+                min: 0.0,
+                kolor: Color::WHITE,
+                err_font: Color::from_rgba(1.,0.5,0.5,0.8),
+                bground: KOLOR_TŁA,
+                bground_lewy: Color::from_rgb(0.1, 0.11, 0.13),
+            },
+            tekst: ObecnyColorCzcionkiPrzezroczystosci {
+                max: 0.9,
+                hi: 0.7,
+                mid: 0.5,
+                low: 0.3,
+                min: 0.0,
+                kolor: Color::WHITE,
+            },
+            ustawienia: Ustawienia {
+                halp_menu: false,
+                debug_menu: false,
+            },
+            temp: Temp {
+                act_proc: None,
+                act_window: UiPods::BinPak,
+                start_btn_status: StartBtnStatus{
+                    bin_pak: BtnState::LackData,
+                    bin_unpak: BtnState::LackData,
+                    konwersja: BtnState::LackData,
+                    dds_pak: BtnState::LackData,
+                    dds_unpak: BtnState::LackData,
+                    laczenie: BtnState::LackData,
+                },
+            },
+            btn_state: Default::default(),
+        }
+    }
 }
 pub struct Temp{
     pub act_proc: Option<ActProces>,

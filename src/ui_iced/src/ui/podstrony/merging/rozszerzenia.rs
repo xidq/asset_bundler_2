@@ -395,6 +395,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                     ).style(styl_kontenera(true,RodzajeContainer::Oba, kolor, temat))
                 }
                 ImgExtTag::Unknown => {container(space())}
+                ImgExtTag::Exr => {container(space())}
             }
         )
         .push(
@@ -407,6 +408,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                 ImgExtTag::Qoi => {space().height(200.)}
                 ImgExtTag::Avif => {space()}
                 ImgExtTag::Unknown => {space()}
+                ImgExtTag::Exr => {space()}
             }
         )
         .push(space().height(Length::FillPortion(1)))

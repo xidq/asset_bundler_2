@@ -9,3 +9,4 @@ mod tga;
 mod qoi;
 mod ff;
 mod unknown;
+mod exr;

@@ -1,8 +1,8 @@
-use crate::halper::{ogarnij_icc, usun_kanal_alpha};
+use crate::halper::{konwersja_float_na_mniejsze, ogarnij_icc, usun_kanal_alpha};
 use crate::send::wyslij_status;
-use enumy::przetwarzanie::PrzetwarzanieAvif;
+use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieAvif};
 use enumy::rozszerzenia::bdepth::BdepthAvif;
-use enumy::rozszerzenia::kolor::ForAvifChroma;
+use enumy::rozszerzenia::kolor::{ColorProfilePhoto, ForAvifChroma};
 use enumy::rozszerzenia::kompresje::ForAvifKompresja;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
@@ -23,12 +23,19 @@ pub async fn avif_match<T>(
     mut tx: Sender<T>,
 ) -> Result<(), tokio::io::Error>
 where T: Logi,
-{
+{    
+    let (fotu, icc) = match &dane.kolor {
+    ColorProfilePhoto::Exr(xxx) => {
+        let obraz = dane.bufor().clone();
+        konwersja_float_na_mniejsze(obraz, xxx.clone())
+    },
+    _ => (dane.bufor().clone(), dane.kolor.clone()),
+};
 
     let reskalowanie = if wymiar == 0 {
-            dane.bufor.clone()
+            fotu
     } else {
-        dane.bufor.clone()
+        fotu
             .resize(
                 wymiar,
                 wymiar,
@@ -40,7 +47,7 @@ where T: Logi,
             {
 
                 let przekonwertowane_bajty_u8 = ogarnij_icc(
-                    dane.kolor.clone(),
+                    icc.clone(),
                     &reskalowanie,
                     lcms2::PixelFormat::RGBA_16 // <--- Wymuszamy 16-bitów na kanał z LCMS2
                 );
@@ -113,7 +120,7 @@ where T: Logi,
                 let res = usun_kanal_alpha(reskalowanie, dane.alpha);
                 // dbg!("jestem w B10");
                 let przekonwertowane_bajty_u8 = ogarnij_icc(
-                    dane.kolor.clone(),
+                    icc.clone(),
                     &res,
                     lcms2::PixelFormat::RGB_16 // <--- Wymuszamy 16-bitów na kanał z LCMS2
                 );
@@ -182,7 +189,7 @@ where T: Logi,
             {
 
                 let przekonwertowane_bajty_u8 = ogarnij_icc(
-                    dane.kolor.clone(),
+                    icc.clone(),
                     &reskalowanie,
                     lcms2::PixelFormat::RGBA_16 // <--- Wymuszamy 16-bitów na kanał z LCMS2
                 );
@@ -253,7 +260,7 @@ where T: Logi,
         BdepthAvif::Rgb8Alpha =>
             {
                 let przekonwertowane_bajty_u8 = ogarnij_icc(
-                    dane.kolor.clone(),
+                    icc.clone(),
                     &reskalowanie,
                     lcms2::PixelFormat::RGBA_8 // <--- Wymuszamy 16-bitów na kanał z LCMS2
                 );
@@ -312,7 +319,7 @@ where T: Logi,
                 let res = usun_kanal_alpha(reskalowanie, dane.alpha);
                 // dbg!("jestem w B10");
                 let przekonwertowane_bajty_u8 = ogarnij_icc(
-                    dane.kolor.clone(),
+                    icc.clone(),
                     &res,
                     lcms2::PixelFormat::RGB_16 // <--- Wymuszamy 16-bitów na kanał z LCMS2
                 );
@@ -377,7 +384,7 @@ where T: Logi,
             {
                 let res = usun_kanal_alpha(reskalowanie, dane.alpha);
                 let przekonwertowane_bajty_u8 = ogarnij_icc(
-                    dane.kolor.clone(),
+                    icc.clone(),
                     &res,
                     lcms2::PixelFormat::RGB_8 // <--- Wymuszamy 16-bitów na kanał z LCMS2
                 );
