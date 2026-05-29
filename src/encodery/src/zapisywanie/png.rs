@@ -2,15 +2,14 @@ use crate::halper::{konwersja_float_na_mniejsze, ogarnij_icc, usun_kanal_alpha, 
 use crate::send::wyslij_status;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzaniePng};
 use enumy::rozszerzenia::bdepth::BdepthPng;
+use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
-use image::DynamicImage;
+use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
-use lcms2::PixelFormat;
 use tokio::sync::Mutex;
-use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 
 pub async fn png_match<T>(
     dane: PrzetwarzaniePng,
@@ -82,7 +81,7 @@ where T: Logi,
 
     // 5. Zapis z kompresją
     let f = File::create(&ścieżka_pliku)?;
-    let ref mut w = std::io::BufWriter::new(f);
+    let _w = &mut std::io::BufWriter::new(f);
 
     let (width, height) = final_final_final_v3_xd.to_rgb8().dimensions();
     let mut encoder = png::Encoder::new(&mut bufor_png, width, height);
@@ -123,8 +122,8 @@ where T: Logi,
 
 
     // --- RĘCZNE WSTRZYKIWANIE EXIF DO WEKTORA BAJTÓW ---
-    if let Some(ref exif_bytes) = dane.exif {
-        if !exif_bytes.is_empty() {
+    if let Some(ref exif_bytes) = dane.exif &&
+        !exif_bytes.is_empty() {
             // Każdy plik PNG zaczyna się od stałego 8-bajtowego nagłówka: [137, 80, 78, 71, 13, 10, 26, 10]
             // Zaraz za nim leci pierwszy chunk, czyli IHDR (który ma zawsze 25 bajtów: 4b długość + 4b nazwa + 13b dane + 4b CRC).
             // Idealne miejsce na nasz EXIF to pozycja tuż po chunku IHDR, czyli dokładnie na 33. bajcie pliku.
@@ -156,7 +155,7 @@ where T: Logi,
                 let pozycja_wstrzykniecia = 33;
                 bufor_png.splice(pozycja_wstrzykniecia..pozycja_wstrzykniecia, chunk_exif);
             }
-        }
+
     }
     // --------------------------------------------------
 

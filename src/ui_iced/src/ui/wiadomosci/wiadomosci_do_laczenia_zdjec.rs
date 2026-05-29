@@ -5,8 +5,7 @@ use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::ActProces;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::ext::{ImgExtSingle, ImgExtTag};
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::statusy::LogTxMerge;
 use file_merge::merge_main::fn_do_laczenia_fot;
 use futures::channel::mpsc;
@@ -221,15 +220,15 @@ impl Program {
             MergeMsg::Rozszerzenia(gwiazdek) => {
                 // dbg!("rozszerzenia", &gwiazdek);
                     let nowy_format = match gwiazdek {
-                        ImgExtTag::Jpg => (ImgExtSingle::def_jpg()),
-                        ImgExtTag::Png => (ImgExtSingle::def_png()),
+                        ImgExtTag::Jpg => ImgExtSingle::def_jpg(),
+                        ImgExtTag::Png => ImgExtSingle::def_png(),
 
-                        ImgExtTag::Webp => (ImgExtSingle::def_webp()),
-                        ImgExtTag::Tga => (ImgExtSingle::def_tga()),
-                        ImgExtTag::Ff => (ImgExtSingle::def_ff()),
-                        ImgExtTag::Qoi => (ImgExtSingle::def_qoi()),
-                        ImgExtTag::Avif => (ImgExtSingle::def_avif()),
-                        ImgExtTag::Unknown => (ImgExtSingle::def_jpg()),
+                        ImgExtTag::Webp => ImgExtSingle::def_webp(),
+                        ImgExtTag::Tga => ImgExtSingle::def_tga(),
+                        ImgExtTag::Ff => ImgExtSingle::def_ff(),
+                        ImgExtTag::Qoi => ImgExtSingle::def_qoi(),
+                        ImgExtTag::Avif => ImgExtSingle::def_avif(),
+                        ImgExtTag::Unknown => ImgExtSingle::def_jpg(),
                         ImgExtTag::Exr => ImgExtSingle::def_exr()
                     };
                     self.dane_merge.rozszerzenie = nowy_format;

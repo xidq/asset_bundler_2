@@ -57,17 +57,13 @@ pub fn konwertuj_przestrzen(
         _ => return Err(std::io::Error::other("Nienatywny lub nieobsługiwany format w DynamicImage")),
     };
 
-    let zrodlo_ma_alpha = match f_src {
+    let zrodlo_ma_alpha = matches!(f_src,
         lcms2::PixelFormat::RGBA_8 | lcms2::PixelFormat::RGBA_16 |
-        lcms2::PixelFormat::GRAYA_8 | lcms2::PixelFormat::GRAYA_16 => true,
-        _ => false,
-    };
+        lcms2::PixelFormat::GRAYA_8 | lcms2::PixelFormat::GRAYA_16);
 
-    let cel_wymaga_alpha = match pixel_format_wyjsciowy {
+    let cel_wymaga_alpha = matches!(pixel_format_wyjsciowy,
         lcms2::PixelFormat::RGBA_8 | lcms2::PixelFormat::RGBA_16 |
-        lcms2::PixelFormat::GRAYA_8 | lcms2::PixelFormat::GRAYA_16 => true,
-        _ => false,
-    };
+        lcms2::PixelFormat::GRAYA_8 | lcms2::PixelFormat::GRAYA_16);
 
 
     // let flagi = lcms2::Flags::COPY_ALPHA;

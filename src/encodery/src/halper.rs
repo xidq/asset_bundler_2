@@ -1,11 +1,10 @@
-use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Rgba32FImage, RgbaImage};
-use rand::RngExt;
-use std::path::{Path, PathBuf};
-use image::ExtendedColorType::Rgba16;
+use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
+use enumy::rozszerzenia::kolor::{ColorNclx, ColorProfilePhoto, PrzestrzeńExr};
+use image::{ColorType, DynamicImage, GenericImageView, ImageBuffer, Rgba32FImage};
 use lcms2::PixelFormat;
 use libheif_rs::{ColorPrimaries, TransferCharacteristics};
-use enumy::rozszerzenia::kolor::{ColorNclx, ColorProfilePhoto, PrzestrzeńExr};
-use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
+use rand::RngExt;
+use std::path::{Path, PathBuf};
 
 pub fn zaszumianie(noising: u8, bufor: DynamicImage) -> DynamicImage {
     // let mut xoxo = bufor.clone();
@@ -661,13 +660,22 @@ pub fn konwersja_float_na_mniejsze(foto: DynamicImage,  chroma: PrzestrzeńExr) 
     let has_alpha = alpha.iter().any(|&a| (a - 1.0).abs() > 0.001); // uproszczona heurystyka
     let dynamic_output = if has_alpha {
         let mut rgba_u16 = vec![0u16; num_pixels * 4];
-        for i in 0..num_pixels {
+        // for i in 0..num_pixels {
+        //     let si = i * 3;
+        //     let di = i * 4;
+        //     rgba_u16[di]     = u16_data[si];
+        //     rgba_u16[di + 1] = u16_data[si + 1];
+        //     rgba_u16[di + 2] = u16_data[si + 2];
+        //     rgba_u16[di + 3] = (alpha[i] * 65535.0).round() as u16;
+        // }
+        for (i, &alpha_val) in alpha.iter().enumerate().take(num_pixels) {
             let si = i * 3;
             let di = i * 4;
+
             rgba_u16[di]     = u16_data[si];
             rgba_u16[di + 1] = u16_data[si + 1];
             rgba_u16[di + 2] = u16_data[si + 2];
-            rgba_u16[di + 3] = (alpha[i] * 65535.0).round() as u16;
+            rgba_u16[di + 3] = (alpha_val * 65535.0).round() as u16;
         }
         DynamicImage::ImageRgba16(
             ImageBuffer::<image::Rgba<u16>, _>::from_raw(width, height, rgba_u16)

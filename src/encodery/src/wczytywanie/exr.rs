@@ -1,15 +1,14 @@
-use std::io::Cursor;
-use image::{DynamicImage, GenericImageView, ImageBuffer, Rgba, Rgba32FImage};
-use enumy::rozszerzenia::kolor::{ColorProfilePhoto, PrzestrzeńExr};
 use crate::wczytywanie::strukty::DaneDoWczytywania;
+use enumy::rozszerzenia::kolor::{ColorProfilePhoto, PrzestrzeńExr};
 use exr::prelude::*;
+use image::{DynamicImage, GenericImageView, Rgba32FImage};
 use libheif_rs::{ColorPrimaries, TransferCharacteristics};
-use enumy::rozszerzenia::kolor::PrzestrzeńExr::LinearSRGB;
+use std::io::Cursor;
 
-struct ExrOdbiornik {
-    width: usize,
-    data: Vec<f32>,
-}
+// struct ExrOdbiornik {
+//     width: usize,
+//     data: Vec<f32>,
+// }
 pub fn exr_loading(bajty: &[u8]) -> std::result::Result<DaneDoWczytywania, std::io::Error> {
 
     let kursor = Cursor::new(bajty);
@@ -68,7 +67,7 @@ pub fn exr_loading(bajty: &[u8]) -> std::result::Result<DaneDoWczytywania, std::
     let mut rgba_f32 = vec![0.0f32; num_pixels * 4];   // tymczasowy bufor f32
 
     // Funkcja kopiująca dane kanału do bufora RGBA (składowa: 0=R, 1=G, 2=B, 3=A)
-    fn copy_channel(samples: &FlatSamples, rgba: &mut [f32], component: usize, num_pixels: usize) {
+    fn copy_channel(samples: &FlatSamples, rgba: &mut [f32], component: usize, _num_pixels: usize) {
         match samples {
             FlatSamples::F16(data) => {
                 for (i, v) in data.iter().enumerate() {
@@ -240,14 +239,17 @@ pub fn konwersja_mniejsze_na_float(
 // Funkcje pomocnicze
 
 /// Stałe chromatyczności sRGB / BT.709
+#[allow(dead_code)]
 const SRGB_PRIMARIES: [f32; 8] = [0.64, 0.33, 0.30, 0.60, 0.15, 0.06, 0.3127, 0.3290];
 
 /// Porównuje dwie 8‑liczbowe tablice chromatyczności z tolerancją.
+#[allow(dead_code)]
 fn primaries_approx_equal(a: [f32; 8], b: [f32; 8]) -> bool {
     a.iter().zip(b.iter()).all(|(x, y)| (x - y).abs() < 1e-4)
 }
 
 /// Zwraca chromatyczności [rx,ry, gx,gy, bx,by, wx,wy] dla znanych standardów.
+#[allow(dead_code)]
 fn primaries_to_coordinates(p: ColorPrimaries) -> [f32; 8] {
     match p {
         ColorPrimaries::ITU_R_BT_709_5 =>
@@ -263,6 +265,7 @@ fn primaries_to_coordinates(p: ColorPrimaries) -> [f32; 8] {
 }
 
 /// Odwrotność funkcji transferu (gamma → liniowy).
+#[allow(dead_code)]
 fn inverse_transfer(value: f32, tf: TransferCharacteristics) -> f32 {
     match tf {
         TransferCharacteristics::IEC_61966_2_1 => srgb_to_linear(value),
@@ -278,6 +281,7 @@ fn inverse_transfer(value: f32, tf: TransferCharacteristics) -> f32 {
 }
 
 /// sRGB -> liniowy (IEC 61966‑2‑1)
+#[allow(dead_code)]
 fn srgb_to_linear(c: f32) -> f32 {
     if c <= 0.04045 {
         c / 12.92
@@ -287,6 +291,7 @@ fn srgb_to_linear(c: f32) -> f32 {
 }
 
 /// BT.709 / BT.2020 (SDR) -> liniowy
+#[allow(dead_code)]
 fn bt709_to_linear(c: f32) -> f32 {
     if c < 0.081 {
         c / 4.5

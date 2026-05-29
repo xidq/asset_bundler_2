@@ -146,7 +146,7 @@ pub async fn main_fn_konwersja(
                 //     exif: bufor.exif,
                 //     kolor: bufor.kolor,
                 // };
-                let exif = match zestaw_danych.exif.clone(){
+                let exif = match zestaw_danych.exif{
                     true => {bufor.exif}
                     false => {None}
                 };

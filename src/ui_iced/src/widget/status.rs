@@ -1,12 +1,11 @@
-use iced::Element;
-use iced::widget::{progress_bar, space, text, Row};
-use iced_core::{Color, Length};
-use enumy::inne_ui::UstawieniaThemeWsio;
-use enumy::lang::odmiana_liczbowa;
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
 use crate::widget::styles::styl_progress_bar;
+use enumy::inne_ui::UstawieniaThemeWsio;
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{progress_bar, space, text, Row};
+use iced::Element;
+use iced_core::{Color, Length};
 
 pub fn status_text<'a>(tekst: String, jezyk: &'a WybórJęzyka  ) -> Element<'a, Message> {
     text(tekst).color(KOLOR_CZCIONKI_SREDNI).font(jezyk.get_font()).size(12.).width(Length::FillPortion(4)).into()

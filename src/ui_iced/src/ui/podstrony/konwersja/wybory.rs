@@ -318,7 +318,7 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
     let exr_bdepth =
         if let Some(ImgExt::Exr {
-                        bit_depth, kompresja
+                        bit_depth, kompresja: _
                     }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Exr { .. })) {
             bit_depth
         } else {
@@ -390,6 +390,8 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
         .push(ff_row)
         .push(info_male("Qoi".to_string(), qoi_bool, temat))
         .push(qoi_row)
+        .push(info_male("Exr".to_string(), exr_bool, temat))
+        .push(exr_row)
         .push(info_male("Resolutions".to_string(), true, temat))
         .push(roz_row)
         .push(info_male("Etc".to_string(), true, temat))

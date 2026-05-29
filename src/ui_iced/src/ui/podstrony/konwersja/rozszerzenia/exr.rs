@@ -1,19 +1,17 @@
 use crate::ui::wiadomosci::message_enum::Message;
-use crate::widget::button::{btn_bdepth_konwersja, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
+use crate::widget::button::{btn_bdepth_konwersja, pole_tekstowe_przycisku, przycisk_rozszerzenia};
 use crate::widget::dropdown::dropdown;
-use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
 use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth::{BdepthExr, BdepthJpg};
-use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
+use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, UstawieniaThemeWsio};
+use enumy::rozszerzenia::bdepth::BdepthExr;
 use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::rozszerzenia::kompresje::ForExrKompresja;
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{container, space, Column, Row};
 use iced::Element;
-use iced_core::{Color, Length};
+use iced_core::Color;
 use strum::IntoEnumIterator;
-use enumy::rozszerzenia::kompresje::ForExrKompresja;
 
 pub fn exr<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
@@ -25,14 +23,14 @@ pub fn exr<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                         if let Some(
                             ImgExt::Exr {
                                 bit_depth,
-                                kompresja
+                                kompresja:_
                             }) = dane.rozszerzenia
                             .iter()
                             .find(|f| matches!(f, ImgExt::Exr { .. }))
                         {
                             Column::new()
                                 .push(
-                                    match kompresja{
+                                    // match kompresja{
                                         // ForExrKompresja::Dwaa(Some(pp)) => {
                                         //     Row::new().spacing(15).height(50.)
                                         //         .push(pole_tekstowe_przycisku(format!("Q: {}", pp), jezyk, temat))
@@ -46,8 +44,9 @@ pub fn exr<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                         //         .push(space().width(15.))
                                         // }
                                         // Wszystkie warianty z None oraz każdy inny rodzaj kompresji wpadną tutaj:
-                                        _ => Row::new().height(50.)
-                                    }
+                                        // _ =>
+                                            Row::new().height(50.)
+                                    // }
                                 )
                                 .push(
                                     BdepthExr::iter()

@@ -4,7 +4,7 @@ use crate::wczytywanie::strukty::DaneDoWczytywania;
 use enumy::rozszerzenia::kolor::{ColorNclx, ColorProfilePhoto};
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
 
-pub fn avif(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error>{ //dodać exif jeżeli jest oraz dane odnośnie color space
+pub fn avif(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error>{ //dodać exif jeżeli jest oraz dane odnośnie color space
     let mut exif_out: Option<Vec<u8>> = None;
     let lib_heif = LibHeif::new();
     let ctx = HeifContext::read_from_bytes(bajty)

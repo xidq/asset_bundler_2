@@ -294,11 +294,13 @@ impl Program {
                             .iter_mut()
                             .find(|f| matches!(f, ImgExt::Exr { .. }))
                         {
-                            *kompresja = match v {
-                                // ForExrKompresja::Dwaa(_) => ForExrKompresja::Dwaa(Some(45.)), // Dostosuj typ (np. 7 jeśli u8/u32)
-                                // ForExrKompresja::Dwab(_) => ForExrKompresja::Dwab(Some(45.)),
-                                inny_wariant => *inny_wariant, // Reszta (Brak, Rle, Zip itd.) zostaje jak była
-                            };
+                            let inny_wariant =v;
+                            *kompresja = *inny_wariant;
+                            // *kompresja = match v {
+                            //     // ForExrKompresja::Dwaa(_) => ForExrKompresja::Dwaa(Some(45.)), // Dostosuj typ (np. 7 jeśli u8/u32)
+                            //     // ForExrKompresja::Dwab(_) => ForExrKompresja::Dwab(Some(45.)),
+                            //     inny_wariant => *inny_wariant, // Reszta (Brak, Rle, Zip itd.) zostaje jak była
+                            // };
                         }
                     }
                 }

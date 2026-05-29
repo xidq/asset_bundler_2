@@ -1,29 +1,19 @@
 use iced::{
-    font, widget::{button, column, container, row, scrollable, text, Space}, Event,
+    font, widget::{button, column, container, row, scrollable, text, Space},
     Task,
 };
-use std::collections::HashMap;
 
 // use crate::ui::podmenu_old::ui_dds::{view_dds, StronyDds};
 use crate::ui::wiadomosci::message_enum::Message;
-use chrono::{Local, Timelike};
 use enumy::czcionki::{FONT_DEFAULT, FONT_JAPANESE, FONT_KOREAN, FONT_THAI};
-use enumy::dane_do_przetwarzania::{DaneKonw, DaneBinUnpak, DaneBinPak, DaneDdsPak, DaneDdsUnpak, DaneMerge};
+use enumy::dane_do_przetwarzania::{DaneBinPak, DaneBinUnpak, DaneDdsPak, DaneDdsUnpak, DaneKonw, DaneMerge};
 use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds};
 pub(crate) use enumy::enums_structs_io::{LogPakowanie, LogPrzetwarzanieFot, LogRozpakowywanie};
-use enumy::inne_ui::{ActProces, BtnState, ButtonType, DropdownType, ObecnyColorCzcionkiPrzezroczystosci, ObecnyColorTheme, ObecnyColorThemePrzezroczystosci, PrzyciskiGlowneMenu, SliderType, StartBtnStatus, Temp, TextInputType, UiPods, Ustawienia, UstawieniaThemeWsio};
-use enumy::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
-use enumy::rozszerzenia::bdepth::BdepthJpg;
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForExrKompresja, ForFfKompresja};
-use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtSingle, ImgExtTag};
+use enumy::inne_ui::{BtnState, PrzyciskiGlowneMenu, UiPods, UstawieniaThemeWsio};
 pub(crate) use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
 use iced::widget::{image, stack, Column, Row};
 use iced::{Border, Color, Element, Length};
 use iced_core::{Shadow, Theme, Vector};
-use std::path::PathBuf;
-use enumy::rozszerzenia::kompresje;
 
 #[allow(dead_code)]
 pub struct Program {
@@ -59,13 +49,8 @@ use crate::ui::podstrony::dds::main::dds_view;
 use crate::ui::podstrony::konwersja::main::konwersja_view;
 use crate::ui::podstrony::merging::main::merge_view;
 use crate::ui::podstrony::settings::main::ustawienia_view;
-use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
-use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
-use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
-use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::BinPakMsg;
-use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
 use crate::widget::button::przycisk_glowne_menu;
-use crate::widget::colors_n_stuff::{KOLOR_CZCIONKI_SREDNI};
+use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
 use crate::widget::styles::styl_przycisków;
 
 

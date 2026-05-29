@@ -11,7 +11,6 @@ use jpeg_encoder::{Encoder, QuantizationTableType, SamplingFactor};
 use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
-use image::DynamicImage;
 use tokio::sync::Mutex;
 
 pub async fn jpg_match<T>(
@@ -132,7 +131,7 @@ pub async fn jpg_match<T>(
     encoder.set_optimized_huffman_tables(dane.progresywny);
     match dane.exif{
         None => {}
-        Some(xxx) => { encoder.add_exif_metadata(&*xxx).expect("Err jpg exif data");}
+        Some(xxx) => { encoder.add_exif_metadata(&xxx).expect("Err jpg exif data");}
     }
 
 
@@ -140,7 +139,7 @@ pub async fn jpg_match<T>(
 
     encoder
         .encode(
-            &*ungabunga,
+            &ungabunga,
             width,
             height,
             enco,

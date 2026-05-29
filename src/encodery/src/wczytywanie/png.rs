@@ -14,11 +14,11 @@ pub fn png(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     // Ważne: musimy poinstruować dekoder, aby czytał metadane, 
     // bo domyślnie może je zignorować dla oszczędności pamięci.
     let mut reader = decoder.read_info()
-        .map_err(|e| std::io::Error::other(e))?;
+        .map_err(std::io::Error::other)?;
 
     let mut pixels = vec![0; reader.output_buffer_size().expect("nie ma pikseli w png")];
     let info = reader.next_frame(&mut pixels)
-        .map_err(|e| std::io::Error::other(e))?;
+        .map_err(std::io::Error::other)?;
 
     // --- 1. Wyciąganie ICC Profile ---
     let mut typ_koloru = ColorProfilePhoto::None;

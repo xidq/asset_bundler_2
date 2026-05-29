@@ -485,8 +485,8 @@ where T: Logi,
 
     let handle =context.encode_image(&heif_img, &mut encoder, None).map_err(std::io::Error::other)?;
     // dbg!("Po encode_image");
-    if let Some(ref surowy_exif) = dane.exif {
-        if !surowy_exif.is_empty() {
+    if let Some(ref surowy_exif) = dane.exif &&
+         !surowy_exif.is_empty() {
             // Specyfikacja HEIF/AVIF wymaga 4 pustych bajtów (offsetu) na początku
             let mut heif_exif_payload = vec![0u8; 4];
             heif_exif_payload.extend_from_slice(surowy_exif);
@@ -496,7 +496,7 @@ where T: Logi,
                 &handle,
                 &heif_exif_payload,
             ).map_err(|e| std::io::Error::other(format!("Błąd zapisu metadanych EXIF: {}", e)))?;
-        }
+
     }
 
     let final_bytes = context.write_to_bytes()

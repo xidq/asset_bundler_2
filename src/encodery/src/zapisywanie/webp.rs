@@ -105,10 +105,10 @@ where T: Logi,
         .map_err(|_| tokio::io::Error::other("img-parts: Nie udało się sparsować strumienia WebP"))?;
 
     // img-parts automatycznie przekonwertuje nagłówek na VP8X, jeśli dodasz EXIF
-    if let Some(ref exif_bytes) = dane.exif {
-        if !exif_bytes.is_empty() {
+    if let Some(ref exif_bytes) = dane.exif &&
+        !exif_bytes.is_empty() {
             webp_image.set_exif(Some(Bytes::copy_from_slice(exif_bytes)));
-        }
+
     }
 
     // Opcjonalnie: jak z jakiegoś powodu zachowanie tego zacnego sRGB ICC

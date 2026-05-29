@@ -3,16 +3,14 @@ use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
 use dds_ops::dds_import::dds_to_image;
 use dds_ops::dds_wczytywanie_zdjec::image_to_dds;
+use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::ActProces;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag, ImgExtSingle};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtSingle, ImgExtTag};
 use enumy::statusy::{LogTxDdsPak, LogTxDdsUnpak};
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
-use enumy::enums_structs_io::FILTERFOTO;
 
 fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
     if let Some(pos) = vec.iter().position(|x| x == element) {
