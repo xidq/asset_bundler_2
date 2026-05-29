@@ -1,3 +1,5 @@
+use std::io;
+use image::{DynamicImage, ImageBuffer, Rgb, Rgba};
 use crate::wczytywanie::strukty::DaneDoWczytywania;
 use enumy::rozszerzenia::kolor::{ColorNclx, ColorProfilePhoto};
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
@@ -84,22 +86,48 @@ pub fn avif(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error>{ //dod
     }
 
     // (clean_vec,bit_depth,width,height)
+    // todo!(); //ogarnąć dlaczego 10bit avif nie odpala tylko błąd
     let obraz = if bit_depth > 8 {
         // Obraz 10/12 bit promujemy do 16-bitowego DynamicImage
-        let data_u16: Vec<u16> = clean_vec.chunks_exact(2)
+
+        // let data_u16: Vec<u16> = clean_vec.chunks_exact(2)
+        //     .map(|c| u16::from_be_bytes([c[0], c[1]]))
+        //     .collect();
+        //
+        // let buffer = image::ImageBuffer::<image::Rgba<u16>, _>::from_raw(width as u32, height as u32, data_u16)
+        //     .ok_or_else(|| std::io::Error::other("Błąd bufora AVIF 16-bit"))?;
+        // image::DynamicImage::ImageRgba16(buffer)
+
+
+        // Dane 10/12‑bit są przechowywane jako 16‑bitowe słowa w formacie big‑endian.
+        // Czytamy po 2 bajty i tworzymy wektor u16.
+        let data_u16: Vec<u16> = clean_vec
+            .chunks_exact(2)
             .map(|c| u16::from_be_bytes([c[0], c[1]]))
             .collect();
 
-        let buffer = image::ImageBuffer::<image::Rgba<u16>, _>::from_raw(width as u32, height as u32, data_u16)
-            .ok_or_else(|| std::io::Error::other("Błąd bufora AVIF 16-bit"))?;
-
-        image::DynamicImage::ImageRgba16(buffer)
+        if has_alpha {
+            let buf = ImageBuffer::<Rgba<u16>, _>::from_raw(width as u32, height as u32, data_u16)
+                .ok_or_else(|| io::Error::other("Błąd tworzenia bufora Rgba16a"))?;
+            DynamicImage::ImageRgba16(buf)
+        } else {
+            let buf = ImageBuffer::<Rgb<u16>, _>::from_raw(width as u32, height as u32, data_u16)
+                .ok_or_else(|| io::Error::other("Błąd tworzenia bufora Rgb16"))?;
+            DynamicImage::ImageRgb16(buf)
+        }
     } else {
         // Standardowe 8 bit
-        let buffer = image::ImageBuffer::<image::Rgba<u8>, _>::from_raw(width as u32, height as u32, clean_vec)
-            .ok_or_else(|| std::io::Error::other("Błąd bufora AVIF 8-bit"))?;
+        if has_alpha{
+            let buffer = image::ImageBuffer::<image::Rgba<u8>, _>::from_raw(width as u32, height as u32, clean_vec)
+                .ok_or_else(|| std::io::Error::other("Błąd bufora AVIF 8-bita"))?;
+            image::DynamicImage::ImageRgba8(buffer)
+        } else {
+            let buffer = image::ImageBuffer::<image::Rgb<u8>, _>::from_raw(width as u32, height as u32, clean_vec)
+                .ok_or_else(|| std::io::Error::other("Błąd bufora AVIF 8-bit"))?;
+            image::DynamicImage::ImageRgb8(buffer)
+        }
 
-        image::DynamicImage::ImageRgba8(buffer)
+
     };
 
     Ok(

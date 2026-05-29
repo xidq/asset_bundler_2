@@ -82,9 +82,11 @@ pub async fn main_fn_konwersja(
 
 
         let total_operacji = ścieżki_do_zdjęć.len() as u32 * ile_rozdzielczosci * suma_wariantow_bit_depth;
+        wyslij_status(&mut tx, Some(LogTxKonw::FiltrowaniePlików(Option::from(total_operacji)))).await;
+
 
         // multiplying according to times tx is called in functions
-        let metryka_operacji = Some(total_operacji * 3);
+        let metryka_operacji = Some(total_operacji * 2);
 
         // getting another one for rayon bcoz rayon needs it for himself...
         let tx_dla_rayona = tx.clone();
@@ -375,7 +377,7 @@ fn wez_sprawdz_sciezki(
     sciezka: PathBuf,
     tx: &mut mpsc::Sender<LogTxKonw>,
 ) -> Vec<(PathBuf, String, String)> {
-    let opt_rozszerzenia_plików_zdjęciowych: [&str; 17] =
+    let opt_rozszerzenia_plików_zdjęciowych: [&str; 18] =
         FILTERFOTO.map(|item| item.strip_prefix("ff.").unwrap_or(item));
     // FILTERFOTO
     let mut przetworzone_pliki: u32 = 0;
@@ -430,7 +432,7 @@ fn zgarnij_dane_z_pliku(
     // println!("jestem w zgarnij dane z pliku!!!!!");
     let mut przetworzone_pliki: u32 = 0;
     let mut do_wyjscia = Vec::new();
-    let opt_rozszerzenia_plików_zdjęciowych: [&str; 17] =
+    let opt_rozszerzenia_plików_zdjęciowych: [&str; 18] =
         FILTERFOTO.map(|item| item.strip_prefix("ff.").unwrap_or(item));
     // println!("jestem w zgarnij_dane_z_pliku");
 

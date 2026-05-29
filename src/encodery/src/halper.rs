@@ -27,30 +27,39 @@ pub fn zaszumianie(noising: u8, bufor: DynamicImage) -> DynamicImage {
     match bufor {
         // --- OBSŁUGA 8-BIT ---
         DynamicImage::ImageRgba8(mut img) => {
-            let max_val = 255.0;
+            let max_val = u8::MAX as f64;
             let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                for i in 0..3 {
-                    // Tylko R, G, B
-                    let v = pixel.0[i] as f64;
+            img.pixels_mut().for_each(|pixel| {
+                pixel.0[..3].iter_mut().for_each(|c| {
+                    let v = *c as f64;
                     let delta = rng.random_range(-max_delta..=max_delta);
-                    pixel.0[i] = (v + delta).clamp(0.0, max_val) as u8;
-                }
-            }
+                    *c = (v + delta).clamp(0.0, max_val) as u8;
+                });
+            });
             DynamicImage::ImageRgba8(img)
         }
 
         // --- OBSŁUGA 16-BIT ---
         DynamicImage::ImageRgba16(mut img) => {
-            let max_val = 65535.0;
+            // let max_val = 65535.0;
+            // let max_delta = max_val * n_factor;
+            // for pixel in img.pixels_mut() {
+            //     for i in 0..3 {
+            //         let v = pixel.0[i] as f64;
+            //         let delta = rng.random_range(-max_delta..=max_delta);
+            //         pixel.0[i] = (v + delta).clamp(0.0, max_val) as u16;
+            //     }
+            // }
+            // DynamicImage::ImageRgba16(img)
+            let max_val = u16::MAX as f64;
             let max_delta = max_val * n_factor;
-            for pixel in img.pixels_mut() {
-                for i in 0..3 {
-                    let v = pixel.0[i] as f64;
+            img.pixels_mut().for_each(|pixel| {
+                pixel.0[..3].iter_mut().for_each(|c| {
+                    let v = *c as f64;
                     let delta = rng.random_range(-max_delta..=max_delta);
-                    pixel.0[i] = (v + delta).clamp(0.0, max_val) as u16;
-                }
-            }
+                    *c = (v + delta).clamp(0.0, max_val) as u16;
+                });
+            });
             DynamicImage::ImageRgba16(img)
         }
 
@@ -80,6 +89,28 @@ pub fn zaszumianie(noising: u8, bufor: DynamicImage) -> DynamicImage {
                 }
             }
             DynamicImage::ImageRgb8(img)
+        }
+        DynamicImage::ImageRgb16(mut img) => {
+            // let max_val = 65535.0;
+            // let max_delta = max_val * n_factor;
+            // for pixel in img.pixels_mut() {
+            //     for i in 0..3 {
+            //         let v = pixel.0[i] as f64;
+            //         let delta = rng.random_range(-max_delta..=max_delta);
+            //         pixel.0[i] = (v + delta).clamp(0.0, max_val) as u16;
+            //     }
+            // }
+            // DynamicImage::ImageRgba16(img)
+            let max_val = u16::MAX as f64;
+            let max_delta = max_val * n_factor;
+            img.pixels_mut().for_each(|pixel| {
+                pixel.0.iter_mut().for_each(|c| {
+                    let v = *c as f64;
+                    let delta = rng.random_range(-max_delta..=max_delta);
+                    *c = (v + delta).clamp(0.0, max_val) as u16;
+                });
+            });
+            DynamicImage::ImageRgb16(img)
         }
         DynamicImage::ImageLuma8(mut img) => {
             let max_val = 255.0;
@@ -125,6 +156,124 @@ pub fn zaszumianie(noising: u8, bufor: DynamicImage) -> DynamicImage {
         _ => bufor, // Reszta formatów bez zmian
     }
 }
+
+// pub fn zaszumianie_u8<T>(noising: u8, bufor: Vec<T>, kolor:Bde, bit: ) -> Vec<T>
+// where T: Copy {
+//     let mut rng = rand::rng();
+//     let n_factor = noising as f64 / 100.0;
+//
+//     let wartosc_max = match bufor[0]{
+//         u8 => {u8::max_value()},
+//         u16 =>{u16::MAX}
+//     };
+//
+//     bufor.into_iter().enumerate().map(|(i,v)| {
+//         for i in 0..3{
+//             let x = v.0[i] as f64
+//         }
+//     })
+//
+//     match bufor {
+//         // --- OBSŁUGA 8-BIT ---
+//         DynamicImage::ImageRgba8(mut img) => {
+//             let max_val = 255.0;
+//             let max_delta = max_val * n_factor;
+//             for pixel in img.pixels_mut() {
+//                 for i in 0..3 {
+//                     // Tylko R, G, B
+//                     let v = pixel.0[i] as f64;
+//                     let delta = rng.random_range(-max_delta..=max_delta);
+//                     pixel.0[i] = (v + delta).clamp(0.0, max_val) as u8;
+//                 }
+//             }
+//             DynamicImage::ImageRgba8(img)
+//         }
+//
+//         // --- OBSŁUGA 16-BIT ---
+//         DynamicImage::ImageRgba16(mut img) => {
+//             let max_val = 65535.0;
+//             let max_delta = max_val * n_factor;
+//             for pixel in img.pixels_mut() {
+//                 for i in 0..3 {
+//                     let v = pixel.0[i] as f64;
+//                     let delta = rng.random_range(-max_delta..=max_delta);
+//                     pixel.0[i] = (v + delta).clamp(0.0, max_val) as u16;
+//                 }
+//             }
+//             DynamicImage::ImageRgba16(img)
+//         }
+//
+//         // --- OBSŁUGA 32-BIT (F32) ---
+//         DynamicImage::ImageRgba32F(mut img) => {
+//             let max_val = 1.0;
+//             let max_delta = max_val * n_factor;
+//             for pixel in img.pixels_mut() {
+//                 for i in 0..3 {
+//                     let v = pixel.0[i] as f64;
+//                     let delta = rng.random_range(-max_delta..=max_delta);
+//                     pixel.0[i] = (v + delta).clamp(0.0, max_val) as f32;
+//                 }
+//             }
+//             DynamicImage::ImageRgba32F(img)
+//         }
+//
+//         // Jeśli wpadnie format bez Alfy (RGB), traktujemy go tak samo
+//         DynamicImage::ImageRgb8(mut img) => {
+//             let max_val = 255.0;
+//             let max_delta = max_val * n_factor;
+//             for pixel in img.pixels_mut() {
+//                 for i in 0..3 {
+//                     let v = pixel.0[i] as f64;
+//                     let delta = rng.random_range(-max_delta..=max_delta);
+//                     pixel.0[i] = (v + delta).clamp(0.0, max_val) as u8;
+//                 }
+//             }
+//             DynamicImage::ImageRgb8(img)
+//         }
+//         DynamicImage::ImageLuma8(mut img) => {
+//             let max_val = 255.0;
+//             let max_delta = max_val * n_factor;
+//             for pixel in img.pixels_mut() {
+//                 let v = pixel.0[0] as f64;
+//                 let delta = rng.random_range(-max_delta..=max_delta);
+//                 pixel.0[0] = (v + delta).clamp(0.0, max_val) as u8;
+//             }
+//             DynamicImage::ImageLuma8(img)
+//         }
+//         DynamicImage::ImageLumaA8(mut img) => {
+//             let max_val = 255.0;
+//             let max_delta = max_val * n_factor;
+//             for pixel in img.pixels_mut() {
+//                 let v = pixel.0[0] as f64;
+//                 let delta = rng.random_range(-max_delta..=max_delta);
+//                 pixel.0[0] = (v + delta).clamp(0.0, max_val) as u8;
+//             }
+//             DynamicImage::ImageLumaA8(img)
+//         }
+//         DynamicImage::ImageLuma16(mut img) => {
+//             let max_val = 65535.0;
+//             let max_delta = max_val * n_factor;
+//             for pixel in img.pixels_mut() {
+//                 let v = pixel.0[0] as f64;
+//                 let delta = rng.random_range(-max_delta..=max_delta);
+//                 pixel.0[0] = (v + delta).clamp(0.0, max_val) as u16;
+//             }
+//             DynamicImage::ImageLuma16(img)
+//         }
+//         DynamicImage::ImageLumaA16(mut img) => {
+//             let max_val = 65535.0;
+//             let max_delta = max_val * n_factor;
+//             for pixel in img.pixels_mut() {
+//                 let v = pixel.0[0] as f64;
+//                 let delta = rng.random_range(-max_delta..=max_delta);
+//                 pixel.0[0] = (v + delta).clamp(0.0, max_val) as u16;
+//             }
+//             DynamicImage::ImageLumaA16(img)
+//         }
+//
+//         _ => bufor, // Reszta formatów bez zmian
+//     }
+// }
 
 pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> DynamicImage {
     let mapuj_u16_na_u8 = |v: u16| -> u8 { ((v as f32 / 65535.0) * 255.0).round() as u8 };

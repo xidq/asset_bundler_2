@@ -238,6 +238,16 @@ impl BdepthAvif {
         }
     }
 }
+impl BdepthExr{
+    pub fn maly_wariant(&self) -> &'static str {
+        match self{
+            BdepthExr::F16 => "F16",
+            BdepthExr::F32 => "F32",
+            BdepthExr::F16Half => "F16H",
+            BdepthExr::F32Half => "F32H",
+        }
+    }
+}
 impl BdepthJpg {
 
     pub fn maly_wariant(&self) -> &'static str {

@@ -1,6 +1,6 @@
-pub const FILTERFOTO: [&str; 17] = [
+pub const FILTERFOTO: [&str; 18] = [
     "jpg", "jpeg", "webp", "png", "tga", "bmp", "ff", "exr", "ico", "hdr", "pnm", "qoi", "tiff",
-    "ff.zst", "ff.bz2", "ff.xz", "exr"
+    "ff.zst", "ff.bz2", "ff.xz", "exr", "avif"
 ];
 
 // #[derive(Debug, Clone)]

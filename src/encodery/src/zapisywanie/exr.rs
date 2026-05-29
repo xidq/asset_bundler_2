@@ -14,6 +14,7 @@ use enumy::statusy::Logi;
 use crate::halper::{konwersja_float_na_mniejsze, konwersja_mniejsze_na_float, usun_kanal_alpha};
 use exr::prelude::*;
 use enumy::rozszerzenia::kompresje::ForExrKompresja;
+use crate::send::wyslij_status;
 
 pub async fn exr_match<T>(
     dane: PrzetwarzanieExr, //będzie dostosowane do exr... gdzie będą kompresje, profile itd.
@@ -46,6 +47,12 @@ where T: Logi,
             )
     };
 
+    let mut oopr = obecna_operacja.lock().await;
+    *oopr += 1;
+    let obecnie = *oopr;
+    drop(oopr);
+
+    wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
 
 
 
@@ -205,6 +212,14 @@ where T: Logi,
         .to_file(&output_path)
         .map_err(|e| tokio::io::Error::other(format!("Błąd zapisu EXR: {}", e)))?;
         // .map_err(|e| tokio::io::Error::new(tokio::io::ErrorKind::Other, format!("Błąd zapisu EXR: {e}")))?;
+
+    let mut oopr = obecna_operacja.lock().await;
+    *oopr += 1;
+    let obecnie = *oopr;
+    drop(oopr);
+
+    wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
+
 
 
     // if matches!(dane.kompresja, ForExrKompresja::Dwaa(_) | ForExrKompresja::Dwab(_)) {

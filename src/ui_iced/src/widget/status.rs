@@ -15,12 +15,13 @@ pub fn status_text_bar<'a>( dane: (u32, Option<u32>), napis: &'static str, kolor
 
     if let Some(dane_max) = dane.1 {
         Row::new()
-            .push(status_text(if dane_max > dane.0 {
-                    format!("{}: ",jezyk.t(&(napis.to_owned() + "_pending")))
-                }else{
-                    format!("{} {} {}",jezyk.t(napis),dane_max, jezyk.t(&odmiana_liczbowa(dane_max)) )
-                }, jezyk))
-
+            .push(status_text(
+                    format!("{}: ",jezyk.t(&(napis.to_owned() + "_pending"))),
+                     jezyk
+                // }else{
+                //     format!("{} {} {}",jezyk.t(napis),dane_max, jezyk.t(&odmiana_liczbowa(dane_max)) )
+                // }, jezyk))
+            ))
             .push(space().width(Length::FillPortion(1)))
 
             .push(

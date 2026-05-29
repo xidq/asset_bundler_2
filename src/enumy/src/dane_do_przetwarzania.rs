@@ -72,7 +72,7 @@ impl Default for DaneKonw {
             noising: None,
             rozszerzenia: Vec::from([ Default::default() ]),
             tag: Vec::from([ ImgExtTag::Jpg ]),
-            inter: OptInterpolacja::Nearest,
+            inter: OptInterpolacja::Lanczos3,
             alfa_rgb: (0, 0, 0),
             exif: false,
         }

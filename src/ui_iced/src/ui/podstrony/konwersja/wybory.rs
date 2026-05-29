@@ -2,7 +2,7 @@ use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::text::info_male;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::UstawieniaThemeWsio;
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
 use iced::widget::{Column, Row};
@@ -292,8 +292,62 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
     qoi_row = qoi_row
         .push(info_male("|".to_string(), qoi_bool,temat));
 
+//exr ----------------------------------------------------------------------------------------------
 
-//rozdzielczosci -----------------------------------------------------------------------------------
+    let exr_bool = dane.tag.contains(&ImgExtTag::Exr);
+
+    let (exr_kompresja, /* ff_kompresja_wartosc */) =
+        if let Some(ImgExt::Exr {
+                        kompresja, ..
+                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Ff { .. })) {
+
+            (
+                kompresja.to_string(),
+                // match metoda_kompresji {
+                //     ForFfKompresja::Zstd(v) | ForFfKompresja::Bzip2(v) | ForFfKompresja::Xz(v) => v.to_string(),
+                //     ForFfKompresja::Brak => "".to_string(),
+                // }
+            )
+
+        } else {
+            (
+                "-".to_string(),
+                // "-".to_string()
+            )
+        };
+
+    let exr_bdepth =
+        if let Some(ImgExt::Exr {
+                        bit_depth, kompresja
+                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Exr { .. })) {
+            bit_depth
+        } else {
+            &Vec::new()
+        };
+
+    let mut exr_row = Row::new().spacing(3.);
+
+    exr_row = exr_row
+        .push(info_male("|".to_string(), exr_bool, temat));
+
+    for wariant in BdepthExr::iter() {
+        exr_row = exr_row.push(
+            info_male(
+                wariant.maly_wariant().to_string(),
+                exr_bdepth.contains(&wariant),
+                temat
+            )
+        );
+    }
+
+    exr_row = exr_row
+        .push(info_male("|".to_string(), exr_bool,temat))
+        .push(info_male(exr_kompresja, exr_bool,temat))
+        .push(info_male("|".to_string(), exr_bool,temat));
+
+
+
+    //rozdzielczosci -----------------------------------------------------------------------------------
 
     let mut roz_row = Row::new().spacing(3.);
 
