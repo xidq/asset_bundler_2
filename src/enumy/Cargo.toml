@@ -11,6 +11,8 @@ iced = { workspace = true, features = ["advanced", "svg"] }
 #dds = { workspace = true }
 strum = { workspace = true, features = ["derive"] }
 image = { workspace = true }
-libheif-rs = "2.7.0"
+libheif-rs = { workspace = true }
+dirs = { workspace = true }
+chrono = { workspace = true }
 
 #libheif-rs = { workspace = true }

@@ -8,6 +8,7 @@ use enumy::statusy::LogTxBinUnpak;
 use kompresja::dekompresjazstd::dekompresujsuj;
 use szyfrowanie::xor_de::deszyfruj_xor;
 use tokio::io::AsyncReadExt;
+use enumy::log_file_gen::generuj_plik_logow;
 
 async fn sprawdzanie_istnienia_pliku(
     ścieżka_pliku: PathBuf,
@@ -16,7 +17,7 @@ async fn sprawdzanie_istnienia_pliku(
 ) -> Result<(), tokio::io::Error> {
 
 
-    // 1. Walidacja wejścia
+    // Walidacja wejścia
     if !ścieżka_pliku.exists() || !ścieżka_pliku.is_file() {
         let błąd = format!("Nie znaleziono pliku: {:?}", ścieżka_pliku);
         let _ = tx
@@ -24,12 +25,12 @@ async fn sprawdzanie_istnienia_pliku(
                 błąd.clone(),
             ))
             .await;
-        return Err(tokio::io::Error::new(tokio::io::ErrorKind::NotFound, błąd));
+        return Err(tokio::io::Error::new(tokio::io::ErrorKind::NotFound, format!("File not found: {:?}",ścieżka_pliku)));
     }
 
     // 2. Przygotowanie ścieżki tymczasowej (.jrzs -> .jrzs_temp)
     let nazwa_pliku = ścieżka_pliku.file_name().ok_or_else(|| {
-        tokio::io::Error::new(tokio::io::ErrorKind::InvalidInput, "Błędna nazwa pliku")
+        tokio::io::Error::new(tokio::io::ErrorKind::InvalidInput, format!("Wrong file name: {:?}",ścieżka_pliku.file_name()))
     })?;
 
     let mut nowa_nazwa = nazwa_pliku.to_string_lossy().into_owned();
@@ -51,7 +52,6 @@ async fn sprawdzanie_istnienia_pliku(
     let mut bufor = vec![0; 64 * 1024]; // Bufor 64KB
     let mut ostatni_stan = Instant::now();
 
-    println!("Rozpoczęto kopiowanie do: {:?}", docelowy_plik_temp);
 
     while let Ok(n) = tokio::io::AsyncReadExt::read(&mut plik_in, &mut bufor).await {
         if n == 0 {
@@ -97,10 +97,7 @@ pub async fn wypakuj_pliki(
             },
         )
         .await;
-    println!(
-        "Rozpoczęcie rozpakowywania binarki: {}_temp_clean",
-        nazwa_pliku
-    );
+
 
     // 1. Ścieżka do surowej binarki (wynik dekompresji)
     let sciezka_binarki = ścieżka.join(format!("{}_temp_clean", nazwa_pliku));
@@ -243,6 +240,7 @@ pub async fn ogarnianie_dekompresji(
                     e.to_string(),
                 ))
                 .await;
+            generuj_plik_logow(e.to_string());
             Err(e)
         }
     }

@@ -1,13 +1,19 @@
 use std::collections::HashMap;
+use std::fs;
 use std::fs::File;
 use std::io::{self, Read, Write, /* Cursor */};
 use iced_core::Color;
 
 const DOMYSLNY_NAGLOWEK: &str = "
-    ## Configuration file for Asset Bundler by Patryk\n\n";
+    ## Configuration file for Asset Bundler by Patryk Jerzak\n\n";
+
 pub fn plik_z_ustawieniami_wczytaj(znacznik: bool) -> Result<Option<HashMap<String,String>>, std::io::Error> {
     let mut sciezka_pliku = dirs::document_dir()
         .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Brak folderu Dokumenty"))?;
+    sciezka_pliku.push("Asset Bundler");
+    if !sciezka_pliku.exists() {
+        fs::create_dir_all(&sciezka_pliku)?;
+    }
     sciezka_pliku.push("asset_bundler_settings.cfg");
     let mut ustawienia = HashMap::new();
     if !sciezka_pliku.exists() | znacznik {
@@ -55,6 +61,7 @@ pub fn plik_z_ustawieniami_wczytaj(znacznik: bool) -> Result<Option<HashMap<Stri
 pub fn plik_z_ustawieniami_popraw(klucz: String, val: String) -> Result<(), std::io::Error> {
     let mut sciezka_pliku = dirs::document_dir()
         .ok_or_else(|| io::Error::new(io::ErrorKind::NotFound, "Brak folderu Dokumenty"))?;
+    sciezka_pliku.push("Asset Bundler");
     sciezka_pliku.push("asset_bundler_settings.cfg");
 
     // println!("val:{},klucz:{}", val, klucz);
