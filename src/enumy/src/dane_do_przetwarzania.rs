@@ -1,4 +1,4 @@
-use crate::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
+use crate::opcje::{OptInterpolacja, OptIstniejePlik, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
 use crate::rozszerzenia::ext::{ImgExt, ImgExtSingle, ImgExtTag};
 use crate::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
@@ -62,19 +62,21 @@ pub struct DaneKonw {
     pub inter: OptInterpolacja,
     pub alfa_rgb: (u16, u16, u16),
     pub exif: bool,
+    pub istniejace_pliki: OptIstniejePlik,
 }
 impl Default for DaneKonw {
     fn default() -> Self {
         DaneKonw {
             ścieżka_wejściowa: PathBuf::new(),
             ścieżka_wyjściowa: PathBuf::new(),
-            opcje_rozdzielczości: Vec::from([Rozdzielczości::R2k]),
+            opcje_rozdzielczości: Vec::from([Rozdzielczości::Oryginalna]),
             noising: None,
             rozszerzenia: Vec::from([ Default::default() ]),
             tag: Vec::from([ ImgExtTag::Jpg ]),
             inter: OptInterpolacja::Lanczos3,
             alfa_rgb: (0, 0, 0),
             exif: false,
+            istniejace_pliki: OptIstniejePlik::Zamień,
         }
     }
 }
@@ -89,6 +91,7 @@ pub struct DaneMerge {
     pub rozszerzenie: ImgExtSingle,
     pub tag: ImgExtTag,
     pub nazwa: String,
+    pub istniejace_pliki: OptIstniejePlik,
 }
 impl Default for DaneMerge {
     fn default() -> Self {
@@ -100,8 +103,9 @@ impl Default for DaneMerge {
             sciezka_out: PathBuf::new(),
             // Tutaj musisz podać domyślne warianty swoich enumów:
             rozszerzenie: ImgExtSingle::def_jpg(), // Zmień na swój domyślny wariant
-            tag: ImgExtTag::Exr,             // Zmień na swój domyślny wariant
+            tag: ImgExtTag::Jpg,             // Zmień na swój domyślny wariant
             nazwa: String::new(),
+            istniejace_pliki: OptIstniejePlik::Zamień,
         }
     }
 }
@@ -133,6 +137,7 @@ pub struct DaneDdsUnpak {
     pub nazwa: String,
     pub rozszerzenie: ImgExt,
     pub tag: ImgExtTag,
+    pub istniejace_pliki: OptIstniejePlik
 }
 impl Default for DaneDdsUnpak {
     fn default() -> Self {
@@ -142,6 +147,7 @@ impl Default for DaneDdsUnpak {
             nazwa: String::new(),
             rozszerzenie: ImgExt::def_jpg(),
             tag: ImgExtTag::Jpg,
+            istniejace_pliki: OptIstniejePlik::Zamień,
         }
     }
 }

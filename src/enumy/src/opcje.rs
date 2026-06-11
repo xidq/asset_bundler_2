@@ -10,6 +10,13 @@ pub enum OptKompresjaPlikówFiltracjaPlików {
     Pdf,
 }
 #[allow(dead_code)]
+#[derive(Clone, Debug, PartialEq, Copy, EnumIter, Display)]
+pub enum OptIstniejePlik{
+    Zamień,
+    Zostaw,
+    ZmieńNazwę,
+}
+#[allow(dead_code)]
 #[derive(Debug, Copy, Clone, PartialEq, EnumIter, Display)]
 pub enum OptKompresjaPlikówPoziomKompresjiZstd {
     Brak = 0,

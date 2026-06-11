@@ -188,6 +188,7 @@ pub async fn main_fn_konwersja(
                                 };
                                 zapisywanie_generic(
                                     dane,
+                                    zestaw_danych.istniejace_pliki,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
@@ -213,6 +214,7 @@ pub async fn main_fn_konwersja(
                                 };
                                 zapisywanie_generic(
                                     dane,
+                                    zestaw_danych.istniejace_pliki,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
@@ -235,6 +237,7 @@ pub async fn main_fn_konwersja(
                                 };
                                 zapisywanie_generic(
                                     dane,
+                                    zestaw_danych.istniejace_pliki,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
@@ -254,6 +257,7 @@ pub async fn main_fn_konwersja(
                                 };
                                 zapisywanie_generic(
                                     dane,
+                                    zestaw_danych.istniejace_pliki,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
@@ -273,6 +277,7 @@ pub async fn main_fn_konwersja(
                                 };
                                 zapisywanie_generic(
                                     dane,
+                                    zestaw_danych.istniejace_pliki,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
@@ -292,6 +297,7 @@ pub async fn main_fn_konwersja(
                                 };
                                 zapisywanie_generic(
                                     dane,
+                                    zestaw_danych.istniejace_pliki,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
@@ -323,6 +329,7 @@ pub async fn main_fn_konwersja(
                                 };
                                 zapisywanie_generic(
                                     dane,
+                                    zestaw_danych.istniejace_pliki,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,
@@ -344,6 +351,7 @@ pub async fn main_fn_konwersja(
                                 };
                                 zapisywanie_generic(
                                     dane,
+                                    zestaw_danych.istniejace_pliki,
                                     metryka_operacji,
                                     obecna_operacja.clone(),
                                     tx_zadanie,

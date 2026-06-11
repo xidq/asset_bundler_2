@@ -1,14 +1,14 @@
 use crate::ui::wiadomosci::message_enum::Message;
-use crate::widget::button::{btn_bdepth_dds, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
+use crate::widget::button::{btn_bdepth_dds, btn_bdepth_merge, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
 use enumy::dane_do_przetwarzania::DaneDdsUnpak;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForExrKompresja, ForFfKompresja};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{container, space, Column, Row};
 use iced_core::{Color, Length};
@@ -392,8 +392,45 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                     ).style(styl_kontenera(true,RodzajeContainer::Oba, kolor, temat))
                 }
                 ImgExtTag::Unknown => {container(space())}
-                ImgExtTag::Exr => {container(space())}
-            }
+                ImgExtTag::Exr => {
+                    container(
+                        Row::new().height(100.)
+                            .push(
+                                if let ImgExt::Exr {
+                                    bit_depth, kompresja: _
+                                } = &dane.rozszerzenie {
+                                    Column::new()
+                                        .push(
+                                            BdepthExr::iter()
+                                                // .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
+                                                .fold(
+                                                    Row::new().height(50.), |row, wariant| {
+                                                        row.push(
+                                                            btn_bdepth_merge(
+                                                                wariant,
+                                                                if bit_depth.contains(&wariant) { &BtnState::Active } else { &BtnState::Disabled },
+                                                                jezyk,
+                                                                kolor,
+                                                                temat
+                                                            ),
+                                                        )
+                                                    }
+                                                )
+                                        )
+                                        .push(
+                                            Row::new().spacing(15).height(50.)
+                                                .push(pole_tekstowe_przycisku("mgt_compression", jezyk, temat))
+                                                .push(dropdown::<ForExrKompresja, _>(dane, kolor, temat))
+                                                .push(space().width(15.))
+                                        )
+                                } else {Column::new().push(space())}
+
+
+                            )
+
+
+                    ).style(styl_kontenera(true,RodzajeContainer::Góra, kolor, temat))
+                }            }
         )
         .push(
             match dane.tag{
@@ -405,7 +442,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                 ImgExtTag::Qoi => {space().height(200.)}
                 ImgExtTag::Avif => {space()}
                 ImgExtTag::Unknown => {space()}
-                ImgExtTag::Exr => {space()}
+                ImgExtTag::Exr => {space().height(200.)}
             }
         )
         .push(space().height(Length::FillPortion(1)))

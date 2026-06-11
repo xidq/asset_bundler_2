@@ -1,11 +1,12 @@
 use crate::halper::{konwersja_float_na_mniejsze, ogarnij_icc, usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
+use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
+use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzaniePng};
 use enumy::rozszerzenia::bdepth::BdepthPng;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
-use image::imageops::FilterType;
 use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
@@ -13,10 +14,11 @@ use tokio::sync::Mutex;
 
 pub async fn png_match<T>(
     dane: PrzetwarzaniePng,
-    wymiar: u32,
-    bit_depth: BdepthPng,
-    nazwa_wariantu: String,
-    filtr: FilterType,
+    dane2: InneDane<BdepthPng>,
+    // wymiar: u32,
+    // bit_depth: BdepthPng,
+    // nazwa_wariantu: String,
+    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
@@ -31,18 +33,18 @@ where T: Logi,
         _ => (dane.bufor().clone(), dane.kolor.clone()),
     };
     let obrazek =
-        if wymiar == 0 {
+        if dane2.wymiar == 0 {
             fotu
         } else {
             fotu
                 .resize(
-                    wymiar,
-                    wymiar,
-                    filtr,
+                    dane2.wymiar,
+                    dane2.wymiar,
+                    dane2.filtr,
                 )
         };
 
-    let (final_img, nazwa_bd, profil, png_color, png_bdepth) = match bit_depth {
+    let (final_img, nazwa_bd, profil, png_color, png_bdepth) = match dane2.bdepth {
         BdepthPng::Luma8 => (usun_kanal_alpha(obrazek, dane.alpha), "_l8b", PixelFormat::GRAY_8, png::ColorType::Grayscale, png::BitDepth::Eight),
         BdepthPng::Luma8Alpha => (obrazek, "_l8bt", PixelFormat::GRAYA_8, png::ColorType::GrayscaleAlpha, png::BitDepth::Eight),
         BdepthPng::Rgb8 => (usun_kanal_alpha(obrazek, dane.alpha), "_8b", PixelFormat::RGB_8, png::ColorType::Rgb, png::BitDepth::Eight),
@@ -70,12 +72,28 @@ where T: Logi,
     );
 
     // 4. Budowanie nazwy
-    let finalna_nazwa = format!("{}{}{}.png", dane.nazwa, nazwa_wariantu, nazwa_bd);
+    let finalna_nazwa = format!("{}{}{}.png", dane.nazwa, dane2.nazwa_wariantu, nazwa_bd);
     let mut ścieżka_pliku = dane.sciezka_wyjsciowa.to_path_buf();
     if !ścieżka_pliku.exists() {
         create_dir_all(ścieżka_pliku.clone())?;
     }
     ścieżka_pliku.push(finalna_nazwa);
+
+    if ścieżka_pliku.exists() {
+        match dane2.zastepowanie{
+            OptIstniejePlik::Zamień => {}
+            OptIstniejePlik::Zostaw => {
+                let mut oopr = obecna_operacja.lock().await;
+                *oopr += 1;
+                let obecnie = *oopr;
+                drop(oopr);
+
+                wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
+                return Ok(())
+            }
+            OptIstniejePlik::ZmieńNazwę => {ścieżka_pliku = get_higher_tier_copy(ścieżka_pliku)}
+        }
+    };
 
     let mut bufor_png = Vec::new();
 

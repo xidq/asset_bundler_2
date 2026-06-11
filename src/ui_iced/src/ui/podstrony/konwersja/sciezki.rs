@@ -1,11 +1,13 @@
 use crate::ui::wiadomosci::message_enum::Message;
-use crate::widget::button::{przycisk, przycisk_startu};
+use crate::widget::button::{pole_tekstowe_przycisku, przycisk, przycisk_startu};
+use crate::widget::dropdown::dropdown;
 use crate::widget::status::{status_text, status_text_bar};
 use crate::widget::text_place::tekstowe_pole_wypelniane;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::enums_structs_io::LogPrzetwarzanieFot;
 use enumy::ikony::folder_icon;
 use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
+use enumy::opcje::OptIstniejePlik;
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{space, text, Column, Row};
 use iced_core::{Color, Length};
@@ -96,6 +98,12 @@ pub fn sciezki<'a>(dane: &'a DaneKonw, log: &'a LogPrzetwarzanieFot, kolor: &'a 
 
                 .push(tekstowe_pole_wypelniane(&dane.ścieżka_wyjściowa, &TextInputType::KonwPathOut, kolor, jezyk, temat, Length::Fill))
 
+        )
+        .push(
+            Row::new().spacing(15)
+                .push(pole_tekstowe_przycisku("mgt_file_treatment", jezyk, temat))
+                .push(dropdown::<OptIstniejePlik, _>(dane, kolor, temat))
+                // .push(space().width(15.))
         )
         .push(space().height(50.))
 

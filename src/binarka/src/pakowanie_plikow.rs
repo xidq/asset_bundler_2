@@ -1,5 +1,6 @@
 use enumy::dane_do_przetwarzania::DaneBinPak;
 use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
+use enumy::halper_fn::chck_av_spc_n_stuff;
 use enumy::opcje::OptKompresjaPlikówFiltracjaPlików;
 use enumy::statusy::LogTxBinPak;
 use iced::futures::channel::mpsc;
@@ -18,9 +19,11 @@ async fn zgarnij_pliki(
     let mut lista_plików = Vec::new();
     let mut licznik:u32 = 0;
     let mut foldery_do_przejrzenia = vec![ścieżka.clone()];
+    
     let _ = tx
         .send(LogTxBinPak::StatusZnaleziono { pliki: 0 })
         .await;
+
 
     while let Some(aktualny_folder) = foldery_do_przejrzenia.pop() {
         let mut wejścia = tokio::fs::read_dir(aktualny_folder).await?;
@@ -72,7 +75,7 @@ fn czy_plik_pasuje(plik: &Path, filtr: &OptKompresjaPlikówFiltracjaPlików) -> 
     match filtr {
         OptKompresjaPlikówFiltracjaPlików::Graficzne => matches!(
             ext.as_str(),
-            "jpg" | "jpeg" | "png" | "gif" | "bmp" | "webp" | "svg"
+            "jpg" | "jpeg" | "png" | "gif" | "bmp" | "webp" | "svg" | "exr" | "avif"
         ),
         OptKompresjaPlikówFiltracjaPlików::Audio => {
             matches!(ext.as_str(), "mp3" | "wav" | "ogg" | "flac" | "m4a")
@@ -145,7 +148,7 @@ pub async fn ogarnianie_eksportu(
     zestaw_danych: DaneBinPak,
     mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<(), tokio::io::Error> {
-    println!("zaczynam pakować");
+    // println!("zaczynam pakować");
     let start_czas = Instant::now();
 
     let wynik = async {
@@ -156,7 +159,7 @@ pub async fn ogarnianie_eksportu(
             zestaw_danych.foldery,
             zestaw_danych.nazwa,
         );
-
+        chck_av_spc_n_stuff(&in_path)?;
         let wsio_dane =
             zgarnij_pliki(in_path, &strukturalnie, zestaw_danych.filtracja, tx.clone()).await?;
         // let _ = tx.send(ilość_plików).await;

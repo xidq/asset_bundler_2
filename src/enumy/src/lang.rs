@@ -185,6 +185,7 @@ impl WybórJęzyka {
                 "mgt_and" => "i",
                 "msg_no_folder_nor_file" => "Nie wybrano plików bądź folderów",
                 "mgt_exif_data" => "Dane EXIF",
+                "mgt_file_treatment" => "Istniejące pliki:",
 
                 "ui_main_btn_binary" => "Binarka",
                 "ui_main_btn_conversion" => "Konwersja",
@@ -230,13 +231,12 @@ impl WybórJęzyka {
                 "conversion_jpg_sampling" => "Próbkowanie:",
                 "conversion_jpg_qua" => "Kwant?:",
                 "conversion_avif_lossless" => "Bezstratne",
-                "conversion_avif_compression" => "Kompresja:",
+                "mgt_compression" => "Kompresja:",
                 "conversion_avif_chroma" => "Chroma:",
                 "conversion_webp_losless" => "Bezstratny.",
                 "conversion_noising" => "Zaszumienie:",
                 "conversion_alpha_color" => "Kolor alpha:",
                 "dds_format" => "Format:",
-                "dds_compression" => "Kompresja:",
 
 
                 "hint_mgt_btn_ready" => "Rozpocznij proces",
@@ -410,7 +410,7 @@ impl WybórJęzyka {
                 "conversion_jpg_sampling" => "Sampling:",
                 "conversion_jpg_qua" => "Quant:",
                 "conversion_avif_lossless" => "BLossless",
-                "conversion_avif_compression" => "Compression:",
+                "mgt_compression" => "Compression:",
                 "conversion_avif_chroma" => "Chroma:",
                 "conversion_webp_losless" => "Lossless",
                 "conversion_noising" => "Noising:",

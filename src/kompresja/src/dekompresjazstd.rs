@@ -14,15 +14,15 @@ pub async fn dekompresujsuj(
     let _ = tx
         .send(LogTxBinUnpak::Dekompresja { pamięć: 0 })
         .await;
-    println!("Rozpoczęcie fn dekompresji");
+    // println!("Rozpoczęcie fn dekompresji");
 
 
     let sciezka_in = ścieżka_pliku.join(format!("{}_temp", nazwa_pliku));
     let sciezka_out = ścieżka_pliku.join(format!("{}_temp_clean", nazwa_pliku));
 
 
-    println!("sciezka_in: \n{:?}", sciezka_in);
-    println!("sciezka_out: \n{:?}", sciezka_out);
+    // println!("sciezka_in: \n{:?}", sciezka_in);
+    // println!("sciezka_out: \n{:?}", sciezka_out);
     let plik_in = File::open(&sciezka_in).await?;
     // let metadata = plik_in.metadata().await?;
     // let rozmiar_skompresowany = metadata.len();
@@ -30,7 +30,7 @@ pub async fn dekompresujsuj(
 
     let plik_out = std::fs::File::create(&sciezka_out)?;
     let decoder = Decoder::new(plik_in.into_std().await)?;
-    println!("przeszło decoder");
+    // println!("przeszło decoder");
 
 
     let mut bufor = vec![0u8; 128 * 1024]; // 128KB

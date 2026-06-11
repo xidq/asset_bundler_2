@@ -1,5 +1,7 @@
 use crate::halper::konwersja_mniejsze_na_float;
 use crate::send::wyslij_status;
+use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
+use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieExr};
 use enumy::rozszerzenia::bdepth::BdepthExr;
 use enumy::rozszerzenia::kolor::{ColorProfilePhoto, PrzestrzeńExr};
@@ -10,17 +12,17 @@ use exr::math::Vec2;
 use exr::prelude::attribute::Chromaticities;
 use exr::prelude::*;
 use futures::channel::mpsc::Sender;
-use image::imageops::FilterType;
 use image::DynamicImage;
 use std::sync::Arc;
 use tokio::sync::Mutex;
 
 pub async fn exr_match<T>(
     dane: PrzetwarzanieExr, //będzie dostosowane do exr... gdzie będą kompresje, profile itd.
-    wymiar: u32,
-    bit_depth: BdepthExr, //tutaj też będą do exr rzeczy czyli na ten moment możesz używać BdepthExr::f16Half, BdepthExr::f32, BdepthExr::f32Half itp itd
-    nazwa_wariantu: String,
-    filtr: FilterType,
+    dane2: InneDane<BdepthExr>,
+    // wymiar: u32,
+    // bit_depth: BdepthExr, //tutaj też będą do exr rzeczy czyli na ten moment możesz używać BdepthExr::f16Half, BdepthExr::f32, BdepthExr::f32Half itp itd
+    // nazwa_wariantu: String,
+    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
@@ -35,14 +37,14 @@ where T: Logi,
         _ => konwersja_mniejsze_na_float(dane.bufor().clone(), dane.kolor.clone()),
     };
 
-    let fotu = if wymiar == 0 {
+    let fotu = if dane2.wymiar == 0 {
         ghgh
     } else {
         ghgh
             .resize(
-                wymiar,
-                wymiar,
-                filtr,
+                dane2.wymiar,
+                dane2.wymiar,
+                dane2.filtr,
             )
     };
 
@@ -121,7 +123,7 @@ where T: Logi,
     };
 
     // 5. Wybór typu próbek (f16 / f32) na podstawie `bit_depth`
-    let use_f16 = match bit_depth {
+    let use_f16 = match dane2.bdepth {
         BdepthExr::F16Half => true,   // odpowiedniki BdepthExr
         BdepthExr::F32 => false,
         BdepthExr::F32Half => true,   // jeśli to half w kontenerze 32-bit
@@ -204,7 +206,22 @@ where T: Logi,
     let image = Image::new(image_attributes, layer);
 
 
-    let output_path = dane.sciezka_wyjsciowa.join(&nazwa_wariantu).with_extension("exr");
+    let mut output_path = dane.sciezka_wyjsciowa.join(&dane2.nazwa_wariantu).with_extension("exr");
+    if output_path.exists() {
+        match dane2.zastepowanie{
+            OptIstniejePlik::Zamień => {}
+            OptIstniejePlik::Zostaw => {
+                let mut oopr = obecna_operacja.lock().await;
+                *oopr += 1;
+                let obecnie = *oopr;
+                drop(oopr);
+
+                wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
+                return Ok(())
+            }
+            OptIstniejePlik::ZmieńNazwę => {output_path = get_higher_tier_copy(output_path)}
+        }
+    };
 
 
     image.write()

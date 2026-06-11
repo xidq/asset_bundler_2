@@ -12,3 +12,4 @@ pub mod fn_ogolne_przeliczeniowe;
 pub mod rozszerzenia;
 pub mod przetwarzanie;
 mod def;
+pub mod halper_fn;

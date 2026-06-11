@@ -17,7 +17,7 @@ use tokio::sync::Mutex;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 
 pub async fn dds_to_image(
-    dane: DaneDdsUnpak,
+    zestaw_danych: DaneDdsUnpak,
     mut tx: Sender<LogTxDdsUnpak>,
 ) -> Result<(), std::io::Error> {
     let start_czas = Instant::now();
@@ -29,7 +29,7 @@ pub async fn dds_to_image(
 
 
 
-    let file = File::open(&dane.ścieżka_wejściowa)?;
+    let file = File::open(&zestaw_danych.ścieżka_wejściowa)?;
     let mut decoder =
         Decoder::new(file).map_err(std::io::Error::other)?;
 
@@ -93,7 +93,7 @@ pub async fn dds_to_image(
                     size.height,
                     buffer,
                 ) {
-                    let file_stem = dane.ścieżka_wejściowa
+                    let file_stem = zestaw_danych.ścieżka_wejściowa
                         .file_stem()
                         .and_then(|s| s.to_str())
                         .unwrap_or("export");
@@ -102,12 +102,12 @@ pub async fn dds_to_image(
                     let dynamic_img = DynamicImage::ImageRgba8(img_buffer);
 
 
-                    match dane.rozszerzenie.clone() {
+                    match zestaw_danych.rozszerzenie.clone() {
                         ImgExt::Jpg { jakosc, progresywny, bit_depth, sampling, quant, scans, } => {
                             let dane = PrzetwarzanieJpg {
                                 bufor: dynamic_img,
                                 rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                                sciezka_wyjsciowa: dane.ścieżka_wyjściowa.clone(),
+                                sciezka_wyjsciowa: zestaw_danych.ścieżka_wyjściowa.clone(),
                                 nazwa: nazawawawa.clone(),
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 jakosc,
@@ -123,6 +123,7 @@ pub async fn dds_to_image(
                             };
                             zapisywanie_generic(
                                 dane,
+                                zestaw_danych.istniejace_pliki,
                                 metryka_operacji,
                                 obecna_operacja.clone(),
                                 tx.clone(),
@@ -132,7 +133,7 @@ pub async fn dds_to_image(
                             let dane = PrzetwarzanieFf {
                                 bufor: dynamic_img,
                                 rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                                sciezka_wyjsciowa: dane.ścieżka_wyjściowa.clone(),
+                                sciezka_wyjsciowa: zestaw_danych.ścieżka_wyjściowa.clone(),
                                 nazwa: nazawawawa.clone(),
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 alpha: (0, 0, 0),
@@ -141,6 +142,7 @@ pub async fn dds_to_image(
                             };
                             zapisywanie_generic(
                                 dane,
+                                zestaw_danych.istniejace_pliki,
                                 metryka_operacji,
                                 obecna_operacja.clone(),
                                 tx.clone(),
@@ -151,7 +153,7 @@ pub async fn dds_to_image(
                             let dane = PrzetwarzaniePng {
                                 bufor: dynamic_img,
                                 rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                                sciezka_wyjsciowa: dane.ścieżka_wyjściowa.clone(),
+                                sciezka_wyjsciowa: zestaw_danych.ścieżka_wyjściowa.clone(),
                                 nazwa: nazawawawa.clone(),
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bdepth: bit_depth.clone(),
@@ -163,6 +165,7 @@ pub async fn dds_to_image(
                             };
                             zapisywanie_generic(
                                 dane,
+                                zestaw_danych.istniejace_pliki,
                                 metryka_operacji,
                                 obecna_operacja.clone(),
                                 tx.clone(),
@@ -172,7 +175,7 @@ pub async fn dds_to_image(
                             let dane = PrzetwarzanieWebp {
                                 bufor: dynamic_img,
                                 rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                                sciezka_wyjsciowa: dane.ścieżka_wyjściowa.clone(),
+                                sciezka_wyjsciowa: zestaw_danych.ścieżka_wyjściowa.clone(),
                                 nazwa: nazawawawa.clone(),
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bdepth: bit_depth.clone(),
@@ -184,6 +187,7 @@ pub async fn dds_to_image(
                             };
                             zapisywanie_generic(
                                 dane,
+                                zestaw_danych.istniejace_pliki,
                                 metryka_operacji,
                                 obecna_operacja.clone(),
                                 tx.clone(),
@@ -193,7 +197,7 @@ pub async fn dds_to_image(
                             let dane = PrzetwarzanieTga {
                                 bufor: dynamic_img,
                                 rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                                sciezka_wyjsciowa: dane.ścieżka_wyjściowa.clone(),
+                                sciezka_wyjsciowa: zestaw_danych.ścieżka_wyjściowa.clone(),
                                 nazwa: nazawawawa.clone(),
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bdepth: bit_depth.clone(),
@@ -202,6 +206,7 @@ pub async fn dds_to_image(
                             };
                             zapisywanie_generic(
                                 dane,
+                                zestaw_danych.istniejace_pliki,
                                 metryka_operacji,
                                 obecna_operacja.clone(),
                                 tx.clone(),
@@ -211,7 +216,7 @@ pub async fn dds_to_image(
                             let dane = PrzetwarzanieQoi {
                                 bufor: dynamic_img,
                                 rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                                sciezka_wyjsciowa: dane.ścieżka_wyjściowa.clone(),
+                                sciezka_wyjsciowa: zestaw_danych.ścieżka_wyjściowa.clone(),
                                 nazwa: nazawawawa.clone(),
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bdepth: bit_depth.clone(),
@@ -220,6 +225,7 @@ pub async fn dds_to_image(
                             };
                             zapisywanie_generic(
                                 dane,
+                                zestaw_danych.istniejace_pliki,
                                 metryka_operacji,
                                 obecna_operacja.clone(),
                                 tx.clone(),
@@ -229,7 +235,7 @@ pub async fn dds_to_image(
                             let dane = PrzetwarzanieAvif {
                                 bufor: dynamic_img,
                                 rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                                sciezka_wyjsciowa: dane.ścieżka_wyjściowa.clone(),
+                                sciezka_wyjsciowa: zestaw_danych.ścieżka_wyjściowa.clone(),
                                 nazwa: nazawawawa.clone(),
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bdepth: bit_depth.clone(),
@@ -244,6 +250,7 @@ pub async fn dds_to_image(
                             };
                             zapisywanie_generic(
                                 dane,
+                                zestaw_danych.istniejace_pliki,
                                 metryka_operacji,
                                 obecna_operacja.clone(),
                                 tx.clone(),
@@ -264,6 +271,7 @@ pub async fn dds_to_image(
                             };
                             zapisywanie_generic(
                                 dane,
+                                zestaw_danych.istniejace_pliki,
                                 metryka_operacji,
                                 obecna_operacja.clone(),
                                 tx.clone(),

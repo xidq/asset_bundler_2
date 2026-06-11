@@ -7,7 +7,6 @@ use jpeg_decoder::Decoder;
 use std::io::Cursor;
 
 pub fn jpeg(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
-
     let mut exif_out = None;
     let mut typ_koloru = ColorProfilePhoto::None;
 

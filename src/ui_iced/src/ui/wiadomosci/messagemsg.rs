@@ -1,13 +1,4 @@
-use std::path::PathBuf;
-use chrono::{Local, Timelike};
-use iced::Task;
-use iced_core::Event;
-use enumy::inne_ui::{ActProces, BtnState, ButtonType, DropdownType, SliderType, TextInputType};
-use enumy::opcje::{OptInterpolacja, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtSingle};
-use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForExrKompresja, ForFfKompresja};
-use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
+use crate::ui::podstrony::settings::plik_ustawienia::{hex_to_color, plik_z_ustawieniami_popraw, plik_z_ustawieniami_wczytaj};
 use crate::ui::program::Program;
 use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
@@ -15,12 +6,63 @@ use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::BinPakMsg;
 use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
+use chrono::{Local, Timelike};
+use enumy::inne_ui::{ActProces, BtnState, ButtonType, DropdownType, ObecnyColorTheme, SliderType, TextInputType, UiPods};
+use enumy::opcje::{OptInterpolacja, OptIstniejePlik, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
+use enumy::rozszerzenia::ext::{ImgExt, ImgExtSingle};
+use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, ForExrKompresja, ForFfKompresja};
+use enumy::wybranie_jezykowe::UstawieniaMenu::UstawieniaJęzyka;
+use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
+use iced::Task;
+use iced_core::{Color, Event};
+use std::collections::HashMap;
+use std::path::PathBuf;
+use std::str::FromStr;
+use strum::{Display, EnumString};
+
+#[derive(Debug, EnumString, Display)]
+pub enum ElementyDoNazwIZmianUstawien{
+    Language,
+    ColorBinaryMenu,
+    ColorConversionMenu,
+    ColorMergingMenu,
+    ColorDdsMenu,
+    ColorSettingsMenu,
+    ColorHint,
+}
+
 
 impl Program {
+    fn wczytaj_ustawienia(&mut self, mapa: HashMap<String, String>){
+        mapa.into_iter().for_each(|(key, val)| {
+            match ElementyDoNazwIZmianUstawien::from_str(&key){
+                Ok(ElementyDoNazwIZmianUstawien::Language) => {
+                    match val.to_lowercase().as_str() {
+                        "pl-pl" | "pl" => self.ui_ustawienia = UstawieniaJęzyka{ jezyk: WybórJęzyka::PL },
+                        "en-en" | "en" => self.ui_ustawienia = UstawieniaJęzyka{ jezyk: WybórJęzyka::EN },
+                        "de-de" | "de" => self.ui_ustawienia = UstawieniaJęzyka{ jezyk: WybórJęzyka::DE },
+                        "hu-hu" | "hu" => self.ui_ustawienia = UstawieniaJęzyka{ jezyk: WybórJęzyka::HU },
+                        "es-es" | "es" => self.ui_ustawienia = UstawieniaJęzyka{ jezyk: WybórJęzyka::ES },
+                        "kr-kr" | "kr" => self.ui_ustawienia = UstawieniaJęzyka{ jezyk: WybórJęzyka::KR },
+                        "jp-jp" | "jp" => self.ui_ustawienia = UstawieniaJęzyka{ jezyk: WybórJęzyka::JP },
+                        "th-th" | "th" => self.ui_ustawienia = UstawieniaJęzyka{ jezyk: WybórJęzyka::TH },
+                        _ => {}
+                    }
+                },
+                Ok(ElementyDoNazwIZmianUstawien::ColorBinaryMenu) => {self.temat.kolory.binarka = hex_to_color(val)}
+                Ok(ElementyDoNazwIZmianUstawien::ColorConversionMenu) => {self.temat.kolory.konwersja = hex_to_color(val)}
+                Ok(ElementyDoNazwIZmianUstawien::ColorMergingMenu) => {self.temat.kolory.laczenie= hex_to_color(val)}
+                Ok(ElementyDoNazwIZmianUstawien::ColorDdsMenu) => {self.temat.kolory.dds = hex_to_color(val)}
+                Ok(ElementyDoNazwIZmianUstawien::ColorSettingsMenu) => {self.temat.kolory.ustawienia = hex_to_color(val)}
+                Ok(ElementyDoNazwIZmianUstawien::ColorHint) => {self.temat.kolory.hint = hex_to_color(val)}
+                _ => {}
+            }
+        })
+    }
     pub fn update(&mut self, message: Message) -> Task<Message> {
         let aktualny_jezyk = match self.ui_ustawienia {
             UstawieniaMenu::UstawieniaJęzyka { jezyk } => jezyk,
-            // Fallback jeśli dodasz inne warianty dev menu
             _ => WybórJęzyka::EN,
         };
 
@@ -46,10 +88,71 @@ impl Program {
                 );
                 self.log_prawe_okno.push(powitanie);
             }
+            Message::InitUstawienia => {
+                let ggg = plik_z_ustawieniami_wczytaj(false).unwrap_or(None);
+                if let Some(dane) = ggg {
+                    self.wczytaj_ustawienia(dane);
+                }
+            }
 
             Message::UsuńLogi => self.log_prawe_okno = Vec::new(),
             Message::DevZmienJezyk(nowy) => {
                 self.ui_ustawienia = UstawieniaMenu::UstawieniaJęzyka { jezyk: nowy };
+                if let Err(e) = plik_z_ustawieniami_popraw(ElementyDoNazwIZmianUstawien::Language.to_string(), nowy.to_string() ){
+                    eprintln!("Błąd zapisu ustawień: {}", e);
+                };
+            }
+
+            Message::DevResetUstawien => {
+                _ = plik_z_ustawieniami_wczytaj(true);
+                self.temat.kolory = ObecnyColorTheme::default();
+            }
+
+            Message::DevZmienKolory(typ, kanal,nazwa_koloru) => {
+                // let kolor = Color::from_rgb8(nazwa_koloru_r.parse().unwrap(), nazwa_koloru_g.parse().unwrap(), nazwa_koloru_b.parse().unwrap(),);
+                let zmien_kolor = |xx:Color| -> Color{match kanal.as_str(){
+                    "r" => Color::from_rgb8(nazwa_koloru, (xx.g * 255.) as u8, (xx.b * 255.) as u8),
+                    "g" => Color::from_rgb8((xx.r * 255.) as u8, nazwa_koloru,(xx.b * 255.) as u8),
+                    "b" => Color::from_rgb8((xx.r * 255.) as u8, (xx.g * 255.) as u8, nazwa_koloru, ),
+                    _ => Color::BLACK
+                }};
+                match typ {
+                    UiPods::BinPak|UiPods::BinUnpak => {
+                        let kolor = zmien_kolor(self.temat.kolory.binarka);
+                        self.temat.kolory.binarka = kolor;
+                        if let Err(e) = plik_z_ustawieniami_popraw(ElementyDoNazwIZmianUstawien::ColorBinaryMenu.to_string(), kolor.to_string() ){
+                            eprintln!("Błąd zapisu ustawień: {}", e);
+                        };
+                    }
+                    UiPods::KonwPath|UiPods::KonwExt|UiPods::KonwRes|UiPods::KonwEtc => {
+                        let kolor = zmien_kolor(self.temat.kolory.konwersja);
+                        self.temat.kolory.konwersja = kolor;
+                        if let Err(e) = plik_z_ustawieniami_popraw(ElementyDoNazwIZmianUstawien::ColorConversionMenu.to_string(), kolor.to_string() ){
+                            eprintln!("Błąd zapisu ustawień: {}", e);
+                        };
+                    }
+                    UiPods::Merge|UiPods::MergeExt => {
+                        let kolor = zmien_kolor(self.temat.kolory.laczenie);
+                        self.temat.kolory.laczenie = kolor;
+                        if let Err(e) = plik_z_ustawieniami_popraw(ElementyDoNazwIZmianUstawien::ColorMergingMenu.to_string(), kolor.to_string() ){
+                            eprintln!("Błąd zapisu ustawień: {}", e);
+                        };
+                    }
+                    UiPods::DdsPak|UiPods::DdsUnpak|UiPods::DdsExt => {
+                        let kolor = zmien_kolor(self.temat.kolory.dds);
+                        self.temat.kolory.dds = kolor;
+                        if let Err(e) = plik_z_ustawieniami_popraw(ElementyDoNazwIZmianUstawien::ColorDdsMenu.to_string(), kolor.to_string() ){
+                            eprintln!("Błąd zapisu ustawień: {}", e);
+                        };
+                    }
+                    UiPods::Ustawienia => {
+                        let kolor = zmien_kolor(self.temat.kolory.ustawienia);
+                        self.temat.kolory.ustawienia = kolor;
+                        if let Err(e) = plik_z_ustawieniami_popraw(ElementyDoNazwIZmianUstawien::ColorHint.to_string(), kolor.to_string() ){
+                            eprintln!("Błąd zapisu ustawień: {}", e);
+                        };
+                    }
+                }
             }
 
             Message::TextInputHandling(string, typ) => {
@@ -302,6 +405,26 @@ impl Program {
                             //     inny_wariant => *inny_wariant, // Reszta (Brak, Rle, Zip itd.) zostaje jak była
                             // };
                         }
+                    }
+                    DropdownType::KonwersjaFileTreatment => {
+                        if let Some(v) = wybrane.downcast_ref::<OptIstniejePlik>() {
+                            self.dane_konw.istniejace_pliki = *v;
+                        }
+                    }
+                    DropdownType::MergeExrKompresja => {
+                        if let Some(ghgh) = wybrane.downcast_ref::<ForExrKompresja>() &&
+                            let ImgExtSingle::Exr{ref mut kompresja, ..} = self.dane_merge.rozszerzenie{
+                            *kompresja = *ghgh
+                        }
+                    }
+                    DropdownType::DdsExrKompresja => {
+                        if let Some(v) = wybrane.downcast_ref::<ForExrKompresja>()
+                            && let ImgExt::Exr {ref mut kompresja, .. } = self.dane_dds_rozpak.rozszerzenie
+                        {
+                            let inny_wariant =v;
+                            *kompresja = *inny_wariant;
+                        }
+
                     }
                 }
             }
@@ -770,6 +893,9 @@ impl Program {
                     (_, Some(_))  => BtnState::Disabled,
                 };
             }
+            // Message::EventOccurred(Event::Mouse(iced::mouse::Event::ButtonPressed(_0))) => {
+            //
+            // }
             Message::EventOccurred(Event::Keyboard(iced::keyboard::Event::KeyPressed {
                                                        key,
                                                        modifiers,

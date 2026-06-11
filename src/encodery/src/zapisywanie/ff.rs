@@ -1,12 +1,13 @@
 use crate::halper::{usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
+use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
 use bzip2::write::BzEncoder;
 use bzip2::Compression;
+use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::PrzetwarzanieFf;
 use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
-use image::imageops::FilterType;
 use image::DynamicImage;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
@@ -15,21 +16,22 @@ use xz2::write::XzEncoder;
 
 pub async fn ff_match<T>(
     dane: PrzetwarzanieFf,
-    wymiar: u32,
-    kompresja: ForFfKompresja,
-    nazwa_wariantu: String,
-    filtr: FilterType,
+    dane2: InneDane<ForFfKompresja>,
+    // wymiar: u32,
+    // kompresja: ForFfKompresja,
+    // nazwa_wariantu: String,
+    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
 ) -> Result<(), tokio::io::Error>
 where T: Logi,
 {
-    let bombozooo = if wymiar == 0 {
+    let bombozooo = if dane2.wymiar == 0 {
         DynamicImage::ImageRgba16(usun_kanal_alpha(dane.bufor.clone(), dane.alpha).to_rgba16())
     } else {
         DynamicImage::ImageRgba16(usun_kanal_alpha(dane.bufor.clone(), dane.alpha).to_rgba16())
-            .resize(wymiar, wymiar, filtr)
+            .resize(dane2.wymiar, dane2.wymiar, dane2.filtr)
     };
 
     let final_finalv3_temp_final_ostatecznyv5 = match dane.zaszumienie {
@@ -37,7 +39,7 @@ where T: Logi,
         None => bombozooo,
     };
 
-    let lambadziara = kompresja;
+    let lambadziara = dane2.bdepth;
     // for lambadziara in wybrana_kompresja {
     let dodatkowa_nazwa = match lambadziara {
         ForFfKompresja::Zstd(_) => ".zst",
@@ -47,13 +49,28 @@ where T: Logi,
     };
 
     // println!("{:?}", final_finalv3_temp_final_ostatecznyv5);
-    let finalna_nazwa = format!("{}{}.ff{}", dane.nazwa, nazwa_wariantu, dodatkowa_nazwa);
+    let finalna_nazwa = format!("{}{}.ff{}", dane.nazwa, dane2.nazwa_wariantu, dodatkowa_nazwa);
     let mut ścieżka_pliku = dane.sciezka_wyjsciowa.to_path_buf();
     // println!("pokaż co mamy przed samym tworzeniem katalogu:\nścieżka pliku:   {:?}", ścieżka_pliku);
     if !ścieżka_pliku.exists() {
         create_dir_all(ścieżka_pliku.clone())?;
     }
     ścieżka_pliku.push(finalna_nazwa);
+    if ścieżka_pliku.exists() {
+        match dane2.zastepowanie{
+            OptIstniejePlik::Zamień => {}
+            OptIstniejePlik::Zostaw => {
+                let mut oopr = obecna_operacja.lock().await;
+                *oopr += 1;
+                let obecnie = *oopr;
+                drop(oopr);
+
+                wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
+                return Ok(())
+            }
+            OptIstniejePlik::ZmieńNazwę => {ścieżka_pliku = get_higher_tier_copy(ścieżka_pliku)}
+        }
+    };
 
     let output_file = File::create(&ścieżka_pliku)?;
 

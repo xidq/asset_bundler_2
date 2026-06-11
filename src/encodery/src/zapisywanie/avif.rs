@@ -1,12 +1,13 @@
 use crate::halper::{konwersja_float_na_mniejsze, ogarnij_icc, usun_kanal_alpha};
 use crate::send::wyslij_status;
+use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
+use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieAvif};
 use enumy::rozszerzenia::bdepth::BdepthAvif;
 use enumy::rozszerzenia::kolor::{ColorProfilePhoto, ForAvifChroma};
 use enumy::rozszerzenia::kompresje::ForAvifKompresja;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
-use image::imageops::FilterType;
 use libheif_rs::{Channel, ColorSpace, CompressionFormat, EncoderParameterValue, EncoderQuality, HeifContext, Image, LibHeif, RgbChroma};
 use std::fs::create_dir_all;
 use std::sync::Arc;
@@ -14,10 +15,11 @@ use tokio::sync::Mutex;
 
 pub async fn avif_match<T>(
     dane: PrzetwarzanieAvif,
-    wymiar: u32,
-    bit_depth: BdepthAvif,
-    nazwa_wariantu: String,
-    filtr: FilterType,
+    dane2: InneDane<BdepthAvif>,
+    // wymiar: u32,
+    // bit_depth: BdepthAvif,
+    // nazwa_wariantu: String,
+    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
@@ -32,17 +34,17 @@ where T: Logi,
     _ => (dane.bufor().clone(), dane.kolor.clone()),
 };
 
-    let reskalowanie = if wymiar == 0 {
+    let reskalowanie = if dane2.wymiar == 0 {
             fotu
     } else {
         fotu
             .resize(
-                wymiar,
-                wymiar,
-                filtr,
+                dane2.wymiar,
+                dane2.wymiar,
+                dane2.filtr,
             )
     };
-    let (heif_img, nazwa_bd) = match bit_depth {
+    let (heif_img, nazwa_bd) = match dane2.bdepth {
         BdepthAvif::Rgb12Alpha =>
             {
 
@@ -507,7 +509,22 @@ where T: Logi,
     if !output_path.exists() {
         create_dir_all(output_path.clone())?;
     }
-    output_path.push(format!("{}{}{}.avif",dane.nazwa,nazwa_wariantu,nazwa_bd));
+    output_path.push(format!("{}{}{}.avif",dane.nazwa,dane2.nazwa_wariantu,nazwa_bd));
+    if output_path.exists() {
+        match dane2.zastepowanie{
+            OptIstniejePlik::Zamień => {}
+            OptIstniejePlik::Zostaw => {
+                let mut oopr = obecna_operacja.lock().await;
+                *oopr += 1;
+                let obecnie = *oopr;
+                drop(oopr);
+
+                wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
+                return Ok(())
+            }
+            OptIstniejePlik::ZmieńNazwę => {output_path = get_higher_tier_copy(output_path)}
+        }
+    };
 
     std::fs::write(&output_path, &final_bytes)
         .map_err(|e| std::io::Error::other(format!("Błąd zapisu pliku: {}", e)))?;

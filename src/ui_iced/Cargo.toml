@@ -18,4 +18,5 @@ file_merge = { path = "../file_merge" }
 strum = { workspace = true }
 dds_ops = { path = "../dds_ops" }
 rand = { workspace = true }
-lazy_static = "1.5.0"
+lazy_static = { workspace = true }
+dirs = { workspace = true }

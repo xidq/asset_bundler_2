@@ -18,7 +18,7 @@ use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 // fn that is entry point for merging images by channels
 
 pub async fn fn_do_laczenia_fot(
-    dane: DaneMerge,
+    zestaw_danych: DaneMerge,
     mut tx: mpsc::Sender<LogTxMerge>,
 ) -> Result<(), tokio::io::Error> {
     
@@ -32,10 +32,10 @@ pub async fn fn_do_laczenia_fot(
     // let start_czas = std::time::Instant::now();
 
     let sciezki = [
-        dane.sciezka_r,
-        dane.sciezka_g,
-        dane.sciezka_b,
-        dane.sciezka_a,
+        zestaw_danych.sciezka_r,
+        zestaw_danych.sciezka_g,
+        zestaw_danych.sciezka_b,
+        zestaw_danych.sciezka_a,
     ];
     let mut surowe_obrazy = [None, None, None, None];
     let mut max_x = 0u32;
@@ -114,7 +114,7 @@ pub async fn fn_do_laczenia_fot(
     // let bfor = laczenie_vac_to_dyn(obrazki,bit_depth,wymiar);
 
     let wynik: Result<(), tokio::io::Error> = block_on(async {
-        match dane.rozszerzenie {
+        match zestaw_danych.rozszerzenie {
             ImgExtSingle::Png {
                 bit_depth,
                 kompresja,
@@ -122,8 +122,8 @@ pub async fn fn_do_laczenia_fot(
                 let dane = PrzetwarzaniePng {
                     bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
                     rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                    sciezka_wyjsciowa: dane.sciezka_out,
-                    nazwa: dane.nazwa,
+                    sciezka_wyjsciowa: zestaw_danych.sciezka_out,
+                    nazwa: zestaw_danych.nazwa,
                     interpolacja: OptInterpolacja::Lanczos3,
                     kompresja,
                     bdepth: vec![bit_depth],
@@ -134,6 +134,7 @@ pub async fn fn_do_laczenia_fot(
                 };
                 zapisywanie_generic(
                     dane,
+                    zestaw_danych.istniejace_pliki,
                     metryka_operacji,
                     obecna_operacja.clone(),
                     tx.clone(),
@@ -150,8 +151,8 @@ pub async fn fn_do_laczenia_fot(
                 let dane = PrzetwarzanieJpg {
                     bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
                     rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                    sciezka_wyjsciowa: dane.sciezka_out,
-                    nazwa: dane.nazwa,
+                    sciezka_wyjsciowa: zestaw_danych.sciezka_out,
+                    nazwa: zestaw_danych.nazwa,
                     interpolacja: OptInterpolacja::Lanczos3,
                     jakosc,
                     bdepth: vec![bit_depth],
@@ -166,6 +167,7 @@ pub async fn fn_do_laczenia_fot(
                 };
                 zapisywanie_generic(
                     dane,
+                    zestaw_danych.istniejace_pliki,
                     metryka_operacji,
                     obecna_operacja.clone(),
                     tx.clone(),
@@ -179,8 +181,8 @@ pub async fn fn_do_laczenia_fot(
                 let dane = PrzetwarzanieWebp {
                     bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
                     rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                    sciezka_wyjsciowa: dane.sciezka_out,
-                    nazwa: dane.nazwa,
+                    sciezka_wyjsciowa: zestaw_danych.sciezka_out,
+                    nazwa: zestaw_danych.nazwa,
                     interpolacja: OptInterpolacja::Lanczos3,
                     bdepth: vec![bit_depth],
                     alpha: (0, 0, 0),
@@ -191,6 +193,7 @@ pub async fn fn_do_laczenia_fot(
                 };
                 zapisywanie_generic(
                     dane,
+                    zestaw_danych.istniejace_pliki,
                     metryka_operacji,
                     obecna_operacja.clone(),
                     tx.clone(),
@@ -201,8 +204,8 @@ pub async fn fn_do_laczenia_fot(
                 let dane = PrzetwarzanieTga {
                     bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
                     rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                    sciezka_wyjsciowa: dane.sciezka_out,
-                    nazwa: dane.nazwa,
+                    sciezka_wyjsciowa: zestaw_danych.sciezka_out,
+                    nazwa: zestaw_danych.nazwa,
                     interpolacja: OptInterpolacja::Lanczos3,
                     bdepth: vec![bit_depth],
                     alpha: (0, 0, 0),
@@ -210,6 +213,7 @@ pub async fn fn_do_laczenia_fot(
                 };
                 zapisywanie_generic(
                     dane,
+                    zestaw_danych.istniejace_pliki,
                     metryka_operacji,
                     obecna_operacja.clone(),
                     tx.clone(),
@@ -219,8 +223,8 @@ pub async fn fn_do_laczenia_fot(
                 let dane = PrzetwarzanieFf {
                     bufor: laczenie_vac_to_dyn(obrazki, BdepthQoi::Color32, wymiar).await.ok().unwrap(),
                     rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                    sciezka_wyjsciowa: dane.sciezka_out,
-                    nazwa: dane.nazwa,
+                    sciezka_wyjsciowa: zestaw_danych.sciezka_out,
+                    nazwa: zestaw_danych.nazwa,
                     interpolacja: OptInterpolacja::Lanczos3,
                     kompresja: vec![metoda_kompresji],
                     alpha: (0, 0, 0),
@@ -228,6 +232,7 @@ pub async fn fn_do_laczenia_fot(
                 };
                 zapisywanie_generic(
                     dane,
+                    zestaw_danych.istniejace_pliki,
                     metryka_operacji,
                     obecna_operacja.clone(),
                     tx.clone(),
@@ -237,8 +242,8 @@ pub async fn fn_do_laczenia_fot(
                 let dane = PrzetwarzanieQoi {
                     bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
                     rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                    sciezka_wyjsciowa: dane.sciezka_out,
-                    nazwa: dane.nazwa,
+                    sciezka_wyjsciowa: zestaw_danych.sciezka_out,
+                    nazwa: zestaw_danych.nazwa,
                     interpolacja: OptInterpolacja::Lanczos3,
                     bdepth: vec![bit_depth],
                     alpha: (0, 0, 0),
@@ -246,6 +251,7 @@ pub async fn fn_do_laczenia_fot(
                 };
                 zapisywanie_generic(
                     dane,
+                    zestaw_danych.istniejace_pliki,
                     metryka_operacji,
                     obecna_operacja.clone(),
                     tx.clone(),
@@ -262,8 +268,8 @@ pub async fn fn_do_laczenia_fot(
                 let dane = PrzetwarzanieAvif {
                     bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
                     rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                    sciezka_wyjsciowa: dane.sciezka_out,
-                    nazwa: dane.nazwa,
+                    sciezka_wyjsciowa: zestaw_danych.sciezka_out,
+                    nazwa: zestaw_danych.nazwa,
                     interpolacja: OptInterpolacja::Lanczos3,
                     bdepth: vec![bit_depth],
                     alpha: (0, 0, 0),
@@ -277,6 +283,7 @@ pub async fn fn_do_laczenia_fot(
                 };
                 zapisywanie_generic(
                     dane,
+                    zestaw_danych.istniejace_pliki,
                     metryka_operacji,
                     obecna_operacja.clone(),
                     tx.clone(),
@@ -286,8 +293,8 @@ pub async fn fn_do_laczenia_fot(
                 let dane = PrzetwarzanieExr {
                     bufor: laczenie_vac_to_dyn(obrazki, bit_depth, wymiar).await.ok().unwrap(),
                     rozdzielczosci: vec![Rozdzielczości::Oryginalna],
-                    sciezka_wyjsciowa: dane.sciezka_out,
-                    nazwa: dane.nazwa,
+                    sciezka_wyjsciowa: zestaw_danych.sciezka_out,
+                    nazwa: zestaw_danych.nazwa,
                     interpolacja: OptInterpolacja::Lanczos3,
                     kompresja,
                     bdepth: vec![bit_depth],
@@ -297,6 +304,7 @@ pub async fn fn_do_laczenia_fot(
                 };
                 zapisywanie_generic(
                     dane,
+                    zestaw_danych.istniejace_pliki,
                     metryka_operacji,
                     obecna_operacja.clone(),
                     tx.clone(),

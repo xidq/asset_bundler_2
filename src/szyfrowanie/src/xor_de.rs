@@ -14,18 +14,18 @@ pub async fn deszyfruj_xor(
 ) -> Result<(), tokio::io::Error> {
 
 
-    println!("Rozpoczęcie deszyfrowania XOR dla: {}", nazwa_pliku);
+    // println!("Rozpoczęcie deszyfrowania XOR dla: {}", nazwa_pliku);
 
     // 1. Składamy ścieżki na podstawie argumentów (prosto i przejrzyście)
     let ścieżka_in = ścieżka_docelowa.join(format!("{}_temp_coded", nazwa_pliku));
     let ścieżka_out = ścieżka_docelowa.join(format!("{}_temp", nazwa_pliku));
 
     // 2. Otwarcie plików
-    println!("ścieżka przed otwarciem: \n {:?}", &ścieżka_in);
+    // println!("ścieżka przed otwarciem: \n {:?}", &ścieżka_in);
     let mut plik_in = tokio::fs::File::open(&ścieżka_in).await?;
     let metadata = plik_in.metadata().await?;
     let calkowity_rozmiar = metadata.len();
-    println!("ścieżka w xor de : \n {:?}", &ścieżka_out);
+    // println!("ścieżka w xor de : \n {:?}", &ścieżka_out);
     let mut plik_out = tokio::fs::File::create(&ścieżka_out).await?;
 
     let klucz = BAŁDZOTAJNEHASŁO.as_bytes();

@@ -119,7 +119,7 @@ pub fn exr_loading(bajty: &[u8]) -> std::result::Result<DaneDoWczytywania, std::
         kolor: profil_koloru,
     })
 }
-
+#[allow(dead_code)]
 pub fn konwersja_mniejsze_na_float(
     foto: DynamicImage,
     profil_wejscia: ColorProfilePhoto,

@@ -3,7 +3,7 @@ use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_do_laczenia_zdjec_enum::MergeMsg;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::ActProces;
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::ext::{ImgExtSingle, ImgExtTag};
 use enumy::rozszerzenia::kompresje::ForFfKompresja;
 use enumy::statusy::LogTxMerge;
@@ -177,7 +177,11 @@ impl Program {
                             *bit_depth = *k;
                         }
                     }
-
+                    ImgExtSingle::Exr { bit_depth, .. } if rozs == ImgExtTag::Exr => {
+                        if let Some(k) = kolor_any.downcast_ref::<BdepthExr>() {
+                            *bit_depth = *k;
+                        }
+                    }
                     _ => {}
                 }
 

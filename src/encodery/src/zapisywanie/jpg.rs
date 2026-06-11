@@ -1,12 +1,13 @@
 use crate::halper::{konwersja_float_na_mniejsze, usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
 use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
+use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
+use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieJpg};
 use enumy::rozszerzenia::bdepth::BdepthJpg;
 use enumy::rozszerzenia::kolor::{ColorProfilePhoto, ForJpgQuant, ForJpgSamplingFac};
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
-use image::imageops::FilterType;
 use jpeg_encoder::{Encoder, QuantizationTableType, SamplingFactor};
 use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
@@ -15,16 +16,19 @@ use tokio::sync::Mutex;
 
 pub async fn jpg_match<T>(
     dane: PrzetwarzanieJpg,
-    wymiar: u32,
-    bit_depth: BdepthJpg,
-    nazwa_wariantu: String,
-    filtr: FilterType,
+    dane2: InneDane<BdepthJpg>,
+    // wymiar: u32,
+    // bit_depth: BdepthJpg,
+    // nazwa_wariantu: String,
+    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
 ) -> Result<(), tokio::io::Error>
     where T: Logi,
 {
+
+
 
     let (fotu, icc) = match &dane.kolor {
         ColorProfilePhoto::Exr(xxx) => {
@@ -34,18 +38,18 @@ pub async fn jpg_match<T>(
         _ => (dane.bufor().clone(), dane.kolor.clone()),
     };
 
-    let final_img = if wymiar == 0 {
+    let final_img = if dane2.wymiar == 0 {
         usun_kanal_alpha(fotu, dane.alpha)
     } else {
         usun_kanal_alpha(fotu, dane.alpha)
             .resize(
-                wymiar,
-                wymiar,
-                filtr,
+                dane2.wymiar,
+                dane2.wymiar,
+                dane2.filtr,
             )
     };
 
-    let (nazwa_bd, profil, enco) = match bit_depth {
+    let (nazwa_bd, profil, enco) = match dane2.bdepth {
         BdepthJpg::Luma8 => ("_l8b", PixelFormat::GRAY_8, jpeg_encoder::ColorType::Luma),
         BdepthJpg::Rgb8 => ("_8b", PixelFormat::RGB_8, jpeg_encoder::ColorType::Rgb),
     };
@@ -66,13 +70,29 @@ pub async fn jpg_match<T>(
         None => final_img,
     };
 
-    let finalna_nazwa = format!("{}{}{}.jpg", dane.nazwa, nazwa_wariantu, nazwa_bd);
+    let finalna_nazwa = format!("{}{}{}.jpg", dane.nazwa, dane2.nazwa_wariantu, nazwa_bd);
     let mut ścieżka_pliku = dane.sciezka_wyjsciowa.to_path_buf();
     // println!("pokaż co mamy przed samym tworzeniem katalogu:\nścieżka pliku:   {:?}", ścieżka_pliku);
     if !ścieżka_pliku.exists() {
         create_dir_all(ścieżka_pliku.clone())?;
     }
     ścieżka_pliku.push(finalna_nazwa);
+    
+    if ścieżka_pliku.exists() {
+        match dane2.zastepowanie{
+            OptIstniejePlik::Zamień => {}
+            OptIstniejePlik::Zostaw => {
+                let mut oopr = obecna_operacja.lock().await;
+                *oopr += 1;
+                let obecnie = *oopr;
+                drop(oopr);
+
+                wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
+                return Ok(())
+            }
+            OptIstniejePlik::ZmieńNazwę => {ścieżka_pliku = get_higher_tier_copy(ścieżka_pliku)}
+        }
+    };
 
     let mut output_file = File::create(&ścieżka_pliku)?;
 

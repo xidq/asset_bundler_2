@@ -1,3 +1,4 @@
+use std::path::PathBuf;
 use crate::send::wyslij_status;
 use crate::zapisywanie::avif::avif_match;
 use crate::zapisywanie::ff::ff_match;
@@ -6,7 +7,7 @@ use crate::zapisywanie::png::png_match;
 use crate::zapisywanie::qoi::qoi_match;
 use crate::zapisywanie::tga::tga_match;
 use crate::zapisywanie::webp::webp_match;
-use enumy::opcje::OptInterpolacja;
+use enumy::opcje::{OptInterpolacja, OptIstniejePlik};
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, TypyPrzetwarzania};
 use enumy::rozszerzenia::bdepth_impl::{BdepthEnum, BitDepth};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
@@ -17,8 +18,17 @@ use std::sync::Arc;
 use tokio::sync::Mutex;
 use crate::zapisywanie::exr::exr_match;
 
+pub struct InneDane<T>{
+    pub wymiar: u32,
+    pub bdepth: T,
+    pub nazwa_wariantu: String,
+    pub filtr: FilterType,
+    pub zastepowanie: OptIstniejePlik,
+}
+
 pub async fn zapisywanie_generic<T, F, G>(
     dane: F,
+    metodyka: OptIstniejePlik,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
@@ -71,12 +81,16 @@ G: BitDepth + std::clone::Clone,
 
                 TypyPrzetwarzania::PrzJpg(danee) => {
                     if let BdepthEnum::Jpg(bdepth) = wybór.clone().jako_enum(){
+                        let data = InneDane{
+                            wymiar: docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            filtr,
+                            zastepowanie: metodyka,
+                        };
                         jpg_match(
                             danee,
-                            docelowy_wymiar,
-                            bdepth,
-                            nazwa_wariantu.to_string(),
-                            filtr,
+                            data,
                             metryka_operacji,
                             obecna_operacja.clone(),
                             tx.clone()
@@ -85,12 +99,16 @@ G: BitDepth + std::clone::Clone,
                 },
                 TypyPrzetwarzania::PrzPng(danee) => {
                     if let BdepthEnum::Png(bdepth) = wybór.clone().jako_enum(){
+                        let data = InneDane{
+                            wymiar: docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            filtr,
+                            zastepowanie: metodyka,
+                        };
                         png_match(
                             danee,
-                            docelowy_wymiar,
-                            bdepth,
-                            nazwa_wariantu.to_string(),
-                            filtr,
+                            data,
                             metryka_operacji,
                             obecna_operacja.clone(),
                             tx.clone()
@@ -99,12 +117,16 @@ G: BitDepth + std::clone::Clone,
                 }
                 TypyPrzetwarzania::PrzAvif(danee) => {
                     if let BdepthEnum::Avif(bdepth) = wybór.clone().jako_enum(){
+                        let data = InneDane{
+                            wymiar: docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            filtr,
+                            zastepowanie: metodyka,
+                        };
                         avif_match(
                             danee,
-                            docelowy_wymiar,
-                            bdepth,
-                            nazwa_wariantu.to_string(),
-                            filtr,
+                            data,
                             metryka_operacji,
                             obecna_operacja.clone(),
                             tx.clone()
@@ -113,12 +135,16 @@ G: BitDepth + std::clone::Clone,
                 }
                 TypyPrzetwarzania::PrzWebp(danee) => {
                     if let BdepthEnum::Webp(bdepth) = wybór.clone().jako_enum(){
+                        let data = InneDane{
+                            wymiar: docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            filtr,
+                            zastepowanie: metodyka,
+                        };
                         webp_match(
                             danee,
-                            docelowy_wymiar,
-                            bdepth,
-                            nazwa_wariantu.to_string(),
-                            filtr,
+                            data,
                             metryka_operacji,
                             obecna_operacja.clone(),
                             tx.clone()
@@ -127,12 +153,16 @@ G: BitDepth + std::clone::Clone,
                 }
                 TypyPrzetwarzania::PrzQoi(danee) => {
                     if let BdepthEnum::Qoi(bdepth) = wybór.clone().jako_enum(){
+                        let data = InneDane{
+                            wymiar: docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            filtr,
+                            zastepowanie: metodyka,
+                        };
                         qoi_match(
                             danee,
-                            docelowy_wymiar,
-                            bdepth,
-                            nazwa_wariantu.to_string(),
-                            filtr,
+                            data,
                             metryka_operacji,
                             obecna_operacja.clone(),
                             tx.clone()
@@ -141,12 +171,16 @@ G: BitDepth + std::clone::Clone,
                 }
                 TypyPrzetwarzania::PrzTga(danee) => {
                     if let BdepthEnum::Tga(bdepth) = wybór.clone().jako_enum(){
+                        let data = InneDane{
+                            wymiar: docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            filtr,
+                            zastepowanie: metodyka,
+                        };
                         tga_match(
                             danee,
-                            docelowy_wymiar,
-                            bdepth,
-                            nazwa_wariantu.to_string(),
-                            filtr,
+                            data,
                             metryka_operacji,
                             obecna_operacja.clone(),
                             tx.clone()
@@ -155,12 +189,16 @@ G: BitDepth + std::clone::Clone,
                 }
                 TypyPrzetwarzania::PrzFf(danee) => {
                     if let BdepthEnum::Ff(bdepth) = wybór.clone().jako_enum(){
+                        let data = InneDane{
+                            wymiar: docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            filtr,
+                            zastepowanie: metodyka,
+                        };
                         ff_match(
                             danee,
-                            docelowy_wymiar,
-                            bdepth,
-                            nazwa_wariantu.to_string(),
-                            filtr,
+                            data,
                             metryka_operacji,
                             obecna_operacja.clone(),
                             tx.clone()
@@ -169,12 +207,16 @@ G: BitDepth + std::clone::Clone,
                 }
                 TypyPrzetwarzania::PrzExr(danee) => {
                     if let BdepthEnum::Exr(bdepth) = wybór.clone().jako_enum(){
+                        let data = InneDane{
+                            wymiar: docelowy_wymiar,
+                            bdepth,
+                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            filtr,
+                            zastepowanie: metodyka,
+                        };
                         exr_match(
                             danee,
-                            docelowy_wymiar,
-                            bdepth,
-                            nazwa_wariantu.to_string(),
-                            filtr,
+                            data,
                             metryka_operacji,
                             obecna_operacja.clone(),
                             tx.clone()
@@ -189,3 +231,38 @@ G: BitDepth + std::clone::Clone,
     Ok(())
 }
 
+pub fn get_higher_tier_copy(sciezka: PathBuf) -> PathBuf {
+    // Jeśli plik w ogóle nie istnieje, zwracamy oryginalną ścieżkę bez zmian
+    if !sciezka.exists() {
+        return sciezka;
+    }
+
+    // Wyciągamy czystą nazwę pliku (bez folderów i bez rozszerzenia)
+    // Jeśli nie uda się pobrać (np. ścieżka to ".."), bezpiecznym fallbackiem jest cała ścieżka
+    let nazwa_bazowa = match sciezka.file_stem() {
+        Some(stem) => stem.to_string_lossy().into_owned(),
+        None => return sciezka,
+    };
+
+    // Pobieramy rozszerzenie (np. "jpg"). Jeśli brak, używamy pustego ciągu
+    let rozszerzenie = match sciezka.extension() {
+        Some(ext) => format!(".{}", ext.to_string_lossy()),
+        None => String::new(),
+    };
+
+    let mut licznik = 1;
+    let mut nowa_sciezka = sciezka.clone();
+
+    // Pętla kręci się tak długo, jak długo generowana ścieżka istnieje na dysku
+    while nowa_sciezka.exists() {
+        // Składamy nową nazwę: "nazwa (1).jpg"
+        let nowa_nazwa = format!("{} ({}){}", nazwa_bazowa, licznik, rozszerzenie);
+
+        // Podmieniamy samą końcówkę ścieżki
+        nowa_sciezka = sciezka.with_file_name(nowa_nazwa);
+
+        licznik += 1;
+    }
+
+    nowa_sciezka
+}

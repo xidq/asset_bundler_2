@@ -1,25 +1,27 @@
 use crate::halper::{ogarnij_icc, usun_kanal_alpha, zaszumianie};
 use crate::send::wyslij_status;
+use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
+use bytes::Bytes;
+use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::PrzetwarzanieWebp;
 use enumy::rozszerzenia::bdepth::BdepthWebp;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
-use image::imageops::FilterType;
+use image::GenericImageView;
+use img_parts::webp::WebP;
+use img_parts::ImageEXIF;
 use lcms2::PixelFormat;
 use std::fs::create_dir_all;
 use std::sync::Arc;
-use image::GenericImageView;
 use tokio::sync::Mutex;
-use img_parts::webp::WebP;
-use img_parts::ImageEXIF;
-use bytes::Bytes;
 
 pub async fn webp_match<T>(
     dane: PrzetwarzanieWebp,
-    wymiar: u32,
-    bit_depth: BdepthWebp,
-    nazwa_wariantu: String,
-    filtr: FilterType,
+    dane2: InneDane<BdepthWebp>,
+    // wymiar: u32,
+    // bit_depth: BdepthWebp,
+    // nazwa_wariantu: String,
+    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
@@ -28,19 +30,19 @@ where T: Logi,
 {
 
     let foto =
-        if wymiar == 0 {
+        if dane2.wymiar == 0 {
             dane.bufor
         } else {
             dane.bufor
                 .resize(
-                    wymiar,
-                    wymiar,
-                    filtr,
+                    dane2.wymiar,
+                    dane2.wymiar,
+                    dane2.filtr,
                 )
         };
     let (width, height) = foto.dimensions();
 
-    let (final_img, nazwa_bd, icc) = match bit_depth {
+    let (final_img, nazwa_bd, icc) = match dane2.bdepth {
         BdepthWebp::Rgb8Alpha => ( foto, "_8ba", PixelFormat::RGBA_8),
         BdepthWebp::Rgb8 => (usun_kanal_alpha(foto.clone(), dane.alpha), "_8b", PixelFormat::RGB_8),
 
@@ -68,13 +70,28 @@ where T: Logi,
 
     // println!("{:?}", final_finalv3_temp_final_ostatecznyv5);
     // 5. Budowanie nazwy pliku: nazwa + wariant + kolor + rozszerzenie
-    let finalna_nazwa = format!("{}{}{}.webp", dane.nazwa, nazwa_wariantu, nazwa_bd);
+    let finalna_nazwa = format!("{}{}{}.webp", dane.nazwa, dane2.nazwa_wariantu, nazwa_bd);
     let mut ścieżka_pliku = dane.sciezka_wyjsciowa.to_path_buf();
     // println!("pokaż co mamy przed samym tworzeniem katalogu:\nścieżka pliku:   {:?}", ścieżka_pliku);
     if !ścieżka_pliku.exists() {
         create_dir_all(ścieżka_pliku.clone())?;
     }
     ścieżka_pliku.push(finalna_nazwa);
+    if ścieżka_pliku.exists() {
+        match dane2.zastepowanie{
+            OptIstniejePlik::Zamień => {}
+            OptIstniejePlik::Zostaw => {
+                let mut oopr = obecna_operacja.lock().await;
+                *oopr += 1;
+                let obecnie = *oopr;
+                drop(oopr);
+
+                wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
+                return Ok(())
+            }
+            OptIstniejePlik::ZmieńNazwę => {ścieżka_pliku = get_higher_tier_copy(ścieżka_pliku)}
+        }
+    };
 
     // let encoder = webp::Encoder::from_image(&final_finalv3_temp_final_ostatecznyv5)
     //     .map_err(tokio::io::Error::other)?;

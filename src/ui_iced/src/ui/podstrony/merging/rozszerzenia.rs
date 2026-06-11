@@ -5,10 +5,10 @@ use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
 use enumy::dane_do_przetwarzania::DaneMerge;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
+use enumy::rozszerzenia::ext::{ImgExtSingle, ImgExtTag};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
-use enumy::rozszerzenia::ext::{ImgExtTag, ImgExtSingle};
+use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForExrKompresja, ForFfKompresja};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{container, space, Column, Row};
 use iced_core::{Color, Length};
@@ -395,7 +395,45 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                     ).style(styl_kontenera(true,RodzajeContainer::Oba, kolor, temat))
                 }
                 ImgExtTag::Unknown => {container(space())}
-                ImgExtTag::Exr => {container(space())}
+                ImgExtTag::Exr => {
+                    container(
+                        Row::new().height(100.)
+                            .push(
+                                if let ImgExtSingle::Exr {
+                                    bit_depth, kompresja: _
+                                } = dane.rozszerzenie {
+                                    Column::new()
+                                    .push(
+                                        BdepthExr::iter()
+                                            // .filter(|wariant| !wariant.to_string().to_lowercase().contains("luma"))
+                                            .fold(
+                                                Row::new().height(50.), |row, wariant| {
+                                                    row.push(
+                                                        btn_bdepth_merge(
+                                                            wariant,
+                                                            if bit_depth == wariant { &BtnState::Active } else { &BtnState::Disabled },
+                                                            jezyk,
+                                                            kolor,
+                                                            temat
+                                                        ),
+                                                    )
+                                                }
+                                            )
+                                    )
+                                    .push(
+                                        Row::new().spacing(15).height(50.)
+                                            .push(pole_tekstowe_przycisku("mgt_compression", jezyk, temat))
+                                            .push(dropdown::<ForExrKompresja, _>(dane, kolor, temat))
+                                            .push(space().width(15.))
+                                    )
+                                } else {Column::new().push(space())}
+
+
+                            )
+
+
+                    ).style(styl_kontenera(true,RodzajeContainer::Góra, kolor, temat))
+                }
             }
         )
         .push(
@@ -408,7 +446,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                 ImgExtTag::Qoi => {space().height(200.)}
                 ImgExtTag::Avif => {space()}
                 ImgExtTag::Unknown => {space()}
-                ImgExtTag::Exr => {space()}
+                ImgExtTag::Exr => {space().height(200.)}
             }
         )
         .push(space().height(Length::FillPortion(1)))

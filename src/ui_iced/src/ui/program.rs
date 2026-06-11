@@ -117,6 +117,7 @@ impl Program {
                 temat: UstawieniaThemeWsio::default(),
             },
             Task::batch(Vec::from([
+                Task::done(Message::InitUstawienia),
                 Task::done(Message::InitLogStartowy),
                 font::load(FONT_DEFAULT).map(|_| Message::Nic),
                 font::load(FONT_KOREAN).map(|_| Message::Nic),
@@ -210,7 +211,7 @@ impl Program {
                 // &self.status_dds_pakowanie,
                 // &self.status_dds_rozpakowywanie,
             ),
-            UiPods::Ustawienia => ustawienia_view(&self.ui_ustawienia, &self.temat),
+            UiPods::Ustawienia => ustawienia_view(&self.ui_ustawienia, aktualny_jezyk, &self.temat),
             // _ => column![text("Opcja jest, lecz UI jeszcze nie").size(50)].into(),
         };
 
