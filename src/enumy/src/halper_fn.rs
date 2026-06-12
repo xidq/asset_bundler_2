@@ -1,5 +1,8 @@
 use std::path::Path;
-
+/// # Check avaliable space
+/// We're estimating if such georgeous binary fille have possibility of being created on designed location.
+/// 
+/// There's smth for Linux and Windows, nothin' for Mac users
 pub fn chck_av_spc_n_stuff(ghhh: &Path) -> Result<(), std::io::Error> {
     let mut lista_plików = Vec::new();
     let mut foldery_do_przejrzenia = vec![ghhh.to_path_buf()];

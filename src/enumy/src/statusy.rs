@@ -11,7 +11,7 @@ pub trait Logi: Send + 'static {
     fn postep_ilosc(_postep: Option<u32>) -> Option<Self> where Self: Sized { None }
     fn znalezione_pliki(_pliki: u32) -> u32 {0_u32}
     fn pakowanie(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
-    fn kompresja(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
+    fn kompresja(_pliki:u64, _suma: Option<u64>) -> Option<Self> where Self: Sized { None }
     fn szyfrowanie(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
 
 
@@ -33,8 +33,8 @@ pub enum LogTxBinPak {
         suma: Option<u32>,
     },
     Kompresja {
-        aktualny: u32,
-        suma: Option<u32>,
+        aktualny: u64,
+        suma: Option<u64>,
     },
     Szyfrowanie {
         aktualny: u32,
@@ -52,7 +52,7 @@ impl Logi for LogTxBinPak {
         pliki
     }
     fn pakowanie(pliki:u32, suma: Option<u32>) -> Option<Self> { Some(LogTxBinPak::Pakowanie { aktualny: pliki, suma }) }
-    fn kompresja(pliki:u32, suma: Option<u32>) -> Option<Self> { Some(LogTxBinPak::Kompresja { aktualny: pliki, suma }) }
+    fn kompresja(pliki:u64, suma: Option<u64>) -> Option<Self> { Some(LogTxBinPak::Kompresja { aktualny: pliki, suma }) }
     fn szyfrowanie(pliki:u32, suma: Option<u32>) -> Option<Self> { Some(LogTxBinPak::Szyfrowanie { aktualny: pliki, suma }) }
     fn nazwa() -> &'static str {
         "[Log Binary packing]"

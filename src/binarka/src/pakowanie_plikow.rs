@@ -11,6 +11,13 @@ use std::time::Instant;
 use enumy::log_file_gen::generuj_plik_logow;
 use szyfrowanie::xor_sz::szyfruj_xor;
 
+/// # Gettin' files
+/// We're getting file name and data here from files.
+/// 
+/// Taking input folder('ścieżka') and goin' around to get every 
+/// (or almost every, depends on choosed filtration method)
+/// file and making Vec out of it.
+/// So we can put such vec in loop and so on...
 async fn zgarnij_pliki(
     ścieżka: PathBuf,
     opcja: &bool,
@@ -57,6 +64,10 @@ async fn zgarnij_pliki(
 
     Ok(lista_plików)
 }
+
+/// # Filtration
+/// Fn for filtration, as set in gui.
+/// 
 fn czy_plik_pasuje(plik: &Path, filtr: &OptKompresjaPlikówFiltracjaPlików) -> bool {
 
     let ext = plik
@@ -80,19 +91,31 @@ fn czy_plik_pasuje(plik: &Path, filtr: &OptKompresjaPlikówFiltracjaPlików) -> 
         _ => true,
     }
 }
-
+/// # Creating binary file
+/// 
+/// Creating binary file from files collected in other places.
+/// 
+/// ONE TO RULE 'EM ALL!!!!!
+/// 
+/// We're getting file names and data from fn zgarnij_pliki.
+/// 
+/// So:
+/// - pliki -> such Vec with names and data
+/// - ścieżka_wyjściowa -> Output folder path
+/// - nazwa_pliku -> name of desired file
+/// - tx -> ofc futures mpsc channel ;)
 async fn tworzenie_binarki(
     pliki: Vec<(String, Vec<u8>)>,
     ścieżka_wyjściowa: PathBuf,
     nazwa_pliku: String,
-    mut tx: mpsc::Sender<LogTxBinPak>, // Dodajemy kanał tutaj
+    mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<(), tokio::io::Error> {
     
     let mut blobloblob = Vec::new();
     let suma = pliki.len() as u32;
     blobloblob.extend_from_slice(&(pliki.len() as u32).to_le_bytes());
 
-    #[allow(clippy::explicit_counter_loop)]
+    #[allow(clippy::explicit_counter_loop)] //ya, coz clippy sometimes can't see overall idea
     for (i, (nazwa, dane)) in pliki.into_iter().enumerate() {
         let n_bytes = nazwa.as_bytes();
 
@@ -124,14 +147,23 @@ async fn tworzenie_binarki(
 
     Ok(())
 }
-
+/// # Main fn for packing binary file
+/// so as u can see, there's some magic...
+/// Getting data from gui, matching 'wynik' and stuff...
+/// 
+/// ah, yeah...
+/// Here's async Tokio, but mpsc is from 'futures' ;)
 pub async fn ogarnianie_eksportu(
     zestaw_danych: DaneBinPak,
     mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<(), tokio::io::Error> {
     let start_czas = Instant::now();
+    
+    
 
     let wynik = async {
+        
+        checkin_data(&zestaw_danych)?;
         let (in_path, out_path, poz_kompresji, strukturalnie, nazwa_pliku) = (
             zestaw_danych.ścieżka_in,
             zestaw_danych.ścieżka_out,
@@ -169,4 +201,12 @@ pub async fn ogarnianie_eksportu(
             Err(e)
         }
     }
+}
+
+/// # Check data
+/// checking data (file name and input path)
+fn checkin_data(data: &DaneBinPak) -> Result<(), std::io::Error> {
+    if data.nazwa.is_empty(){ return Err(std::io::Error::other("[Binary packing: checkin_data] File name is empty")); }
+    if !data.ścieżka_in.exists(){ return Err(std::io::Error::other("[Binary packing: checkin_data] Input folder doesn't exist ;(")); }
+    Ok(())
 }

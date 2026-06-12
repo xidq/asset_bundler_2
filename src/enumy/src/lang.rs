@@ -106,6 +106,18 @@ impl WybórJęzyka {
 
         (f1, xxx)
     }
+    pub fn normal_u64_option(&self,var: (impl Into<u64> + std::clone::Clone, Option<impl Into<u64> + std::clone::Clone>)) -> (u64, Option<u64>){
+        let vwar0: u64 = var.0.clone().into();
+        let f1:u64 = vwar0;
+        let xxx;
+
+        if let Some(wartosc2) = var.1 {
+            xxx = Some(wartosc2.clone().into() )
+        } else {xxx = None}
+        // let f2 = var.1.map(|v| v.to_f32()).unwrap_or(0.0);
+
+        (f1, xxx)
+    }
 
     pub fn bajt(&self, val:impl Into<u64> + std::clone::Clone )->String{
         let xx: u64 = val.clone().into();

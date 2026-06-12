@@ -20,7 +20,7 @@ pub fn status_pakowanie<'a>(dane: &'a LogPakowanie, kolor: &'a Color, jezyk: &'a
                 ,jezyk)
             )
             .push(status_text_bar(jezyk.normal_u32_option(dane.pakowanie), "proces_binary_pack_packing", kolor, jezyk, temat))
-            .push(status_text_bar(jezyk.normal_u32_option(dane.kompresja), "proces_binary_pack_compression", kolor, jezyk, temat))
+            .push(status_text_bar(jezyk.normal_u64_option(dane.kompresja), "proces_binary_pack_compression", kolor, jezyk, temat))
             .push(status_text_bar(jezyk.normal_u32_option(dane.szyfrowanie), "proces_binary_pack_compression", kolor, jezyk, temat))
             .push(
                 status_text(

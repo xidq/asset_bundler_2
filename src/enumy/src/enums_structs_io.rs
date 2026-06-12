@@ -21,7 +21,7 @@ pub const FILTERFOTO: [&str; 18] = [
 pub struct LogPakowanie {
     pub zbieranie_plików: u32,
     pub pakowanie:(u32,Option<u32>),
-    pub kompresja: (u32 ,Option<u32>),
+    pub kompresja: (u64 ,Option<u64>),
     pub szyfrowanie: (u32 ,Option<u32>),
     pub koniec: String,
     pub błąd: String,

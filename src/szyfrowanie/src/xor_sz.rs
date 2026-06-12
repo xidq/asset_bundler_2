@@ -5,10 +5,15 @@ use pass::BAŁDZOTAJNEHASŁO;
 use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
+use enumy::log_file_gen::generuj_plik_logow;
 
-/// Encoding XOR module where file is encoded tho ;)
+/// # Encoding XOR module
+/// where file is encoded tho ;)
 /// There's need for path to file folder, name of such file and future mpsc sender.
 /// And as you can see there's 5ms pause, just for giving some time to hardware.
+///
+/// ścieżka -> PathBuf to folder containing file (*.jrz)
+/// nazwa -> file name (without extension)
 ///
 /// # Errors
 /// fn may throw tokio::io::Error if there's no valid file.
@@ -18,6 +23,20 @@ pub async fn szyfruj_xor(
     nazwa: String,
     mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<(), tokio::io::Error> {
+    // walidacja wejścia
+    // ------------------------------------------------------------------------------------------
+    if nazwa.trim().is_empty() {
+        let msg = "[Binary packing:  validation] Nazwa pliku jest pusta!".to_string();
+        generuj_plik_logow(msg.clone());
+        return Err(tokio::io::Error::new(tokio::io::ErrorKind::InvalidInput, msg));
+    }
+
+    if !ścieżka.is_dir() {
+        let msg = format!("[Binary packing: validation] Ścieżka nie jest katalogiem: {:?}", ścieżka);
+        generuj_plik_logow(msg.clone());
+        return Err(tokio::io::Error::new(tokio::io::ErrorKind::InvalidInput, msg));
+    }
+    // ------------------------------------------------------------------------------------------
 
     let sciezka_in = ścieżka.join(format!("{}.jrz", nazwa)); // Plik po kompresji
     let sciezka_out = ścieżka.join(format!("{}.jrzs", nazwa)); // Plik zaszyfrowany (finalny)
@@ -32,14 +51,38 @@ pub async fn szyfruj_xor(
     let mut przeczytano_razem = 0u64;
     let mut bufor = vec![0u8; 128 * 1024]; // 128KB bufor
 
-    while let Ok(n) = plik_in.read(&mut bufor).await {
+    // while let Ok(n) = plik_in.read(&mut bufor).await {
+    //     if n == 0 {
+    //         break;
+    //     }
+    //     // XOR na tym konkretnym kawałku (buforze)
+    //     // Musimy wiedzieć, na którym bajcie całego pliku jesteśmy,
+    //     // aby zachować ciągłość klucza XOR (przeczytano_razem + i)
+    //     for (i, bajt) in bufor[..n].iter_mut().enumerate() {
+    //         let pozycja_w_pliku = przeczytano_razem + i as u64;
+    //         *bajt ^= klucz[pozycja_w_pliku as usize % klucz.len()];
+    //     }
+    //     plik_out.write_all(&bufor[..n]).await?;
+    //     tokio::time::sleep(tokio::time::Duration::from_millis(5)).await;
+    //     // Aktualizacja postępu
+    //     przeczytano_razem += n as u64;
+    //
+    //     wyslij_status(&mut tx,Some(LogTxBinPak::Szyfrowanie {
+    //         aktualny: przeczytano_razem as u32,
+    //         suma: Some(calkowity_rozmiar as u32 +2),
+    //     })).await;
+    // }
+
+    // same situation as in compression
+    loop {
+        // Jeśli odczyt rzuci błąd, przerywamy i zwracamy Err, plik wejściowy ocaleje!
+        let n = plik_in.read(&mut bufor).await?;
+
         if n == 0 {
             break;
         }
 
-        // Aplikujemy XOR na tym konkretnym kawałku (buforze)
-        // Musimy wiedzieć, na którym bajcie całego pliku jesteśmy,
-        // aby zachować ciągłość klucza XOR (przeczytano_razem + i)
+        // XOR na tym konkretnym kawałku
         for (i, bajt) in bufor[..n].iter_mut().enumerate() {
             let pozycja_w_pliku = przeczytano_razem + i as u64;
             *bajt ^= klucz[pozycja_w_pliku as usize % klucz.len()];
@@ -47,15 +90,13 @@ pub async fn szyfruj_xor(
 
         plik_out.write_all(&bufor[..n]).await?;
         tokio::time::sleep(tokio::time::Duration::from_millis(5)).await;
-        // Aktualizacja postępu
+
         przeczytano_razem += n as u64;
 
-        wyslij_status(&mut tx,Some(LogTxBinPak::Szyfrowanie {
+        wyslij_status(&mut tx, Some(LogTxBinPak::Szyfrowanie {
             aktualny: przeczytano_razem as u32,
-            suma: Some(calkowity_rozmiar as u32 +2),
+            suma: Some(calkowity_rozmiar as u32 + 2),
         })).await;
-
-        
     }
 
     wyslij_status(&mut tx,Some(LogTxBinPak::Szyfrowanie {
