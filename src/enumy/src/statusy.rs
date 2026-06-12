@@ -15,7 +15,7 @@ pub trait Logi: Send + 'static {
     fn szyfrowanie(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
     // rozpak bin
     fn zbieranie(_pliki:u64, _suma: Option<u64>) -> Option<Self> where Self: Sized { None }
-    fn deszyfracja(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
+    fn deszyfracja(_pliki:u64, _suma: Option<u64>) -> Option<Self> where Self: Sized { None }
     fn dekompresja(_pamięć:u64) -> u64 { 0 }
     fn rozpakowywanie(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
 
@@ -74,8 +74,8 @@ pub enum LogTxBinUnpak {
         max: Option<u64>,
     },
     Deszyfracja {
-        current: u32,
-        max: Option<u32>,
+        current: u64,
+        max: Option<u64>,
     },
     Dekompresja {
         pamięć: u64,
@@ -96,7 +96,7 @@ impl Logi for LogTxBinUnpak {
         pliki
     }
     fn zbieranie(pliki:u64, suma: Option<u64>) -> Option<Self> { Some(LogTxBinUnpak::Zbieranie {current: pliki, max:suma })}
-    fn deszyfracja(pliki:u32, suma: Option<u32>) -> Option<Self> { Some(LogTxBinUnpak::Deszyfracja {current: pliki, max:suma })}
+    fn deszyfracja(pliki:u64, suma: Option<u64>) -> Option<Self> { Some(LogTxBinUnpak::Deszyfracja {current: pliki, max:suma })}
     fn dekompresja(pamięć:u64) -> u64 { pamięć }
     fn rozpakowywanie(pliki:u32, suma: Option<u32>) -> Option<Self> { Some(LogTxBinUnpak::Rozpakowywanie {current: pliki, max:suma })}
     fn nazwa() -> &'static str {

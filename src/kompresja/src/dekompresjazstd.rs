@@ -3,7 +3,17 @@ use enumy::statusy::LogTxBinUnpak;
 use iced::futures::channel::mpsc;
 use std::path::PathBuf;
 use tokio::time::Instant;
-
+/// # Decompression for binary file
+/// Ya, decompressing binaty that's compressed.
+/// With ZSTD
+/// 
+/// Idk what to write here most of the time...
+/// 
+/// You just can see what's goin' on here
+/// 
+/// Compressed File -> <sparkles>MAGIC*<sparkles> -> File ;D
+/// 
+/// * loop and math
 pub async fn dekompresujsuj(
     ścieżka_pliku: PathBuf,
     nazwa_pliku: String,

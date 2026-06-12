@@ -116,77 +116,7 @@ pub async fn wypakuj_pliki(
     nazwa_pliku: String,
     mut tx: mpsc::Sender<LogTxBinUnpak>,
 ) -> Result<(), tokio::io::Error> {
-
-    // // Ścieżka do surowej binarki (wynik dekompresji)
-    // let sciezka_binarki = ścieżka.join(format!("{}_temp_clean", nazwa_pliku));
-    //
-    // // Otwieramy plik do czytania przez Tokio
-    // let mut plik = tokio::fs::File::open(&sciezka_binarki).await?;
-    //
-    // // Bufory pomocnicze na liczby
-    // let mut buf_u32 = [0u8; 4];
-    // let mut buf_u64 = [0u8; 8];
-    // let mut ostatni_stan = Instant::now();
-    // let mut liczydło = 0;
-    //
-    // // Czytamy całkowitą ilość plików zapisaną na samym początku (u32)
-    // plik.read_exact(&mut buf_u32).await?;
-    // let suma_plikow = u32::from_le_bytes(buf_u32);
-    //
-    // // Pętla przetwarzająca każdy zapisany plik
-    // for i in 0..suma_plikow {
-    //     // A. Czytamy długość nazwy (u32)
-    //     plik.read_exact(&mut buf_u32).await?;
-    //     let dlugosc_nazwy = u32::from_le_bytes(buf_u32) as usize;
-    //
-    //     // B. Czytamy nazwę (String)
-    //     let mut buf_nazwa = vec![0u8; dlugosc_nazwy];
-    //     plik.read_exact(&mut buf_nazwa).await?;
-    //     let relatywna_sciezka = String::from_utf8_lossy(&buf_nazwa).into_owned();
-    //
-    //     // C. Czytamy rozmiar danych (u64)
-    //     plik.read_exact(&mut buf_u64).await?;
-    //     let rozmiar_danych = u64::from_le_bytes(buf_u64);
-    //
-    //     // D. Czytamy same dane pliku (Vec<u8>)
-    //     let mut dane_pliku = vec![0u8; rozmiar_danych as usize];
-    //     plik.read_exact(&mut dane_pliku).await?;
-    //
-    //     // E. Odtwarzanie ścieżki i zapis na dysk
-    //     let pełna_ścieżka_wyjściowa = ścieżka.join(&relatywna_sciezka);
-    //
-    //     // Tworzymy strukturę folderów, jeśli plik był w podkatalogu
-    //     if let Some(parent) = pełna_ścieżka_wyjściowa.parent()
-    //         && !parent.exists()
-    //     {
-    //         tokio::fs::create_dir_all(parent).await?;
-    //     }
-    //     liczydło = i+1;
-    //     // Zapisujemy plik wynikowy
-    //     tokio::fs::write(&pełna_ścieżka_wyjściowa, dane_pliku).await?;
-    //
-    //     if ostatni_stan.elapsed().as_millis() >= 250 {
-    //         ostatni_stan = Instant::now();
-    //         wyslij_status(&mut tx, Some(LogTxBinUnpak::Rozpakowywanie {
-    //             current: liczydło,
-    //             max: Some(suma_plikow   + 2 ),
-    //         })).await;
-    //     }
-    // }
-    // wyslij_status(&mut tx, Some(LogTxBinUnpak::Rozpakowywanie {
-    //     current: liczydło +1,
-    //     max: Some(suma_plikow +2 ),
-    // })).await;
-    //
-    // drop(plik);
-    // tokio::fs::remove_file(sciezka_binarki).await?;
-    //
-    // wyslij_status(&mut tx, Some(LogTxBinUnpak::Rozpakowywanie {
-    //     current: liczydło +2,
-    //     max: Some(suma_plikow +2 ),
-    // })).await;
-    //
-    // Ok(())
+    
     let sciezka_binarki = ścieżka.join(format!("{}_temp_clean", nazwa_pliku));
     let mut plik = File::open(&sciezka_binarki).await?;
 

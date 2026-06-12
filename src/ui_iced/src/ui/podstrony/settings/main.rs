@@ -2,7 +2,7 @@ use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::styles::{styl_menu_pick, styl_pick_list, styl_przycisków, styl_sliderów};
 use enumy::inne_ui::{BtnState, UiPods, UstawieniaThemeWsio};
 use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
-use iced::widget::{button, pick_list, slider, text, Column, Row};
+use iced::widget::{button, pick_list, slider, text, text_input, Column, Row};
 use iced::Element;
 use iced_core::{Color, Length};
 use strum::IntoEnumIterator;
@@ -38,6 +38,15 @@ pub fn ustawienia_view<'a>(opcje: &UstawieniaMenu, jezyk: &'a WybórJęzyka, tem
         .push(wybor_koloru("Łączenie".to_string(), &UiPods::Merge, jezyk, &temat.kolory.laczenie, temat))
         .push(wybor_koloru("Dds".to_string(), &UiPods::DdsExt, jezyk, &temat.kolory.dds, temat))
         .push(wybor_koloru("Ustawienia".to_string(), &UiPods::Ustawienia, jezyk, &temat.kolory.ustawienia, temat))
+        .push(
+            Row::new()
+                .push(
+                    button("push custom log").on_press(Message::DevCustomLog).style(styl_przycisków(&BtnState::Disabled, &temat.kolory.binarka, temat))
+                )
+                .push(
+                    text_input("", &temat.temp.custom_log).on_input(Message::DevCustomLogText)
+                )
+        )
         .spacing(15)
         .into()
 

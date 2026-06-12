@@ -86,6 +86,7 @@ impl Default for UstawieniaThemeWsio {
                     dds_unpak: BtnState::LackData,
                     laczenie: BtnState::LackData,
                 },
+                custom_log: String::new(),
             },
             btn_state: Default::default(),
         }
@@ -95,6 +96,7 @@ pub struct Temp{
     pub act_proc: Option<ActProces>,
     pub act_window: UiPods,
     pub start_btn_status: StartBtnStatus,
+    pub custom_log: String,
 }
 #[derive(Clone, Debug, EnumMessage, PartialEq)]
 pub enum TextInputType{

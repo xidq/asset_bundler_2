@@ -20,6 +20,7 @@ use std::collections::HashMap;
 use std::path::PathBuf;
 use std::str::FromStr;
 use strum::{Display, EnumString};
+use enumy::log_file_gen::generuj_plik_logow;
 
 #[derive(Debug, EnumString, Display)]
 pub enum ElementyDoNazwIZmianUstawien{
@@ -93,6 +94,14 @@ impl Program {
                 if let Some(dane) = ggg {
                     self.wczytaj_ustawienia(dane);
                 }
+            }
+            Message::DevCustomLog
+                if !self.temat.temp.custom_log.is_empty() => {
+                    generuj_plik_logow(self.temat.temp.custom_log.clone());
+                }
+
+            Message::DevCustomLogText(log) => {
+                self.temat.temp.custom_log = log;
             }
 
             Message::UsuńLogi => self.log_prawe_okno = Vec::new(),

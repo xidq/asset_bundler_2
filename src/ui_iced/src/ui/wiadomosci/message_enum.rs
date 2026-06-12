@@ -53,4 +53,6 @@ pub enum Message {
     InitUstawienia,
     DevZmienKolory(UiPods,String, u8),
     DevResetUstawien,
+    DevCustomLog,
+    DevCustomLogText(String),
 }
