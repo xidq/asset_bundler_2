@@ -2,12 +2,13 @@ use enumy::dane_do_przetwarzania::DaneBinPak;
 use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
 use enumy::halper_fn::chck_av_spc_n_stuff;
 use enumy::opcje::OptKompresjaPlikówFiltracjaPlików;
+use enumy::send::wyslij_status;
 use enumy::statusy::LogTxBinPak;
 use iced::futures::channel::mpsc;
-use iced::futures::SinkExt;
 use kompresja::zetestede::kompresujsuj;
 use std::path::{Path, PathBuf};
 use std::time::Instant;
+use enumy::log_file_gen::generuj_plik_logow;
 use szyfrowanie::xor_sz::szyfruj_xor;
 
 async fn zgarnij_pliki(
@@ -19,11 +20,8 @@ async fn zgarnij_pliki(
     let mut lista_plików = Vec::new();
     let mut licznik:u32 = 0;
     let mut foldery_do_przejrzenia = vec![ścieżka.clone()];
-    
-    let _ = tx
-        .send(LogTxBinPak::StatusZnaleziono { pliki: 0 })
-        .await;
 
+    wyslij_status(&mut tx,Some(LogTxBinPak::StatusZnaleziono { pliki: 0 })).await;
 
     while let Some(aktualny_folder) = foldery_do_przejrzenia.pop() {
         let mut wejścia = tokio::fs::read_dir(aktualny_folder).await?;
@@ -51,13 +49,8 @@ async fn zgarnij_pliki(
                 lista_plików.push((nazwa, tresc));
                 licznik += 1;
 
-                let _ = tx
-                    .send(
-                        LogTxBinPak::StatusZnaleziono {
-                            pliki: licznik,
-                        },
-                    )
-                    .await;
+                wyslij_status(&mut tx,Some(LogTxBinPak::StatusZnaleziono { pliki: licznik })).await;
+                
             }
         }
     }
@@ -94,20 +87,10 @@ async fn tworzenie_binarki(
     nazwa_pliku: String,
     mut tx: mpsc::Sender<LogTxBinPak>, // Dodajemy kanał tutaj
 ) -> Result<(), tokio::io::Error> {
-    let mut akt_stat = async |aktualny:u32,suma:Option<u32>|{
-        if let Err(e) = tx.send(LogTxBinPak::Pakowanie {
-            aktualny,
-            suma,
-        }).await {
-            dbg!("Błąd wysyłania statusu do kanału: ", e);
-        }
-        };
-
-
+    
     let mut blobloblob = Vec::new();
     let suma = pliki.len() as u32;
     blobloblob.extend_from_slice(&(pliki.len() as u32).to_le_bytes());
-
 
     #[allow(clippy::explicit_counter_loop)]
     for (i, (nazwa, dane)) in pliki.into_iter().enumerate() {
@@ -122,7 +105,7 @@ async fn tworzenie_binarki(
 
         tokio::time::sleep(tokio::time::Duration::from_millis(1)).await;
 
-        akt_stat((i + 1) as u32, Some(suma)).await;
+        wyslij_status(&mut tx,Some(LogTxBinPak::Pakowanie { aktualny: (i + 1) as u32, suma: Some(suma) })).await;
 
     }
 
@@ -134,11 +117,9 @@ async fn tworzenie_binarki(
 
 
     if let Err(e) = tokio::fs::write(&ścieżka_temp, blobloblob).await {
-            let _ = tx
-                .send(LogTxBinPak::Błąd(
-                    e.to_string(),
-                ))
-                .await;
+        let msg = format!("[Binary packing: creating] {}",e);
+        generuj_plik_logow(msg.clone());
+        wyslij_status(&mut tx,Some(LogTxBinPak::Błąd(msg))).await;
     }
 
     Ok(())
@@ -148,7 +129,6 @@ pub async fn ogarnianie_eksportu(
     zestaw_danych: DaneBinPak,
     mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<(), tokio::io::Error> {
-    // println!("zaczynam pakować");
     let start_czas = Instant::now();
 
     let wynik = async {
@@ -162,7 +142,6 @@ pub async fn ogarnianie_eksportu(
         chck_av_spc_n_stuff(&in_path)?;
         let wsio_dane =
             zgarnij_pliki(in_path, &strukturalnie, zestaw_danych.filtracja, tx.clone()).await?;
-        // let _ = tx.send(ilość_plików).await;
         tworzenie_binarki(wsio_dane, out_path.clone(), nazwa_pliku.clone(), tx.clone()).await?;
 
         kompresujsuj(
@@ -180,82 +159,14 @@ pub async fn ogarnianie_eksportu(
 
     match wynik {
         Ok(_) => {
-            let _ = tx
-                .send(LogTxBinPak::Finito { czas: przelicz_czas(start_czas) })
-                .await;
+            wyslij_status(&mut tx,Some(LogTxBinPak::Finito(przelicz_czas(start_czas)))).await;
             Ok(())
         }
         Err(e) => {
-            let _ = tx
-                .send(LogTxBinPak::Błąd(
-                    e.to_string(),
-                ))
-                .await;
+            let msg = format!("[Binary packing] {}",e);
+            generuj_plik_logow(msg.clone());
+            wyslij_status(&mut tx,Some(LogTxBinPak::Błąd(msg))).await;
             Err(e)
         }
     }
 }
-
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
-//     // Używamy kanałów z futures, bo takie przyjmuje Twoja funkcja
-//     use iced::futures::channel::mpsc;
-//     use iced::futures::StreamExt; // Potrzebne dla metody .next()
-//
-//     #[tokio::test]
-//     async fn test_ogarniania_eksportu_podstawowy() {
-//         // 1. Setup
-//         let zestaw = DaneDoKompresjaPlików {
-//             ścieżka_in: PathBuf::from("/home/xidq/RustroverProjects/asset_bundler_2/src/testfiles/for_compression/"), // Testujemy na własnym folderze src
-//             ścieżka_out: PathBuf::from("/home/xidq/RustroverProjects/asset_bundler_2/src/testfiles/compressed/"),
-//             kompresjaa: OptKompresjaPlikówPoziomKompresjiZstd::Brak,
-//             nazwa: "test_output".to_string(),
-//             foldery: StrukturaFolderów::Tak,
-//             filtracja: OptKompresjaPlikówFiltracjaPlików::Wszystkie,
-//         };
-//         let sciezka = PathBuf::from("/home/xidq/RustroverProjects/asset_bundler_2/src/testfiles/for_compression/");
-//         println!("Czy widzę folder wejściowy? {}", sciezka.exists());
-//         assert!(sciezka.exists(), "FOLDER NIE ISTNIEJE Z PERSPEKTYWY TESTU: {:?}", sciezka);
-//         let sciezka2 = PathBuf::from("/home/xidq/RustroverProjects/asset_bundler_2/src/testfiles/compressed/");
-//         println!("Czy widzę folder wyjściowy? {}", sciezka2.exists());
-//         assert!(sciezka2.exists(), "FOLDER NIE ISTNIEJE Z PERSPEKTYWY TESTU: {:?}", sciezka2);
-//         // Tworzymy kanał z biblioteki futures (ten sam co w Iced)
-//         let (tx, mut rx) = mpsc::channel::<Progress>(100);
-//
-//         // 2. Odpalamy funkcję w tle
-//         let handle = tokio::spawn(async move {
-//             ogarnianie_eksportu(zestaw, tx).await
-//         });
-//
-//         // 3. Odbieramy wiadomosci z kanału (Stream API)
-//         // .next() zwraca Option<Progress>
-//         // Odbieraj wszystko, co leci kanałem, aż do zamknięcia lub sukcesu
-//         let mut czy_zakonczono = false;
-//         while let Some(msg) = rx.next().await {
-//             match msg {
-//                 Progress::ZnalezionoPliki { pliki, .. } => {
-//                     println!("Sukces: Znaleziono {} plików", pliki);
-//                 },
-//                 Progress::Proces { etap, procent } => {
-//                     println!("Postęp: {:?} - {}%", etap, procent);
-//                 },
-//                 Progress::Zakonczono { czas, .. } => {
-//                     println!("Eksport zakończony w czasie: {}", czas);
-//                     czy_zakonczono = true;
-//                     break; // Wychodzimy z pętli, bo to koniec
-//                 },
-//                 Progress::Błąd(e) => {
-//                     panic!("Wystąpił błąd w trakcie procesu: {}", e);
-//                 },
-//                 _ => {} // Resztę (np. pakowanie) ignorujemy lub dopisujemy
-//             }
-//         }
-//
-//         assert!(czy_zakonczono, "Test zakończył się bez otrzymania komunikatu Zakonczono!");
-//
-//         // Na końcu sprawdzamy wynik samej funkcji (handle)
-//         let wynik = handle.await.unwrap();
-//         assert!(wynik.is_ok());
-//     }
-// }

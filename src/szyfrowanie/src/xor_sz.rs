@@ -1,11 +1,10 @@
+use enumy::send::wyslij_status;
 use enumy::statusy::LogTxBinPak;
-use iced::futures::SinkExt;
 use iced::futures::channel::mpsc;
 use pass::BAŁDZOTAJNEHASŁO;
 use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
-// Pamiętaj o zdefiniowaniu klucza gdzieś w stałych
 
 pub async fn szyfruj_xor(
     ścieżka: PathBuf,
@@ -13,12 +12,9 @@ pub async fn szyfruj_xor(
     mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<(), tokio::io::Error> {
 
-
-    // 1. Przygotowanie ścieżek
     let sciezka_in = ścieżka.join(format!("{}.jrz", nazwa)); // Plik po kompresji
     let sciezka_out = ścieżka.join(format!("{}.jrzs", nazwa)); // Plik zaszyfrowany (finalny)
 
-    // 2. Otwarcie plików i sprawdzenie rozmiaru
     let mut plik_in = File::open(&sciezka_in).await?;
     let metadata = plik_in.metadata().await?;
     let calkowity_rozmiar = metadata.len();
@@ -28,13 +24,11 @@ pub async fn szyfruj_xor(
     let klucz = BAŁDZOTAJNEHASŁO.as_bytes();
     let mut przeczytano_razem = 0u64;
     let mut bufor = vec![0u8; 128 * 1024]; // 128KB bufor
-    // let mut ostatni_procent = 0u8;
 
-    // 3. Pętla szyfrowania
     while let Ok(n) = plik_in.read(&mut bufor).await {
         if n == 0 {
             break;
-        } // Koniec pliku
+        }
 
         // Aplikujemy XOR na tym konkretnym kawałku (buforze)
         // Musimy wiedzieć, na którym bajcie całego pliku jesteśmy,
@@ -44,42 +38,31 @@ pub async fn szyfruj_xor(
             *bajt ^= klucz[pozycja_w_pliku as usize % klucz.len()];
         }
 
-        // Zapisujemy zaszyfrowany kawałek
         plik_out.write_all(&bufor[..n]).await?;
         tokio::time::sleep(tokio::time::Duration::from_millis(5)).await;
         // Aktualizacja postępu
         przeczytano_razem += n as u64;
 
+        wyslij_status(&mut tx,Some(LogTxBinPak::Szyfrowanie {
+            aktualny: przeczytano_razem as u32,
+            suma: Some(calkowity_rozmiar as u32 +2),
+        })).await;
 
-        let _ = tx
-            .send(
-                LogTxBinPak::Szyfrowanie {
-                    aktualny: przeczytano_razem as u32,
-                    suma: Some(calkowity_rozmiar as u32 +2),
-                },
-            )
-            .await;
         
     }
 
-    let _ = tx
-        .send(LogTxBinPak::Szyfrowanie { 
-            aktualny: przeczytano_razem as u32 +1,
-            suma: Some(calkowity_rozmiar as u32 +2)
-        })
-        .await;
+    wyslij_status(&mut tx,Some(LogTxBinPak::Szyfrowanie {
+        aktualny: przeczytano_razem as u32 + 1,
+        suma: Some(calkowity_rozmiar as u32 +2),
+    })).await;
 
-    // 4. Flush i zamknięcie
     plik_out.flush().await?;
 
-    // 5. Usuwanie pliku .jrz (pośredniego)
     tokio::fs::remove_file(sciezka_in).await?;
-    let _ = tx
-        .send(LogTxBinPak::Szyfrowanie {
-            aktualny: przeczytano_razem as u32 +2,
-            suma: Some(calkowity_rozmiar as u32 +2)
-        })
-        .await;
+    wyslij_status(&mut tx,Some(LogTxBinPak::Szyfrowanie {
+        aktualny: przeczytano_razem as u32 + 2,
+        suma: Some(calkowity_rozmiar as u32 +2),
+    })).await;
 
     Ok(())
 }

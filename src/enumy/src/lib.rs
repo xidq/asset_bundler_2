@@ -14,3 +14,4 @@ pub mod przetwarzanie;
 mod def;
 pub mod halper_fn;
 pub mod log_file_gen;
+pub mod send;

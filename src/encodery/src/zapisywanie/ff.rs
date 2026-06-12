@@ -1,5 +1,5 @@
 use crate::halper::{usun_kanal_alpha, zaszumianie};
-use crate::send::wyslij_status;
+use enumy::send::wyslij_status;
 use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
 use bzip2::write::BzEncoder;
 use bzip2::Compression;

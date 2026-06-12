@@ -2,8 +2,6 @@ use iced::{
     font, widget::{button, column, container, row, scrollable, text, Space},
     Task,
 };
-
-// use crate::ui::podmenu_old::ui_dds::{view_dds, StronyDds};
 use crate::ui::wiadomosci::message_enum::Message;
 use enumy::czcionki::{FONT_DEFAULT, FONT_JAPANESE, FONT_KOREAN, FONT_THAI};
 use enumy::dane_do_przetwarzania::{DaneBinPak, DaneBinUnpak, DaneDdsPak, DaneDdsUnpak, DaneKonw, DaneMerge};
@@ -13,6 +11,14 @@ use enumy::inne_ui::{BtnState, PrzyciskiGlowneMenu, UiPods, UstawieniaThemeWsio}
 pub(crate) use enumy::wybranie_jezykowe::{UstawieniaMenu, WybórJęzyka};
 use iced::widget::{image, stack, Column, Row};
 use iced::{Border, Color, Element, Length};
+use crate::ui::podstrony::binarka::main::binarka_view;
+use crate::ui::podstrony::dds::main::dds_view;
+use crate::ui::podstrony::konwersja::main::konwersja_view;
+use crate::ui::podstrony::merging::main::merge_view;
+use crate::ui::podstrony::settings::main::ustawienia_view;
+use crate::widget::button::przycisk_glowne_menu;
+use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
+use crate::widget::styles::styl_przycisków;
 use iced_core::{Shadow, Theme, Vector};
 
 #[allow(dead_code)]
@@ -43,15 +49,6 @@ pub struct Program {
     pub temat:UstawieniaThemeWsio,
 
 }
-
-use crate::ui::podstrony::binarka::main::binarka_view;
-use crate::ui::podstrony::dds::main::dds_view;
-use crate::ui::podstrony::konwersja::main::konwersja_view;
-use crate::ui::podstrony::merging::main::merge_view;
-use crate::ui::podstrony::settings::main::ustawienia_view;
-use crate::widget::button::przycisk_glowne_menu;
-use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
-use crate::widget::styles::styl_przycisków;
 
 
 pub fn generuj_ziarno() -> image::Handle {

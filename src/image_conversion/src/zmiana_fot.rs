@@ -1,6 +1,6 @@
 use encodery::check::sprawdzacz;
 use encodery::halper::merge_sciezki;
-use encodery::send::wyslij_status;
+use enumy::send::wyslij_status;
 use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneKonw;

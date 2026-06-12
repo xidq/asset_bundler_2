@@ -1,4 +1,4 @@
-use crate::send::wyslij_status;
+use enumy::send::wyslij_status;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::opcje::OptInterpolacja;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};

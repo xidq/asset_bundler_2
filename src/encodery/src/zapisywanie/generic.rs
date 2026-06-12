@@ -1,5 +1,5 @@
 use std::path::PathBuf;
-use crate::send::wyslij_status;
+use enumy::send::wyslij_status;
 use crate::zapisywanie::avif::avif_match;
 use crate::zapisywanie::ff::ff_match;
 use crate::zapisywanie::jpg::jpg_match;

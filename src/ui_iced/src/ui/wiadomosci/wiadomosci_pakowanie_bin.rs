@@ -89,7 +89,7 @@ impl Program {
                         self.status_pakowanie_log.szyfrowanie = (aktualny, suma);
                     }
 
-                    LogTxBinPak::Finito { czas } => {
+                    LogTxBinPak::Finito (czas)  => {
 
                         self.temat.temp.act_proc = None;
 
@@ -117,7 +117,7 @@ impl Program {
 
                     }
 
-                    
+                    _ => {}
                 }
 
             }

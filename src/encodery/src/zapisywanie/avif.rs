@@ -1,5 +1,5 @@
 use crate::halper::{konwersja_float_na_mniejsze, ogarnij_icc, usun_kanal_alpha};
-use crate::send::wyslij_status;
+use enumy::send::wyslij_status;
 use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
 use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieAvif};
@@ -16,10 +16,6 @@ use tokio::sync::Mutex;
 pub async fn avif_match<T>(
     dane: PrzetwarzanieAvif,
     dane2: InneDane<BdepthAvif>,
-    // wymiar: u32,
-    // bit_depth: BdepthAvif,
-    // nazwa_wariantu: String,
-    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,

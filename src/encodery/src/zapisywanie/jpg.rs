@@ -1,5 +1,5 @@
 use crate::halper::{konwersja_float_na_mniejsze, usun_kanal_alpha, zaszumianie};
-use crate::send::wyslij_status;
+use enumy::send::wyslij_status;
 use crate::transform::{konwertuj_przestrzen, profil_z_nclx};
 use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
 use enumy::opcje::OptIstniejePlik;

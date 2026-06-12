@@ -1,5 +1,5 @@
 use crate::halper::konwersja_mniejsze_na_float;
-use crate::send::wyslij_status;
+use enumy::send::wyslij_status;
 use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
 use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, PrzetwarzanieExr};
