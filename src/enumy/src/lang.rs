@@ -22,6 +22,10 @@ where
         _ => format!("{:.2}TB", n_f / (kibi.pow(4) as f32 * bity)),
     }
 }
+/// # numbers...
+/// In different languages we can see different ways of declination 'n stuff...
+/// 
+/// So there's fn for that! ;)
 pub fn odmiana_liczbowa<T>(liczba: T) -> String
 where
     T: TryInto<u64> + std::fmt::Display + Copy,
@@ -64,7 +68,12 @@ impl ToU32 for f32 { fn to_u32(&self) -> u32 { *self as u32 } }
 impl ToU32 for u16 { fn to_u32(&self) -> u32 { *self as u32 } }
 impl ToU32 for u8 { fn to_u32(&self) -> u32 { *self as u32 } }
 impl WybórJęzyka {
-
+/// # Path formatting
+/// How nice will be if u have long path to trim that a bit?
+/// 
+/// Yeah, that's possible...
+/// 
+/// Here, put &Path and get String!
     pub fn format_sciezek(&self, xx: &Path) -> String {
         let starrrrtuuuuuu = match xx.components().nth(1){
             None => {String::new()}
@@ -118,7 +127,10 @@ impl WybórJęzyka {
 
         (f1, xxx)
     }
-
+/// # Conversion for bytes 'n stuff
+/// put bytes inside (propably as u64) and get String!!!!!!
+/// 
+/// But no string or str allowed as input argument...
     pub fn bajt(&self, val:impl Into<u64> + std::clone::Clone )->String{
         let xx: u64 = val.clone().into();
         let kb: u64 = 1024_u64 * 8;
@@ -138,6 +150,11 @@ impl WybórJęzyka {
 }
 
 impl WybórJęzyka {
+    
+    /// # Translation
+    /// Here we have keys and translations to them.
+    /// 
+    /// If there's no key, then we can see 'No translation' in gui. Simple enough ;)
     pub fn t(&self, klucz: &str) -> &'static str {
         match self {
             WybórJęzyka::PL => match klucz {

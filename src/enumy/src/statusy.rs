@@ -3,7 +3,13 @@ pub trait Logi: Send + 'static {
     // Wspólne dla wszystkich
     fn start() -> Self;
     fn status(_msg: (&'static str,String)) -> Self;
+    /// # Error status
+    /// For sending to gui abt errors and gossips
     fn blad(msg: String) -> Self;
+    /// # End status
+    /// if there's an end to a fn, why not to tell how much time it was???
+    /// 
+    /// In String ofc
     fn finito(msg: Option<String>) -> Self;
 
 
@@ -19,7 +25,9 @@ pub trait Logi: Send + 'static {
     fn dekompresja(_pamięć:u64) -> u64 { 0 }
     fn rozpakowywanie(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
 
-
+/// # Name 
+/// getting name of element from such trait,
+/// mainly for error handling
     fn nazwa() -> &'static str;
 }
 

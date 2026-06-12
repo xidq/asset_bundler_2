@@ -1,11 +1,12 @@
 use crate::metody_mielenia::laczenie::laczenie_vac_to_dyn;
-use encodery::wczytaj_foto::wczytaj_zdjęcie;
+use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneMerge;
 use enumy::opcje::OptInterpolacja;
 use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieExr, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 use enumy::rozszerzenia::bdepth::BdepthQoi;
 use enumy::rozszerzenia::ext::ImgExtSingle;
+use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 pub use enumy::statusy::LogTxMerge;
 use futures::channel::mpsc;
@@ -14,7 +15,6 @@ use futures::SinkExt;
 use image::DynamicImage;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 // fn that is entry point for merging images by channels
 
 pub async fn fn_do_laczenia_fot(
@@ -45,14 +45,14 @@ pub async fn fn_do_laczenia_fot(
     // taking max dimention from x and y axis and store that in let above
     for (i, opt_p) in sciezki.iter().enumerate() {
         if let Some(p) = opt_p {
-            let (img, _) = wczytaj_zdjęcie(p.clone())?;
-            if img.width() > max_x {
-                max_x = img.width();
+            let (img, _) = wczytaj_pliki(p.clone())?;
+            if img.dane.width() > max_x {
+                max_x = img.dane.width();
             }
-            if img.height() > max_y {
-                max_y = img.height();
+            if img.dane.height() > max_y {
+                max_y = img.dane.height();
             }
-            surowe_obrazy[i] = Some(img);
+            surowe_obrazy[i] = Some(img.dane);
         }
     }
 

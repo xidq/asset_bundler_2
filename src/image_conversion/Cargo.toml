@@ -1,3 +1,4 @@
+#cargo-features = ["edition2024"]
 [package]
 name = "image_conversion"
 version = "0.6.4"

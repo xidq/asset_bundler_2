@@ -132,23 +132,23 @@ pub async fn wypakuj_pliki(
     let mut buf_nazwa = Vec::with_capacity(128);
 
     for i in 0..suma_plikow {
-        // A. Czytamy długość nazwy
+        // czytana długość nazwy
         plik.read_exact(&mut buf_u32).await?;
         let dlugosc_nazwy = u32::from_le_bytes(buf_u32) as usize;
 
-        // B. Czytamy nazwę korzystając z tego samego bufora
+        // czytana nazwa korzystając z tego samego bufora
         buf_nazwa.resize(dlugosc_nazwy, 0);
         plik.read_exact(&mut buf_nazwa).await?;
         let relatywna_sciezka = String::from_utf8_lossy(&buf_nazwa);
 
-        // C. Czytamy rozmiar danych
+        // czytany rozmiar danych
         plik.read_exact(&mut buf_u64).await?;
         let rozmiar_danych = u64::from_le_bytes(buf_u64);
 
-        // E. Odtwarzanie ścieżki i zabezpieczenie
+        // odtwarzanie ścieżki i zabezpieczenie
         let pełna_ścieżka_wyjściowa = ścieżka.join(relatywna_sciezka.as_ref());
 
-        // [Optymalizacja 2] Zabezpieczenie przed atakiem Zip Slip
+        // zab przed atakiem Zip Slip
         if !pełna_ścieżka_wyjściowa.starts_with(&ścieżka) {
             return Err(tokio::io::Error::new(
                 tokio::io::ErrorKind::PermissionDenied,
@@ -168,10 +168,10 @@ pub async fn wypakuj_pliki(
         // .take(n) ogranicza czytanie z głównego pliku tylko do rozmiaru tego jednego assetu
         let mut adapter_rozmiaru = plik.take(rozmiar_danych);
 
-        // Kopiujemy dane bezpośrednio z pliku do pliku w locie (zużycie RAMu: kilka kilobajtów)
+        // kopiujemy dane bezpośrednio z pliku do pliku w locie (zużycie RAMu: kilka kilobajtów)
         tokio::io::copy(&mut adapter_rozmiaru, &mut plik_docelowy).await?;
 
-        // Odzyskujemy nasz główny plik spowrotem do dalszego czytania w pętli
+        // odzyskiwanie głwnego pliku do dalszego czytania w pętli
         plik = adapter_rozmiaru.into_inner();
 
         liczydło = i + 1;

@@ -2,7 +2,10 @@ use image::DynamicImage;
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
 use std::io::Read;
 use std::path::PathBuf;
-
+/// # Read image (obsolete)
+/// get image from path to memory
+///
+/// try using wczytaj_pliki(PathBuf) instead
 pub fn wczytaj_zdjęcie(
     ścieżka: PathBuf,
 ) -> Result<(DynamicImage, String), std::io::Error> {
@@ -174,7 +177,7 @@ pub fn wczytaj_zdjęcie(
             image::DynamicImage::ImageRgba8(buffer)
         }
     } else {
-        // Twoja dotychczasowa logika dla reszty świata (JPG, PNG, TGA)
+        // dotychczasowa logika dla reszty świata (JPG, PNG, TGA)
         let cursor = std::io::Cursor::new(&dane_obrazu);
         let mut reader = image::ImageReader::new(cursor).with_guessed_format()?;
 

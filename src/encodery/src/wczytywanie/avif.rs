@@ -3,7 +3,14 @@ use image::{DynamicImage, ImageBuffer, Rgb, Rgba};
 use crate::wczytywanie::strukty::DaneDoWczytywania;
 use enumy::rozszerzenia::kolor::{ColorNclx, ColorProfilePhoto};
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
-
+/// # Avif decoding
+/// Using libheif, mean... Somewhat wrapping...
+/// 
+/// just using libheif, ok?
+/// 
+/// Put data from avif to get image, and exif, and color profile...
+/// 
+/// nice, right?
 pub fn avif(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error>{ //dodać exif jeżeli jest oraz dane odnośnie color space
     let mut exif_out: Option<Vec<u8>> = None;
     let lib_heif = LibHeif::new();
@@ -86,7 +93,7 @@ pub fn avif(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error>{ //dodać
     }
 
     // (clean_vec,bit_depth,width,height)
-    // todo!(); //ogarnąć dlaczego 10bit avif nie odpala tylko błąd
+    
     let obraz = if bit_depth > 8 {
         // Obraz 10/12 bit promujemy do 16-bitowego DynamicImage
 
