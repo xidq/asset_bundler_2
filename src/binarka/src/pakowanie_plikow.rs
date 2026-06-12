@@ -24,6 +24,7 @@ async fn zgarnij_pliki(
     filter: OptKompresjaPlikówFiltracjaPlików,
     mut tx: mpsc::Sender<LogTxBinPak>,
 ) -> Result<Vec<(String, Vec<u8>)>, tokio::io::Error> {
+    
     let mut lista_plików = Vec::new();
     let mut licznik:u32 = 0;
     let mut foldery_do_przejrzenia = vec![ścieżka.clone()];

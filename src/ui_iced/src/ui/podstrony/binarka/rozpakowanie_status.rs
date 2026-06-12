@@ -10,7 +10,7 @@ use crate::widget::status::{status_text, status_text_bar};
 pub fn status_rozpakowanie<'a>(dane: &'a LogRozpakowywanie, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a,Message>{
     if dane.błąd.is_empty() {
         Column::new()
-            .push(status_text_bar(jezyk.normal_u32_option(dane.kontrola_pliku), "proces_binary_unpack_files", kolor, jezyk, temat))
+            .push(status_text_bar(jezyk.normal_u64_option(dane.kontrola_pliku), "proces_binary_unpack_files", kolor, jezyk, temat))
             .push(status_text_bar(jezyk.normal_u32_option(dane.deszyfrowanie), "proces_binary_unpack_decoding", kolor, jezyk, temat))
 
             .push(

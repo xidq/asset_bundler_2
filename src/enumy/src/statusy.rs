@@ -13,10 +13,16 @@ pub trait Logi: Send + 'static {
     fn pakowanie(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
     fn kompresja(_pliki:u64, _suma: Option<u64>) -> Option<Self> where Self: Sized { None }
     fn szyfrowanie(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
+    // rozpak bin
+    fn zbieranie(_pliki:u64, _suma: Option<u64>) -> Option<Self> where Self: Sized { None }
+    fn deszyfracja(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
+    fn dekompresja(_pamięć:u64) -> u64 { 0 }
+    fn rozpakowywanie(_pliki:u32, _suma: Option<u32>) -> Option<Self> where Self: Sized { None }
 
 
     fn nazwa() -> &'static str;
 }
+
 
 
 #[allow(dead_code)]
@@ -61,9 +67,11 @@ impl Logi for LogTxBinPak {
 #[allow(dead_code)]
 #[derive(Debug, Clone)]
 pub enum LogTxBinUnpak {
+    Start,
+    Sprawdzanie((&'static str,String)),
     Zbieranie {
-        current: u32,
-        max: Option<u32>,
+        current: u64,
+        max: Option<u64>,
     },
     Deszyfracja {
         current: u32,
@@ -77,9 +85,23 @@ pub enum LogTxBinUnpak {
         max: Option<u32>,
     },
     Błąd(String),
-    Finito {
-        czas: String,
-    },
+    Finito (String),
+}
+impl Logi for LogTxBinUnpak {
+    fn start() -> Self { Self::Start }
+    fn status(msg: (&'static str,String)) -> Self { Self::Sprawdzanie(msg) }
+    fn blad(msg: String) -> Self { Self::Błąd(msg) }
+    fn finito(msg: Option<String>) -> Self { Self::Finito(msg.unwrap_or_default()) }
+    fn znalezione_pliki(pliki: u32) -> u32{
+        pliki
+    }
+    fn zbieranie(pliki:u64, suma: Option<u64>) -> Option<Self> { Some(LogTxBinUnpak::Zbieranie {current: pliki, max:suma })}
+    fn deszyfracja(pliki:u32, suma: Option<u32>) -> Option<Self> { Some(LogTxBinUnpak::Deszyfracja {current: pliki, max:suma })}
+    fn dekompresja(pamięć:u64) -> u64 { pamięć }
+    fn rozpakowywanie(pliki:u32, suma: Option<u32>) -> Option<Self> { Some(LogTxBinUnpak::Rozpakowywanie {current: pliki, max:suma })}
+    fn nazwa() -> &'static str {
+        "[Log Binary unacking]"
+    }
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]

@@ -93,7 +93,7 @@ impl Program {
                         self.status_rozpakowywania_log.rozpakowanie = (current, max);
                     }
 
-                    LogTxBinUnpak::Finito { czas } => {
+                    LogTxBinUnpak::Finito ( czas ) => {
 
                         self.status_rozpakowywania_log.czas = czas;
                         let _ = self.update(Message::UpdateProcesUiBtnPost);
@@ -113,6 +113,7 @@ impl Program {
 
                     }
 
+                    _ => {}
                 }
 
             }

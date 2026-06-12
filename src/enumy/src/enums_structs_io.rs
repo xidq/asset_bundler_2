@@ -29,7 +29,7 @@ pub struct LogPakowanie {
 #[allow(dead_code)]
 #[derive(Debug, Clone, Default)]
 pub struct LogRozpakowywanie {
-    pub kontrola_pliku: (u32,Option<u32>),
+    pub kontrola_pliku: (u64,Option<u64>),
     pub rozpakowanie: (u32,Option<u32>),
     pub dekompresja: u64,
     pub deszyfrowanie: (u32,Option<u32>),
