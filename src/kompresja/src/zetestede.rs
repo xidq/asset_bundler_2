@@ -1,16 +1,13 @@
+use enumy::log_file_gen::generuj_plik_logow;
+use enumy::opcje::OptKompresjaPlikówPoziomKompresjiZstd;
+use enumy::send::wyslij_status;
+use enumy::statusy::LogTxBinPak;
 use iced::futures::channel::mpsc;
 use std::io::Write;
 use std::path::PathBuf;
-// use iced::futures::channel::mpsc;
-use enumy::opcje::OptKompresjaPlikówPoziomKompresjiZstd;
-use enumy::statusy::LogTxBinPak;
-use iced::futures::SinkExt;
 use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 use zstd::*;
-use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
-use enumy::log_file_gen::generuj_plik_logow;
-use enumy::send::wyslij_status;
 
 pub async fn kompresujsuj(
     ścieżka_pliku: PathBuf,
@@ -26,7 +23,7 @@ pub async fn kompresujsuj(
 
     let metadata = plik_in.metadata().await?;
     let calkowity_rozmiar = metadata.len();
-    
+
     let poziom = match poziom_kompresji {
         OptKompresjaPlikówPoziomKompresjiZstd::Brak => 0,
         OptKompresjaPlikówPoziomKompresjiZstd::Standard => 3,
@@ -35,7 +32,7 @@ pub async fn kompresujsuj(
 
     let plik_out = std::fs::File::create(&sciezka_final)?;
     let mut encoder = Encoder::new(plik_out, poziom)?;
-    
+
     let mut bufor = vec![0u8; 128 * 1024]; // 128KB bufor
     let mut przeczytano_razem = 0u64;
 
@@ -51,7 +48,7 @@ pub async fn kompresujsuj(
         przeczytano_razem += n as u64;
         
         tokio::time::sleep(tokio::time::Duration::from_millis(5)).await;
-        
+
         wyslij_status(&mut tx,Some(LogTxBinPak::Kompresja{ aktualny: przeczytano_razem as u32, suma: Some(calkowity_rozmiar as u32) })).await;
         
     }
@@ -62,13 +59,13 @@ pub async fn kompresujsuj(
         return Err(e);
 
     }
-    
+
     if let Err(e) = tokio::fs::remove_file(sciezka_temp).await
     {
         let msg = format!("[Binary packing: compression: file removal] {}",e);
         generuj_plik_logow(msg.clone());
         return Err(e);
     };
-    
+
     Ok(())
 }
