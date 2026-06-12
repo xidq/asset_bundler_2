@@ -96,8 +96,7 @@ pub async fn kompresujsuj(
 
     }
 
-    if let Err(e) = tokio::fs::remove_file(sciezka_temp).await
-    {
+    if let Err(e) = tokio::fs::remove_file(sciezka_temp).await {
         let msg = format!("[Binary packing: compression: file removal] {}",e);
         generuj_plik_logow(msg.clone());
         return Err(e);
