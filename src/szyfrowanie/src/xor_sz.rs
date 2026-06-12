@@ -6,6 +6,13 @@ use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncWriteExt};
 
+/// Encoding XOR module where file is encoded tho ;)
+/// There's need for path to file folder, name of such file and future mpsc sender.
+/// And as you can see there's 5ms pause, just for giving some time to hardware.
+///
+/// # Errors
+/// fn may throw tokio::io::Error if there's no valid file.
+/// Ofc in such implementation that shouldn't be possible tho.
 pub async fn szyfruj_xor(
     ścieżka: PathBuf,
     nazwa: String,

@@ -9,6 +9,16 @@ use tokio::fs::File;
 use tokio::io::AsyncReadExt;
 use zstd::*;
 
+/// ZSTD compression module for files.
+/// All u need is:
+/// - path to file folder
+/// - file name (.jrz_temp)
+/// - compression level (none = Brak, standard = Standard, max = Duża)
+/// - futures mpsc Sender
+/// 
+/// # Errors
+/// Can throw error if something in arguments isn't right (not valid data)
+/// Shouldn't be a problem here, coz reasons. (yeah, it's checked)
 pub async fn kompresujsuj(
     ścieżka_pliku: PathBuf,
     nazwa_pliku: String,
@@ -41,9 +51,7 @@ pub async fn kompresujsuj(
             break;
         } 
 
-
         encoder.write_all(&bufor[..n])?;
-
 
         przeczytano_razem += n as u64;
         
