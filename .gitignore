@@ -5,7 +5,6 @@ src/Data
 src/fonts
 src/pass
 /Cargo.lock
-/.idea
 /export/
 AppDir
 tests

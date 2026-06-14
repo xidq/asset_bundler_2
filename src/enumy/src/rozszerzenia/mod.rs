@@ -5,4 +5,5 @@ pub mod kolor;
 pub mod ext;
 pub mod bdepth_impl;
 pub mod rozdzielczosci;
+pub mod rozszenienia_zdjec;
 // mod transform_icc;

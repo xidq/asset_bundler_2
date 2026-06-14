@@ -7,7 +7,7 @@ use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForDds, ForDdsKompresja, 
 use std::any::Any;
 use std::fmt::Debug;
 use strum::IntoEnumIterator;
-
+use crate::rozszerzenia::rozszenienia_zdjec::{ImgExtAvif, ImgExtExr, ImgExtFf, ImgExtJpg};
 
 pub trait ElementyDropdown: Debug + Send + Sync{
 
@@ -93,16 +93,11 @@ impl DaneDropdown<ForJpgSamplingFac> for DaneKonw {
     type Opcja = Vec<ForJpgSamplingFac>;
 
     fn get_data(&self) -> Option<ForJpgSamplingFac> {
-        self.rozszerzenia
-            .iter()
-            .find_map(|f| {
-                if let ImgExt::Jpg { sampling, .. } = f {
-                    Some(*sampling)
-                } else {
-                    None
-                }
-            })
-
+        if let Some(ImgExtJpg { sampling, .. }) = self.rozszerzenia.jpg {
+            Some(sampling)
+        } else {
+            None
+        }
     }
 
     fn get_dropdown_type() -> DropdownType {
@@ -204,16 +199,13 @@ impl DaneDropdown<ForJpgQuant> for DaneKonw {
     type Opcja = Vec<ForJpgQuant>;
 
     fn get_data(&self) -> Option<ForJpgQuant> {
-        self.rozszerzenia
-            .iter()
-            .find_map(|f| {
-                if let ImgExt::Jpg { quant, .. } = f {
-                    Some(*quant)
-                } else {
-                    None
-                }
-            })
 
+        if let Some(ImgExtJpg{ quant, .. }) = self.rozszerzenia.jpg {
+            Some(quant)
+        } else {
+            None
+        }
+        
     }
 
     fn get_dropdown_type() -> DropdownType {
@@ -269,16 +261,13 @@ impl DaneDropdown<ForAvifChroma> for DaneKonw {
     type Opcja = Vec<ForAvifChroma>;
 
     fn get_data(&self) -> Option<ForAvifChroma> {
-        self.rozszerzenia
-            .iter()
-            .find_map(|f| {
-                if let ImgExt::Avif { chroma, .. } = f {
-                    Some(chroma.clone())
-                } else {
-                    None
-                }
-            })
-
+        
+        if let Some(ImgExtAvif { ref chroma, .. }) = self.rozszerzenia.avif {
+            Some(chroma.clone())
+        } else {
+            None
+        }
+        
     }
 
     fn get_dropdown_type() -> DropdownType {
@@ -335,16 +324,13 @@ impl DaneDropdown<ForAvifKompresja> for DaneKonw {
     type Opcja = Vec<ForAvifKompresja>;
 
     fn get_data(&self) -> Option<ForAvifKompresja> {
-        self.rozszerzenia
-            .iter()
-            .find_map(|f| {
-                if let ImgExt::Avif { metoda_kompresji, .. } = f {
-                    Some(metoda_kompresji.clone())
-                } else {
-                    None
-                }
-            })
-
+        
+        if let Some(ImgExtAvif { ref metoda_kompresji, .. }) = self.rozszerzenia.avif {
+            Some(metoda_kompresji.clone())
+        } else {
+            None
+        }
+        
     }
 
     fn get_dropdown_type() -> DropdownType {
@@ -415,18 +401,12 @@ impl DaneDropdown<ForFfKompresja> for DaneKonw {
     type Opcja = Vec<ForFfKompresja>;
 
     fn get_data(&self) -> Option<ForFfKompresja> {
-
-        self.rozszerzenia
-            .iter()
-            .find_map(|r|
-                {
-                    if let ImgExt::Ff { metoda_kompresji } = r {
-                        Some(*metoda_kompresji)
-                    } else {
-                        None
-                    }
-                }
-            )
+        
+        if let Some(ImgExtFf { metoda_kompresji }) = self.rozszerzenia.ff {
+            Some(metoda_kompresji)
+        } else {
+            None
+        }
 
     }
     fn get_dropdown_type() -> DropdownType {
@@ -513,15 +493,12 @@ impl DaneDropdown<ForExrKompresja> for DaneKonw {
     type Opcja = Vec<ForExrKompresja>;
 
     fn get_data(&self) -> Option<ForExrKompresja> {
-        self.rozszerzenia
-            .iter()
-            .find_map(|f| {
-                if let ImgExt::Exr { kompresja, .. } = f {
-                    Some(*kompresja)
-                } else {
-                    None
-                }
-            })
+
+        if let Some(ImgExtExr { kompresja, .. }) = self.rozszerzenia.exr {
+            Some(kompresja)
+        } else {
+            None
+        }
 
     }
 

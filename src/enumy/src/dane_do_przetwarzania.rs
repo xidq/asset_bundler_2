@@ -6,6 +6,7 @@ use image::imageops::FilterType;
 use std::any::Any;
 use std::cmp::PartialEq;
 use std::path::PathBuf;
+use crate::rozszerzenia::rozszenienia_zdjec::{FormatyWyjściowe, ImgExtJpg};
 
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
@@ -57,8 +58,9 @@ pub struct DaneKonw {
     pub ścieżka_wyjściowa: PathBuf,
     pub opcje_rozdzielczości: Vec<Rozdzielczości>,
     pub noising: Option<u8>,
-    pub rozszerzenia: Vec<ImgExt>,
-    pub tag:Vec<ImgExtTag>,
+    // pub rozszerzenia: Vec<ImgExt>,
+    // pub tag:Vec<ImgExtTag>,
+    pub rozszerzenia: FormatyWyjściowe,
     pub inter: OptInterpolacja,
     pub alfa_rgb: (u16, u16, u16),
     pub exif: bool,
@@ -71,8 +73,18 @@ impl Default for DaneKonw {
             ścieżka_wyjściowa: PathBuf::new(),
             opcje_rozdzielczości: Vec::from([Rozdzielczości::Oryginalna]),
             noising: None,
-            rozszerzenia: Vec::from([ Default::default() ]),
-            tag: Vec::from([ ImgExtTag::Jpg ]),
+            // rozszerzenia: Vec::from([ Default::default() ]),
+            // tag: Vec::from([ ImgExtTag::Jpg ]),
+            rozszerzenia: FormatyWyjściowe {
+                jpg: Some(ImgExtJpg::default()),
+                png: None,
+                webp: None,
+                tga: None,
+                ff: None,
+                qoi: None,
+                avif: None,
+                exr: None,
+            },
             inter: OptInterpolacja::Lanczos3,
             alfa_rgb: (0, 0, 0),
             exif: false,
@@ -179,7 +191,7 @@ impl Default for DaneProces {
 pub trait DaneDoObrbki{
     fn jako_any(&self) -> &dyn Any;
     fn jest_rowny(&self, inny: &dyn Any) -> bool;
-    fn tag_master(&self) -> Vec<ImgExtTag>;
+    // fn tag_master(&self) -> Vec<ImgExtTag>;
 
     // fn dane_do_spr(&self) -> ;
 
@@ -194,9 +206,7 @@ impl DaneDoObrbki for DaneKonw {
         }
         false
     }
-    fn tag_master(&self) -> Vec<ImgExtTag> { self.tag.clone() }
-
-
+    // fn tag_master(&self) -> Vec<ImgExtTag> { self.tag.clone() }
 }
 impl DaneDoObrbki for DaneMerge {
     fn jako_any(&self) -> &dyn Any { self }
@@ -206,9 +216,9 @@ impl DaneDoObrbki for DaneMerge {
         }
         false
     }
-    fn tag_master(&self) -> Vec<ImgExtTag> {
-        Vec::from([self.tag.clone()])
-    }
+    // fn tag_master(&self) -> Vec<ImgExtTag> {
+    //     Vec::from([self.tag.clone()])
+    // }
 
 }
 impl DaneDoObrbki for DaneDdsUnpak {
@@ -219,9 +229,9 @@ impl DaneDoObrbki for DaneDdsUnpak {
         }
         false
     }
-    fn tag_master(&self) -> Vec<ImgExtTag> {
-        Vec::from([self.tag.clone()])
-    }
+    // fn tag_master(&self) -> Vec<ImgExtTag> {
+    //     Vec::from([self.tag.clone()])
+    // }
 }
 
 

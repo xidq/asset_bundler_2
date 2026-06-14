@@ -147,7 +147,7 @@ pub async fn jpg_match<T>(
     encoder.set_sampling_factor(samplerrr);
     encoder.set_quantization_tables(quant.clone(), quant);
     encoder.set_progressive(dane.progresywny);
-    encoder.set_progressive_scans(dane.skany ); //Number of scans must be between 2 and 64. There is at least one scan for the DC coefficients and one for the remaining 63 AC coefficients.
+    encoder.set_progressive_scans(dane.scans); //Number of scans must be between 2 and 64. There is at least one scan for the DC coefficients and one for the remaining 63 AC coefficients.
     encoder.set_optimized_huffman_tables(dane.progresywny);
     match dane.exif{
         None => {}

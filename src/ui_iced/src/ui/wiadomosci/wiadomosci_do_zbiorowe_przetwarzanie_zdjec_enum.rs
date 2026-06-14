@@ -33,7 +33,7 @@ pub enum KonwMsg {
     Uruchom,
     Log(LogTxKonw),
     PathInFile,
-    Bdepth(ImgExtTag, Arc<dyn BitDepth>),
+    Bdepth(Arc<dyn BitDepth>),
     Nic,
     PathInFolder,
     PathsReset,

@@ -503,7 +503,7 @@ where T: BitDepth + Clone
             .padding(5)
             .width(Length::FillPortion(1))
             .height(50.)
-            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(KonwMsg::Bdepth(bdepth.format(), Arc::new(bdepth.clone()))))
+            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(KonwMsg::Bdepth(Arc::new(bdepth.clone()))))
             .style(styl_przycisków(stan, kolor, temat));
 
 

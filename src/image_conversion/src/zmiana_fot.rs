@@ -1,12 +1,12 @@
 use encodery::check::sprawdzacz;
 use encodery::halper::merge_sciezki;
-use enumy::send::wyslij_status;
 use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieExr, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
-use enumy::rozszerzenia::ext::ImgExt;
+use enumy::rozszerzenia::rozszenienia_zdjec::{ImgExtAvif, ImgExtExr, ImgExtFf, ImgExtJpg, ImgExtPng, ImgExtQoi, ImgExtTga, ImgExtWebp};
+use enumy::send::wyslij_status;
 use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc;
 use futures::executor::block_on;
@@ -44,41 +44,21 @@ pub async fn main_fn_konwersja(
 
         let ile_rozdzielczosci = wsio_dane.opcje_rozdzielczości.len() as u32;
 
-        let mut suma_wariantow_bit_depth = 0u32;
+        // let mut suma_wariantow_bit_depth = 0u32;
 
 
         // getting how much types there can be, for tx and counting purposes
-        for rozszerzenie in &wsio_dane.rozszerzenia {
-            match rozszerzenie {
-                ImgExt::Jpg { bit_depth, .. } => {
-                    // Jeśli JPG ma zaznaczone L8 i B8, to są 2 warianty
-                    suma_wariantow_bit_depth += bit_depth.len() as u32;
-                }
-                ImgExt::Png { bit_depth, .. } => {
-                    // Jeśli PNG ma zaznaczone B8, B16, L16, to są 3 warianty
-                    suma_wariantow_bit_depth += bit_depth.len() as u32;
-                }
-                ImgExt::Webp { bit_depth, .. } => {
-                    // Webp u Ciebie nie ma bit_depth w enumie, więc liczymy jako 1
-                    suma_wariantow_bit_depth += bit_depth.len() as u32;
-                }
-                ImgExt::Tga {bit_depth, ..} => {
-                    suma_wariantow_bit_depth += bit_depth.len() as u32;
-                }
-                ImgExt::Ff { .. }  => {
-                    suma_wariantow_bit_depth += 1;
-                }
-                ImgExt::Qoi { bit_depth } => {
-                    suma_wariantow_bit_depth += bit_depth.len() as u32;
-                }
-                ImgExt::Avif { bit_depth,.. } => {
-                    suma_wariantow_bit_depth += bit_depth.len() as u32;
-                }
-                ImgExt::Exr { bit_depth, .. } => {
-                    suma_wariantow_bit_depth += bit_depth.len() as u32;
-                }
-            }
-        }
+        let f = wsio_dane.rozszerzenia.clone();
+
+        let suma_wariantow_bit_depth =
+            f.jpg.as_ref().map_or(0, |c| c.bit_depth.len() as u32) +
+                f.png.as_ref().map_or(0, |c| c.bit_depth.len() as u32) +
+                f.webp.as_ref().map_or(0, |c| c.bit_depth.len() as u32) +
+                f.tga.as_ref().map_or(0, |c| c.bit_depth.len() as u32) +
+                f.ff.as_ref().map_or(0, |_| 1) + // Dla FF nie ma bit_depth, to +1 tylko
+                f.qoi.as_ref().map_or(0, |c| c.bit_depth.len() as u32) +
+                f.avif.as_ref().map_or(0, |c| c.bit_depth.len() as u32) +
+                f.exr.as_ref().map_or(0, |c| c.bit_depth.len() as u32);
 
 
         let total_operacji = ścieżki_do_zdjęć.len() as u32 * ile_rozdzielczosci * suma_wariantow_bit_depth;
@@ -104,7 +84,10 @@ pub async fn main_fn_konwersja(
                         // Opcjonalnie: wyślij tx.blocking_send z informacją o błędzie konkretnego pliku
 
                         let mut oopr = obecna_operacja.blocking_lock();
-                        let ile_rozszerzen = wsio_dane.rozszerzenia.len() as u32;
+                        let ile_rozszerzen = f.jpg.is_some() as u32 + f.png.is_some() as u32 +
+                            f.webp.is_some() as u32 + f.tga.is_some() as u32 + f.ff.is_some() as u32 +
+                            f.qoi.is_some() as u32 + f.avif.is_some() as u32 + f.exr.is_some() as u32;
+                        // let ile_rozszerzen = wsio_dane.rozszerzenia.len() as u32;
                         let ile_rozdzielczosci = wsio_dane.opcje_rozdzielczości.len() as u32;
                         *oopr += ile_rozszerzen * ile_rozdzielczosci;
                         drop(oopr);
@@ -152,215 +135,422 @@ pub async fn main_fn_konwersja(
                 };
 
 
+                // 'block_on' is used coz there's external unsafe C libs for avif and webp (for now)
+                block_on(async {
+
+                    let tx_zadanie = tx_dla_rayona.clone();
+
+                    if let Some(ImgExtJpg {
+                        jakosc,
+                        progresywny,
+                        bit_depth,
+                        sampling,
+                        quant,
+                        scans
+                    }) = &f.jpg {
+                        let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                        let dane = PrzetwarzanieJpg{
+                            bufor: bufor.dane.clone(),
+                            rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                            sciezka_wyjsciowa: sciezka,
+                            nazwa: nazwa.clone(),
+                            interpolacja: wsio_dane.inter,
+                            jakosc: *jakosc,
+                            progresywny: *progresywny,
+                            bit_depth: bit_depth.clone(),
+                            sampling: *sampling,
+                            quant: *quant,
+                            scans: *scans,
+                            alpha: wsio_dane.alfa_rgb,
+                            zaszumienie: wsio_dane.noising,
+                            exif: exif.clone(),
+                            kolor: bufor.kolor.clone(),
+                        };
+                        zapisywanie_generic(
+                            dane,
+                            zestaw_danych.istniejace_pliki,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx_zadanie.clone(),
+                        ).await?;
+                    }
+                    if let Some(ImgExtPng {
+                        kompresja,
+                        bit_depth
+                    }) = &f.png {
+                        let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                        let dane = PrzetwarzaniePng{
+                            bufor: bufor.dane.clone(),
+                            rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                            sciezka_wyjsciowa: sciezka,
+                            nazwa: nazwa.clone(),
+                            interpolacja: wsio_dane.inter,
+                            kompresja: *kompresja,
+                            bit_depth: bit_depth.clone(),
+                            alpha: wsio_dane.alfa_rgb,
+                            zaszumienie: wsio_dane.noising,
+                            exif: exif.clone(),
+                            kolor: bufor.kolor.clone(),
+                        };
+                        zapisywanie_generic(
+                            dane,
+                            zestaw_danych.istniejace_pliki,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx_zadanie.clone(),
+                        ).await?;
+                    }
+                    if let Some(ImgExtWebp { jakosc , lossless, bit_depth}) = &f.webp {
+                        let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                        let dane = PrzetwarzanieWebp{
+                            bufor: bufor.dane.clone(),
+                            rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                            sciezka_wyjsciowa: sciezka,
+                            nazwa: nazwa.clone(),
+                            interpolacja: wsio_dane.inter,
+                            bit_depth: bit_depth.clone(),
+                            alpha: wsio_dane.alfa_rgb,
+                            zaszumienie: wsio_dane.noising,
+                            lossy: if *lossless { None } else { Some(*jakosc) },
+                            exif: exif.clone(),
+                            kolor: bufor.kolor.clone(),
+                        };
+                        zapisywanie_generic(
+                            dane,
+                            zestaw_danych.istniejace_pliki,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx_zadanie.clone(),
+                        ).await?;
+                    }
+                    if let Some(ImgExtTga { bit_depth }) = &f.tga {
+                        let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                        let dane = PrzetwarzanieTga{
+                            bufor: bufor.dane.clone(),
+                            rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                            sciezka_wyjsciowa: sciezka,
+                            nazwa: nazwa.clone(),
+                            interpolacja: wsio_dane.inter,
+                            bit_depth: bit_depth.clone(),
+                            alpha: wsio_dane.alfa_rgb,
+                            zaszumienie: wsio_dane.noising,
+                        };
+                        zapisywanie_generic(
+                            dane,
+                            zestaw_danych.istniejace_pliki,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx_zadanie.clone(),
+                        ).await?;
+                    }
+                    if let Some(ImgExtFf { metoda_kompresji }) = &f.ff {
+                        let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                        let dane = PrzetwarzanieFf{
+                            bufor: bufor.dane.clone(),
+                            rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                            sciezka_wyjsciowa: sciezka,
+                            nazwa: nazwa.clone(),
+                            interpolacja: wsio_dane.inter,
+                            kompresja: vec![*metoda_kompresji],
+                            alpha: wsio_dane.alfa_rgb,
+                            zaszumienie: wsio_dane.noising,
+                        };
+                        zapisywanie_generic(
+                            dane,
+                            zestaw_danych.istniejace_pliki,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx_zadanie.clone(),
+                        ).await?;
+                    }
+                    if let Some(ImgExtQoi { bit_depth }) = &f.qoi {
+                        let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                        let dane = PrzetwarzanieQoi{
+                            bufor: bufor.dane.clone(),
+                            rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                            sciezka_wyjsciowa: sciezka,
+                            nazwa: nazwa.clone(),
+                            interpolacja: wsio_dane.inter,
+                            bit_depth: bit_depth.clone(),
+                            alpha: wsio_dane.alfa_rgb,
+                            zaszumienie: wsio_dane.noising,
+                        };
+                        zapisywanie_generic(
+                            dane,
+                            zestaw_danych.istniejace_pliki,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx_zadanie.clone(),
+                        ).await?;
+                    }
+                    if let Some(ImgExtAvif {
+                        chroma,
+                        speed,
+                        metoda_kompresji,
+                        lossy,
+                        bit_depth
+                    }) = &f.avif {
+                        let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                        let dane = PrzetwarzanieAvif{
+                            bufor: bufor.dane.clone(),
+                            rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                            sciezka_wyjsciowa: sciezka,
+                            nazwa: nazwa.clone(),
+                            interpolacja: wsio_dane.inter,
+                            bit_depth: bit_depth.clone(),
+                            alpha: wsio_dane.alfa_rgb,
+                            zaszumienie: wsio_dane.noising,
+                            chroma: chroma.clone(),
+                            speed: *speed,
+                            metoda_kompresji: metoda_kompresji.clone(),
+                            lossy: *lossy,
+                            exif: exif.clone(),
+                            kolor: bufor.kolor.clone(),
+                        };
+                        zapisywanie_generic(
+                            dane,
+                            zestaw_danych.istniejace_pliki,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx_zadanie.clone(),
+                        ).await?;
+                    }
+                    if let Some(ImgExtExr { bit_depth, kompresja }) = &f.exr {
+                        let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                        let dane = PrzetwarzanieExr{
+                            bufor: bufor.dane.clone(),
+                            rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                            sciezka_wyjsciowa: sciezka,
+                            nazwa: nazwa.clone(),
+                            interpolacja: wsio_dane.inter,
+                            kompresja: *kompresja,
+                            bit_depth: bit_depth.clone(),
+                            alpha: wsio_dane.alfa_rgb,
+                            zaszumienie: wsio_dane.noising,
+                            kolor: bufor.kolor.clone(),
+                        };
+                        zapisywanie_generic(
+                            dane,
+                            zestaw_danych.istniejace_pliki,
+                            metryka_operacji,
+                            obecna_operacja.clone(),
+                            tx_zadanie.clone(),
+                        ).await?;
+                    }
+
+                    Ok::<(), tokio::io::Error>(())
+                })?;
+
                 // For every resolution option there's matching, in my opinion here's better than inside
-                for r in &wsio_dane.rozszerzenia {
 
-                    // 'block_on' is used coz there's external unsafe C libs for avif and webp (for now)
-                    block_on(async {
-                        let tx_zadanie = tx_dla_rayona.clone();
-
-                        match &r {
-                            ImgExt::Jpg {
-                                jakosc,
-                                progresywny,
-                                bit_depth,
-                                sampling,
-                                quant,
-                                scans
-                            } => {
-                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let dane = PrzetwarzanieJpg{
-                                    bufor: bufor.dane.clone(),
-                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
-                                    sciezka_wyjsciowa: sciezka,
-                                    nazwa: nazwa.clone(),
-                                    interpolacja: wsio_dane.inter,
-                                    jakosc: *jakosc,
-                                    progresywny: *progresywny,
-                                    bdepth: bit_depth.clone(),
-                                    sampling: *sampling,
-                                    quant: *quant,
-                                    skany: *scans,
-                                    alpha: wsio_dane.alfa_rgb,
-                                    zaszumienie: wsio_dane.noising,
-                                    exif: exif.clone(),
-                                    kolor: bufor.kolor.clone(),
-                                };
-                                zapisywanie_generic(
-                                    dane,
-                                    zestaw_danych.istniejace_pliki,
-                                    metryka_operacji,
-                                    obecna_operacja.clone(),
-                                    tx_zadanie,
-                                ).await?;
-                            }
-                            ImgExt::Png {
-                                kompresja,
-                                bit_depth
-                            } => {
-                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let dane = PrzetwarzaniePng{
-                                    bufor: bufor.dane.clone(),
-                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
-                                    sciezka_wyjsciowa: sciezka,
-                                    nazwa: nazwa.clone(),
-                                    interpolacja: wsio_dane.inter,
-                                    kompresja: *kompresja,
-                                    bdepth: bit_depth.clone(),
-                                    alpha: wsio_dane.alfa_rgb,
-                                    zaszumienie: wsio_dane.noising,
-                                    exif: exif.clone(),
-                                    kolor: bufor.kolor.clone(),
-                                };
-                                zapisywanie_generic(
-                                    dane,
-                                    zestaw_danych.istniejace_pliki,
-                                    metryka_operacji,
-                                    obecna_operacja.clone(),
-                                    tx_zadanie,
-                                ).await?;
-                            }
-                            ImgExt::Webp { jakosc , lossless, bit_depth} => {
-                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let dane = PrzetwarzanieWebp{
-                                    bufor: bufor.dane.clone(),
-                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
-                                    sciezka_wyjsciowa: sciezka,
-                                    nazwa: nazwa.clone(),
-                                    interpolacja: wsio_dane.inter,
-                                    bdepth: bit_depth.clone(),
-                                    alpha: wsio_dane.alfa_rgb,
-                                    zaszumienie: wsio_dane.noising,
-                                    lossy: if *lossless { None } else { Some(*jakosc) },
-                                    exif: exif.clone(),
-                                    kolor: bufor.kolor.clone(),
-                                };
-                                zapisywanie_generic(
-                                    dane,
-                                    zestaw_danych.istniejace_pliki,
-                                    metryka_operacji,
-                                    obecna_operacja.clone(),
-                                    tx_zadanie,
-                                ).await?;
-                            }
-                            ImgExt::Tga { bit_depth } => {
-                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let dane = PrzetwarzanieTga{
-                                    bufor: bufor.dane.clone(),
-                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
-                                    sciezka_wyjsciowa: sciezka,
-                                    nazwa: nazwa.clone(),
-                                    interpolacja: wsio_dane.inter,
-                                    bdepth: bit_depth.clone(),
-                                    alpha: wsio_dane.alfa_rgb,
-                                    zaszumienie: wsio_dane.noising,
-                                };
-                                zapisywanie_generic(
-                                    dane,
-                                    zestaw_danych.istniejace_pliki,
-                                    metryka_operacji,
-                                    obecna_operacja.clone(),
-                                    tx_zadanie,
-                                ).await?;
-                            }
-                            ImgExt::Ff { metoda_kompresji } => {
-                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let dane = PrzetwarzanieFf{
-                                    bufor: bufor.dane.clone(),
-                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
-                                    sciezka_wyjsciowa: sciezka,
-                                    nazwa: nazwa.clone(),
-                                    interpolacja: wsio_dane.inter,
-                                    kompresja: vec![*metoda_kompresji],
-                                    alpha: wsio_dane.alfa_rgb,
-                                    zaszumienie: wsio_dane.noising,
-                                };
-                                zapisywanie_generic(
-                                    dane,
-                                    zestaw_danych.istniejace_pliki,
-                                    metryka_operacji,
-                                    obecna_operacja.clone(),
-                                    tx_zadanie,
-                                ).await?;
-                            }
-                            ImgExt::Qoi { bit_depth } => {
-                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let dane = PrzetwarzanieQoi{
-                                    bufor: bufor.dane.clone(),
-                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
-                                    sciezka_wyjsciowa: sciezka,
-                                    nazwa: nazwa.clone(),
-                                    interpolacja: wsio_dane.inter,
-                                    bdepth: bit_depth.clone(),
-                                    alpha: wsio_dane.alfa_rgb,
-                                    zaszumienie: wsio_dane.noising,
-                                };
-                                zapisywanie_generic(
-                                    dane,
-                                    zestaw_danych.istniejace_pliki,
-                                    metryka_operacji,
-                                    obecna_operacja.clone(),
-                                    tx_zadanie,
-                                ).await?;
-                            }
-                            ImgExt::Avif {
-                                chroma,
-                                speed,
-                                metoda_kompresji,
-                                lossy,
-                                bit_depth
-                            } => {
-                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let dane = PrzetwarzanieAvif{
-                                    bufor: bufor.dane.clone(),
-                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
-                                    sciezka_wyjsciowa: sciezka,
-                                    nazwa: nazwa.clone(),
-                                    interpolacja: wsio_dane.inter,
-                                    bdepth: bit_depth.clone(),
-                                    alpha: wsio_dane.alfa_rgb,
-                                    zaszumienie: wsio_dane.noising,
-                                    chroma: chroma.clone(),
-                                    speed: *speed,
-                                    metoda_kompresji: metoda_kompresji.clone(),
-                                    lossy: *lossy,
-                                    exif: exif.clone(),
-                                    kolor: bufor.kolor.clone(),
-                                };
-                                zapisywanie_generic(
-                                    dane,
-                                    zestaw_danych.istniejace_pliki,
-                                    metryka_operacji,
-                                    obecna_operacja.clone(),
-                                    tx_zadanie,
-                                ).await?;
-                            }
-                            ImgExt::Exr { bit_depth, kompresja } => {
-                                let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
-                                let dane = PrzetwarzanieExr{
-                                    bufor: bufor.dane.clone(),
-                                    rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
-                                    sciezka_wyjsciowa: sciezka,
-                                    nazwa: nazwa.clone(),
-                                    interpolacja: wsio_dane.inter,
-                                    kompresja: *kompresja,
-                                    bdepth: bit_depth.clone(),
-                                    alpha: wsio_dane.alfa_rgb,
-                                    zaszumienie: wsio_dane.noising,
-                                    kolor: bufor.kolor.clone(),
-                                };
-                                zapisywanie_generic(
-                                    dane,
-                                    zestaw_danych.istniejace_pliki,
-                                    metryka_operacji,
-                                    obecna_operacja.clone(),
-                                    tx_zadanie,
-                                ).await?;
-                            }
-                        }
-                        Ok::<(), tokio::io::Error>(())
-                    })?;
-                }
+                // for r in &wsio_dane.rozszerzenia {
+                //
+                //     // 'block_on' is used coz there's external unsafe C libs for avif and webp (for now)
+                //     block_on(async {
+                //         let tx_zadanie = tx_dla_rayona.clone();
+                //
+                //         match &r {
+                //             ImgExt::Jpg {
+                //                 jakosc,
+                //                 progresywny,
+                //                 bit_depth,
+                //                 sampling,
+                //                 quant,
+                //                 scans
+                //             } => {
+                //                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                //                 let dane = PrzetwarzanieJpg{
+                //                     bufor: bufor.dane.clone(),
+                //                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                //                     sciezka_wyjsciowa: sciezka,
+                //                     nazwa: nazwa.clone(),
+                //                     interpolacja: wsio_dane.inter,
+                //                     jakosc: *jakosc,
+                //                     progresywny: *progresywny,
+                //                     bdepth: bit_depth.clone(),
+                //                     sampling: *sampling,
+                //                     quant: *quant,
+                //                     skany: *scans,
+                //                     alpha: wsio_dane.alfa_rgb,
+                //                     zaszumienie: wsio_dane.noising,
+                //                     exif: exif.clone(),
+                //                     kolor: bufor.kolor.clone(),
+                //                 };
+                //                 zapisywanie_generic(
+                //                     dane,
+                //                     zestaw_danych.istniejace_pliki,
+                //                     metryka_operacji,
+                //                     obecna_operacja.clone(),
+                //                     tx_zadanie,
+                //                 ).await?;
+                //             }
+                //             ImgExt::Png {
+                //                 kompresja,
+                //                 bit_depth
+                //             } => {
+                //                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                //                 let dane = PrzetwarzaniePng{
+                //                     bufor: bufor.dane.clone(),
+                //                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                //                     sciezka_wyjsciowa: sciezka,
+                //                     nazwa: nazwa.clone(),
+                //                     interpolacja: wsio_dane.inter,
+                //                     kompresja: *kompresja,
+                //                     bdepth: bit_depth.clone(),
+                //                     alpha: wsio_dane.alfa_rgb,
+                //                     zaszumienie: wsio_dane.noising,
+                //                     exif: exif.clone(),
+                //                     kolor: bufor.kolor.clone(),
+                //                 };
+                //                 zapisywanie_generic(
+                //                     dane,
+                //                     zestaw_danych.istniejace_pliki,
+                //                     metryka_operacji,
+                //                     obecna_operacja.clone(),
+                //                     tx_zadanie,
+                //                 ).await?;
+                //             }
+                //             ImgExt::Webp { jakosc , lossless, bit_depth} => {
+                //                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                //                 let dane = PrzetwarzanieWebp{
+                //                     bufor: bufor.dane.clone(),
+                //                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                //                     sciezka_wyjsciowa: sciezka,
+                //                     nazwa: nazwa.clone(),
+                //                     interpolacja: wsio_dane.inter,
+                //                     bdepth: bit_depth.clone(),
+                //                     alpha: wsio_dane.alfa_rgb,
+                //                     zaszumienie: wsio_dane.noising,
+                //                     lossy: if *lossless { None } else { Some(*jakosc) },
+                //                     exif: exif.clone(),
+                //                     kolor: bufor.kolor.clone(),
+                //                 };
+                //                 zapisywanie_generic(
+                //                     dane,
+                //                     zestaw_danych.istniejace_pliki,
+                //                     metryka_operacji,
+                //                     obecna_operacja.clone(),
+                //                     tx_zadanie,
+                //                 ).await?;
+                //             }
+                //             ImgExt::Tga { bit_depth } => {
+                //                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                //                 let dane = PrzetwarzanieTga{
+                //                     bufor: bufor.dane.clone(),
+                //                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                //                     sciezka_wyjsciowa: sciezka,
+                //                     nazwa: nazwa.clone(),
+                //                     interpolacja: wsio_dane.inter,
+                //                     bdepth: bit_depth.clone(),
+                //                     alpha: wsio_dane.alfa_rgb,
+                //                     zaszumienie: wsio_dane.noising,
+                //                 };
+                //                 zapisywanie_generic(
+                //                     dane,
+                //                     zestaw_danych.istniejace_pliki,
+                //                     metryka_operacji,
+                //                     obecna_operacja.clone(),
+                //                     tx_zadanie,
+                //                 ).await?;
+                //             }
+                //             ImgExt::Ff { metoda_kompresji } => {
+                //                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                //                 let dane = PrzetwarzanieFf{
+                //                     bufor: bufor.dane.clone(),
+                //                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                //                     sciezka_wyjsciowa: sciezka,
+                //                     nazwa: nazwa.clone(),
+                //                     interpolacja: wsio_dane.inter,
+                //                     kompresja: vec![*metoda_kompresji],
+                //                     alpha: wsio_dane.alfa_rgb,
+                //                     zaszumienie: wsio_dane.noising,
+                //                 };
+                //                 zapisywanie_generic(
+                //                     dane,
+                //                     zestaw_danych.istniejace_pliki,
+                //                     metryka_operacji,
+                //                     obecna_operacja.clone(),
+                //                     tx_zadanie,
+                //                 ).await?;
+                //             }
+                //             ImgExt::Qoi { bit_depth } => {
+                //                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                //                 let dane = PrzetwarzanieQoi{
+                //                     bufor: bufor.dane.clone(),
+                //                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                //                     sciezka_wyjsciowa: sciezka,
+                //                     nazwa: nazwa.clone(),
+                //                     interpolacja: wsio_dane.inter,
+                //                     bdepth: bit_depth.clone(),
+                //                     alpha: wsio_dane.alfa_rgb,
+                //                     zaszumienie: wsio_dane.noising,
+                //                 };
+                //                 zapisywanie_generic(
+                //                     dane,
+                //                     zestaw_danych.istniejace_pliki,
+                //                     metryka_operacji,
+                //                     obecna_operacja.clone(),
+                //                     tx_zadanie,
+                //                 ).await?;
+                //             }
+                //             ImgExt::Avif {
+                //                 chroma,
+                //                 speed,
+                //                 metoda_kompresji,
+                //                 lossy,
+                //                 bit_depth
+                //             } => {
+                //                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                //                 let dane = PrzetwarzanieAvif{
+                //                     bufor: bufor.dane.clone(),
+                //                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                //                     sciezka_wyjsciowa: sciezka,
+                //                     nazwa: nazwa.clone(),
+                //                     interpolacja: wsio_dane.inter,
+                //                     bdepth: bit_depth.clone(),
+                //                     alpha: wsio_dane.alfa_rgb,
+                //                     zaszumienie: wsio_dane.noising,
+                //                     chroma: chroma.clone(),
+                //                     speed: *speed,
+                //                     metoda_kompresji: metoda_kompresji.clone(),
+                //                     lossy: *lossy,
+                //                     exif: exif.clone(),
+                //                     kolor: bufor.kolor.clone(),
+                //                 };
+                //                 zapisywanie_generic(
+                //                     dane,
+                //                     zestaw_danych.istniejace_pliki,
+                //                     metryka_operacji,
+                //                     obecna_operacja.clone(),
+                //                     tx_zadanie,
+                //                 ).await?;
+                //             }
+                //             ImgExt::Exr { bit_depth, kompresja } => {
+                //                 let sciezka = merge_sciezki(&wsio_dane.ścieżka_wyjściowa,&p.2);
+                //                 let dane = PrzetwarzanieExr{
+                //                     bufor: bufor.dane.clone(),
+                //                     rozdzielczosci: wsio_dane.opcje_rozdzielczości.clone(),
+                //                     sciezka_wyjsciowa: sciezka,
+                //                     nazwa: nazwa.clone(),
+                //                     interpolacja: wsio_dane.inter,
+                //                     kompresja: *kompresja,
+                //                     bdepth: bit_depth.clone(),
+                //                     alpha: wsio_dane.alfa_rgb,
+                //                     zaszumienie: wsio_dane.noising,
+                //                     kolor: bufor.kolor.clone(),
+                //                 };
+                //                 zapisywanie_generic(
+                //                     dane,
+                //                     zestaw_danych.istniejace_pliki,
+                //                     metryka_operacji,
+                //                     obecna_operacja.clone(),
+                //                     tx_zadanie,
+                //                 ).await?;
+                //             }
+                //         }
+                //         Ok::<(), tokio::io::Error>(())
+                //     })?;
+                // }
                 Ok::<(), tokio::io::Error>(())
             })
         }).await.map_err(tokio::io::Error::other)?

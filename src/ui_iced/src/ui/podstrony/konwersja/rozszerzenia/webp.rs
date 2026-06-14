@@ -5,7 +5,8 @@ use crate::widget::styles::styl_kontenera;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
 use enumy::rozszerzenia::bdepth::BdepthWebp;
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::rozszerzenia::ext::ImgExtTag;
+use enumy::rozszerzenia::rozszenienia_zdjec::ImgExtWebp;
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{container, space, Column, Row};
 use iced::Element;
@@ -14,17 +15,15 @@ use strum::IntoEnumIterator;
 
 pub fn webp<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
-        .push(przycisk_rozszerzenia(ImgExtTag::Webp, ButtonType::KonwRozszerzenia, kolor, if dane.tag.contains(&ImgExtTag::Webp) { &BtnState::Active } else { &BtnState::Disabled }, jezyk, temat))
+        .push(przycisk_rozszerzenia(ImgExtTag::Webp, ButtonType::KonwRozszerzenia, kolor, if dane.rozszerzenia.webp.is_some() { &BtnState::Active } else { &BtnState::Disabled }, jezyk, temat))
         .push(
             container(
                 Row::new()
                     .push(
                         if let Some(
-                            ImgExt::Webp {
+                            ImgExtWebp {
                                 jakosc, lossless, bit_depth
-                            }) = dane.rozszerzenia
-                            .iter()
-                            .find(|f| matches!(f, ImgExt::Webp { .. }))
+                            }) = &dane.rozszerzenia.webp
                         {
                             Column::new()
                                 .push(

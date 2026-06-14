@@ -2,6 +2,7 @@ use crate::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, B
 use crate::rozszerzenia::ext::{ImgExt, ImgExtSingle};
 use crate::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
 use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForExrKompresja, ForFfKompresja};
+use crate::rozszerzenia::rozszenienia_zdjec::{ImgExtAvif, ImgExtExr, ImgExtFf, ImgExtJpg, ImgExtPng, ImgExtQoi, ImgExtTga, ImgExtWebp};
 
 impl ImgExt {
     pub fn def_jpg() -> ImgExt {
@@ -110,6 +111,77 @@ impl ImgExtSingle {
             jakosc: 90,
             lossless: false,
             bit_depth: BdepthWebp::Rgb8,
+        }
+    }
+}
+
+
+impl Default for ImgExtJpg {
+    fn default() -> Self {
+        ImgExtJpg{
+            jakosc: 90,
+            progresywny: false,
+            bit_depth: vec![BdepthJpg::Rgb8],
+            sampling: ForJpgSamplingFac::R420,
+            quant: ForJpgQuant::Default,
+            scans: 4,
+        }
+    }
+}
+impl Default for ImgExtPng {
+    fn default() -> Self {
+        ImgExtPng{
+            kompresja: 3,
+            bit_depth: vec![BdepthPng::Rgb8],
+        }
+    }
+}
+impl Default for ImgExtAvif {
+    fn default() -> Self {
+        ImgExtAvif{
+            chroma: ForAvifChroma::C420,
+            speed: 3,
+            metoda_kompresji: ForAvifKompresja::Av1,
+            lossy: Some(90),
+            bit_depth: vec![BdepthAvif::Rgb10],
+        }
+    }
+}
+impl Default for ImgExtTga {
+    fn default() -> Self {
+        ImgExtTga{
+            bit_depth: vec![BdepthTga::TrueColor24],
+        }
+    }
+}
+impl Default for ImgExtWebp {
+    fn default() -> Self {
+        ImgExtWebp{
+            jakosc: 90,
+            lossless: false,
+            bit_depth: vec![BdepthWebp::Rgb8],
+        }
+    }
+}
+impl Default for ImgExtQoi{
+    fn default() -> Self {
+        ImgExtQoi{
+            bit_depth: vec![BdepthQoi::Color24],
+        }
+    }
+}
+impl Default for ImgExtFf{
+    fn default() -> Self {
+        ImgExtFf{
+            metoda_kompresji: ForFfKompresja::Brak,
+        }
+    }
+}
+impl Default for ImgExtExr{
+    fn default() -> Self {
+        ImgExtExr{
+            bit_depth: vec![BdepthExr::F16],
+            kompresja: ForExrKompresja::Brak,
         }
     }
 }

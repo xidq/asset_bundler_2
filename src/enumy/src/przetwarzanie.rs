@@ -36,10 +36,10 @@ pub struct PrzetwarzanieJpg{
     pub interpolacja: OptInterpolacja,
     pub jakosc: u8,
     pub progresywny: bool,
-    pub bdepth:  Vec<BdepthJpg>,
+    pub bit_depth:  Vec<BdepthJpg>,
     pub sampling: ForJpgSamplingFac,
     pub quant: ForJpgQuant,
-    pub skany: u8,
+    pub scans: u8,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
     pub exif: Option<Vec<u8>>,
@@ -52,7 +52,7 @@ impl DaneDoPrzetwarzania<BdepthJpg> for PrzetwarzanieJpg{
     fn rozdzielczosci(&self) -> &Vec<Rozdzielczości> {&self.rozdzielczosci}
     fn sciezka_wejsciowa(&self) -> PathBuf {self.sciezka_wyjsciowa.clone()}
     fn interpolacja(&self) -> &OptInterpolacja {&self.interpolacja}
-    fn bdepth(&self) -> &Vec<BdepthJpg> {&self.bdepth}
+    fn bdepth(&self) -> &Vec<BdepthJpg> {&self.bit_depth }
     fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzJpg(self)}
 }
 #[derive(Debug, Clone)]
@@ -63,7 +63,7 @@ pub struct PrzetwarzaniePng{
     pub nazwa: String,
     pub interpolacja: OptInterpolacja,
     pub kompresja: u8,
-    pub bdepth:  Vec<BdepthPng>,
+    pub bit_depth:  Vec<BdepthPng>,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
     pub exif: Option<Vec<u8>>,
@@ -76,7 +76,7 @@ impl DaneDoPrzetwarzania<BdepthPng> for PrzetwarzaniePng{
     fn rozdzielczosci(&self) -> &Vec<Rozdzielczości> {&self.rozdzielczosci}
     fn sciezka_wejsciowa(&self) -> PathBuf {self.sciezka_wyjsciowa.clone()}
     fn interpolacja(&self) -> &OptInterpolacja {&self.interpolacja}
-    fn bdepth(&self) -> &Vec<BdepthPng> {&self.bdepth}
+    fn bdepth(&self) -> &Vec<BdepthPng> {&self.bit_depth }
     fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzPng(self)}
 
 }
@@ -87,7 +87,7 @@ pub struct PrzetwarzanieAvif{
     pub sciezka_wyjsciowa: PathBuf,
     pub nazwa: String,
     pub interpolacja: OptInterpolacja,
-    pub bdepth:  Vec<BdepthAvif>,
+    pub bit_depth:  Vec<BdepthAvif>,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
     pub chroma: ForAvifChroma,
@@ -104,7 +104,7 @@ impl DaneDoPrzetwarzania<BdepthAvif> for PrzetwarzanieAvif{
     fn rozdzielczosci(&self) -> &Vec<Rozdzielczości> {&self.rozdzielczosci}
     fn sciezka_wejsciowa(&self) -> PathBuf {self.sciezka_wyjsciowa.clone()}
     fn interpolacja(&self) -> &OptInterpolacja {&self.interpolacja}
-    fn bdepth(&self) -> &Vec<BdepthAvif> {&self.bdepth}
+    fn bdepth(&self) -> &Vec<BdepthAvif> {&self.bit_depth }
     fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzAvif(self)}
 
 }
@@ -116,7 +116,7 @@ pub struct PrzetwarzanieWebp{
     pub sciezka_wyjsciowa: PathBuf,
     pub nazwa: String,
     pub interpolacja: OptInterpolacja,
-    pub bdepth:  Vec<BdepthWebp>,
+    pub bit_depth:  Vec<BdepthWebp>,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
     pub lossy: Option<u8>,
@@ -130,7 +130,7 @@ impl DaneDoPrzetwarzania<BdepthWebp> for PrzetwarzanieWebp{
     fn rozdzielczosci(&self) -> &Vec<Rozdzielczości> {&self.rozdzielczosci}
     fn sciezka_wejsciowa(&self) -> PathBuf {self.sciezka_wyjsciowa.clone()}
     fn interpolacja(&self) -> &OptInterpolacja {&self.interpolacja}
-    fn bdepth(&self) -> &Vec<BdepthWebp> {&self.bdepth}
+    fn bdepth(&self) -> &Vec<BdepthWebp> {&self.bit_depth }
     fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzWebp(self)}
 
 }
@@ -141,7 +141,7 @@ pub struct PrzetwarzanieQoi{
     pub sciezka_wyjsciowa: PathBuf,
     pub nazwa: String,
     pub interpolacja: OptInterpolacja,
-    pub bdepth:  Vec<BdepthQoi>,
+    pub bit_depth:  Vec<BdepthQoi>,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
 }
@@ -152,7 +152,7 @@ impl DaneDoPrzetwarzania<BdepthQoi> for PrzetwarzanieQoi{
     fn rozdzielczosci(&self) -> &Vec<Rozdzielczości> {&self.rozdzielczosci}
     fn sciezka_wejsciowa(&self) -> PathBuf {self.sciezka_wyjsciowa.clone()}
     fn interpolacja(&self) -> &OptInterpolacja {&self.interpolacja}
-    fn bdepth(&self) -> &Vec<BdepthQoi> {&self.bdepth}
+    fn bdepth(&self) -> &Vec<BdepthQoi> {&self.bit_depth }
     fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzQoi(self)}
 
 }
@@ -163,7 +163,7 @@ pub struct PrzetwarzanieTga{
     pub sciezka_wyjsciowa: PathBuf,
     pub nazwa: String,
     pub interpolacja: OptInterpolacja,
-    pub bdepth:  Vec<BdepthTga>,
+    pub bit_depth:  Vec<BdepthTga>,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
 }
@@ -174,7 +174,7 @@ impl DaneDoPrzetwarzania<BdepthTga> for PrzetwarzanieTga{
     fn rozdzielczosci(&self) -> &Vec<Rozdzielczości> {&self.rozdzielczosci}
     fn sciezka_wejsciowa(&self) -> PathBuf {self.sciezka_wyjsciowa.clone()}
     fn interpolacja(&self) -> &OptInterpolacja {&self.interpolacja}
-    fn bdepth(&self) -> &Vec<BdepthTga> {&self.bdepth}
+    fn bdepth(&self) -> &Vec<BdepthTga> {&self.bit_depth }
     fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzTga(self)}
 
 }
@@ -208,7 +208,7 @@ pub struct PrzetwarzanieExr{
     pub nazwa: String,
     pub interpolacja: OptInterpolacja,
     pub kompresja: ForExrKompresja,
-    pub bdepth:  Vec<BdepthExr>,
+    pub bit_depth:  Vec<BdepthExr>,
     pub alpha: (u16, u16, u16),
     pub zaszumienie: Option<u8>,
     pub kolor: ColorProfilePhoto,
@@ -220,6 +220,6 @@ impl DaneDoPrzetwarzania<BdepthExr> for PrzetwarzanieExr{
     fn rozdzielczosci(&self) -> &Vec<Rozdzielczości> {&self.rozdzielczosci}
     fn sciezka_wejsciowa(&self) -> PathBuf {self.sciezka_wyjsciowa.clone()}
     fn interpolacja(&self) -> &OptInterpolacja {&self.interpolacja}
-    fn bdepth(&self) -> &Vec<BdepthExr> {&self.bdepth}
+    fn bdepth(&self) -> &Vec<BdepthExr> {&self.bit_depth }
     fn jako_enum(self) -> TypyPrzetwarzania {TypyPrzetwarzania::PrzExr(self)}
 }

@@ -4,7 +4,7 @@ use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::UstawieniaThemeWsio;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::rozszerzenia::rozszenienia_zdjec::{ImgExtAvif, ImgExtExr, ImgExtFf, ImgExtJpg, ImgExtPng, ImgExtQoi, ImgExtTga, ImgExtWebp};
 use iced::widget::{Column, Row};
 use iced::Element;
 use strum::{EnumMessage, IntoEnumIterator};
@@ -13,23 +13,23 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 //jpg ----------------------------------------------------------------------------------------------
 
-    let jpg_bool = dane.tag.contains(&ImgExtTag::Jpg);
+    let jpg_bool = dane.rozszerzenia.jpg.is_some();
 
     let (jpg_jakosc, jpg_prog, jpg_bdepth, jpg_qa) =
-        if let Some(ImgExt::Jpg {
+        if let Some(ImgExtJpg {
              jakosc, progresywny, bit_depth, quant, ..
-         }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Jpg { .. })) {
+         }) = &dane.rozszerzenia.jpg {
         (
             jakosc.to_string(),
             progresywny,
-            bit_depth,
+            bit_depth.as_slice(),
             quant.get_message().unwrap_or("err").to_string()
         )
     } else {
         (
             "-".to_string(),
             &false,
-            &Vec::new(),
+            &[] as &[BdepthJpg],
             "-".to_string()
         )
     };
@@ -60,16 +60,16 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 //avif ----------------------------------------------------------------------------------------------
 
-    let avif_bool = dane.tag.contains(&ImgExtTag::Avif);
+    let avif_bool = dane.rozszerzenia.avif.is_some();
 
     let (avif_speed, avif_lossy, avif_bdepth, avif_kompresja, avif_chroma) =
-        if let Some(ImgExt::Avif {
+        if let Some(ImgExtAvif {
                         chroma, speed, metoda_kompresji, lossy, bit_depth
-                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Avif { .. })) {
+                    }) = &dane.rozszerzenia.avif {
             (
                 speed.to_string(),
                 match lossy{ Some (xx) => xx.to_string(), None => "Lossless".to_string()},
-                bit_depth,
+                bit_depth.as_slice(),
                 metoda_kompresji.krotkie(),
                 chroma.to_string()
             )
@@ -77,7 +77,7 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
             (
                 "-".to_string(),
                 "-".to_string(),
-                &Vec::new(),
+                &[] as &[BdepthAvif],
                 "-",
                 "-".to_string(),
             )
@@ -115,20 +115,20 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 //png ----------------------------------------------------------------------------------------------
 
-    let png_bool = dane.tag.contains(&ImgExtTag::Png);
+    let png_bool = dane.rozszerzenia.png.is_some();
 
     let (png_kompresja, png_bdepth, ) =
-        if let Some(ImgExt::Png {
+        if let Some(ImgExtPng {
                         kompresja, bit_depth
-                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Png { .. })) {
+                    }) = &dane.rozszerzenia.png {
             (
                 kompresja.to_string(),
-                bit_depth,
+                bit_depth.as_slice(),
             )
         } else {
             (
                 "-".to_string(),
-                &Vec::new(),
+                &[] as &[BdepthPng],
             )
         };
 
@@ -154,22 +154,22 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 //webp ----------------------------------------------------------------------------------------------
 
-    let webp_bool = dane.tag.contains(&ImgExtTag::Webp);
+    let webp_bool = dane.rozszerzenia.webp.is_some();
 
     let (webp_jakosc, webp_lossy, webp_bdepth) =
-        if let Some(ImgExt::Webp {
+        if let Some(ImgExtWebp {
                         jakosc, lossless, bit_depth
-                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Webp { .. })) {
+                    }) = &dane.rozszerzenia.webp {
             (
                 jakosc.to_string(),
                 lossless,
-                bit_depth,
+                bit_depth.as_slice(),
             )
         } else {
             (
                 "-".to_string(),
                 &false,
-                &Vec::new(),
+                &[] as &[BdepthWebp],
             )
         };
 
@@ -190,7 +190,7 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
     webp_row = webp_row
         .push(info_male("|".to_string(), webp_bool,temat))
-        .push(info_male(webp_jakosc, webp_bool && !*webp_lossy, temat))
+        .push(info_male(webp_jakosc, webp_bool && !webp_lossy, temat))
         .push(info_male("|".to_string(), webp_bool,temat))
         .push(info_male("Lossless".to_string(), *webp_lossy, temat))
         .push(info_male("|".to_string(), webp_bool,temat));
@@ -198,15 +198,15 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 //tga ----------------------------------------------------------------------------------------------
 
-    let tga_bool = dane.tag.contains(&ImgExtTag::Tga);
+    let tga_bool = dane.rozszerzenia.tga.is_some();
 
     let tga_bdepth =
-        if let Some(ImgExt::Tga {
+        if let Some(ImgExtTga {
                          bit_depth
-                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Tga { .. })) {
-            bit_depth
+                    }) = &dane.rozszerzenia.tga {
+            bit_depth.as_slice()
         } else {
-            &Vec::new()
+            &[] as &[BdepthTga]
         };
 
     let mut tga_row = Row::new().spacing(3.);
@@ -230,12 +230,12 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 //ff ----------------------------------------------------------------------------------------------
 
-    let ff_bool = dane.tag.contains(&ImgExtTag::Ff);
+    let ff_bool = dane.rozszerzenia.ff.is_some();
 
     let (ff_kompresja, /* ff_kompresja_wartosc */) =
-        if let Some(ImgExt::Ff {
+        if let Some(ImgExtFf {
                         metoda_kompresji
-                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Ff { .. })) {
+                    }) = &dane.rozszerzenia.ff {
 
             (
                 metoda_kompresji.to_string(),
@@ -263,15 +263,15 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 //qoi ----------------------------------------------------------------------------------------------
 
-    let qoi_bool = dane.tag.contains(&ImgExtTag::Qoi);
+    let qoi_bool = dane.rozszerzenia.qoi.is_some();
 
     let qoi_bdepth =
-        if let Some(ImgExt::Qoi {
+        if let Some(ImgExtQoi {
                         bit_depth
-                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Qoi { .. })) {
-                bit_depth
+                    }) = &dane.rozszerzenia.qoi {
+                bit_depth.as_slice()
         } else {
-            &Vec::new()
+            &[] as &[BdepthQoi]
         };
 
     let mut qoi_row = Row::new().spacing(3.);
@@ -294,15 +294,16 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 //exr ----------------------------------------------------------------------------------------------
 
-    let exr_bool = dane.tag.contains(&ImgExtTag::Exr);
+    let exr_bool = dane.rozszerzenia.exr.is_some();
 
-    let (exr_kompresja, /* ff_kompresja_wartosc */) =
-        if let Some(ImgExt::Exr {
-                        kompresja, ..
-                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Ff { .. })) {
+    let (exr_kompresja, exr_bdepth) =
+        if let Some(ImgExtExr {
+                        kompresja, bit_depth
+                    }) = &dane.rozszerzenia.exr {
 
             (
                 kompresja.to_string(),
+                bit_depth.as_slice()
                 // match metoda_kompresji {
                 //     ForFfKompresja::Zstd(v) | ForFfKompresja::Bzip2(v) | ForFfKompresja::Xz(v) => v.to_string(),
                 //     ForFfKompresja::Brak => "".to_string(),
@@ -312,17 +313,9 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
         } else {
             (
                 "-".to_string(),
+                &[] as &[BdepthExr]
                 // "-".to_string()
             )
-        };
-
-    let exr_bdepth =
-        if let Some(ImgExt::Exr {
-                        bit_depth, kompresja: _
-                    }) = dane.rozszerzenia.iter().find(|f| matches!(f, ImgExt::Exr { .. })) {
-            bit_depth
-        } else {
-            &Vec::new()
         };
 
     let mut exr_row = Row::new().spacing(3.);

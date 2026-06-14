@@ -5,8 +5,9 @@ use enumy::enums_structs_io::FILTERFOTO;
 use enumy::inne_ui::ActProces;
 use enumy::opcje::OptInterpolacja;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::rozszerzenia::ext::ImgExtTag;
 use enumy::rozszerzenia::kompresje::ForFfKompresja;
+use enumy::rozszerzenia::rozszenienia_zdjec::{ImgExtAvif, ImgExtExr, ImgExtFf, ImgExtJpg, ImgExtPng, ImgExtQoi, ImgExtTga, ImgExtWebp};
 use enumy::statusy::LogTxKonw;
 use futures::channel::mpsc;
 use iced::Task;
@@ -114,66 +115,52 @@ impl Program {
             }
 
             KonwMsg::JpgJakość(procent) => {
-                if let Some(ImgExt::Jpg { jakosc, .. }) = self
+                if let Some(ImgExtJpg { ref mut jakosc, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                    .rozszerzenia.jpg
                 {
-                    *jakosc = procent; // Jeśli znaleziono, aktualizujemy wartość
+                    *jakosc = procent;
                 }
             }
             KonwMsg::JpgProg=> {
-                if let Some(ImgExt::Jpg { progresywny, .. }) = self
+                if let Some(ImgExtJpg { ref mut progresywny, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut()
-                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                    .rozszerzenia.jpg
                 {
                     *progresywny = !*progresywny;
                 }
 
             }
             KonwMsg::JpgSampling(xx) => {
-                if let Some(ImgExt::Jpg { sampling, .. }) = self
+                if let Some(ImgExtJpg { ref mut sampling, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut()
-                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                    .rozszerzenia.jpg
                 {
-                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
                     *sampling = xx;
                 }
             }
             KonwMsg::JpgQua(xx) => {
-                if let Some(ImgExt::Jpg { quant, .. }) = self
+                if let Some(ImgExtJpg { ref mut quant, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut()
-                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                    .rozszerzenia.jpg
                 {
-                    // 2. lossless jest tutaj mutowalną referencją (&mut bool)
                     *quant = xx;
                 }
             }
             KonwMsg::JpgScan(skany) => {
-                if let Some(ImgExt::Jpg { scans, .. }) = self
+                if let Some(ImgExtJpg { ref mut scans, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                    .rozszerzenia.jpg
                 {
-                    *scans = skany; // Jeśli znaleziono, aktualizujemy wartość
+                    *scans = skany;
                 }
             }
             KonwMsg::PngKompresja(var) => {
-                if let Some(ImgExt::Png { kompresja, .. }) = self
+                if let Some(ImgExtPng { ref mut kompresja, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Png { .. }))
+                    .rozszerzenia.png
                 {
-                    *kompresja = var; // Jeśli znaleziono, aktualizujemy wartość
+                    *kompresja = var;
                 }
             }
             KonwMsg::Interpolacja(xx) => {
@@ -188,43 +175,35 @@ impl Program {
                 self.dane_konw.inter = yy;
             }
             KonwMsg::WebpJakość(procent) => {
-                if let Some(ImgExt::Webp { jakosc, .. }) = self
+                if let Some(ImgExtWebp { ref mut jakosc, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Webp { .. }))
+                    .rozszerzenia.webp
                 {
-                    *jakosc = procent; // Jeśli znaleziono, aktualizujemy wartość
+                    *jakosc = procent;
                 }
             }
             KonwMsg::WebpLossless => {
-                if let Some(ImgExt::Webp { lossless, .. }) = self
+                if let Some(ImgExtWebp { ref mut lossless, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut()
-                    .find(|f| matches!(f, ImgExt::Webp { .. }))
+                    .rozszerzenia.webp
                 {
                     *lossless = !*lossless;
                 }
             }
             
             KonwMsg::FfKompresja(metoda) => {
-                if let Some(ImgExt::Ff { metoda_kompresji }) = self
+                if let Some(ImgExtFf { ref mut metoda_kompresji }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Ff { .. }))
+                    .rozszerzenia.ff
                 {
                     *metoda_kompresji = metoda;
                 }
 
             }
             KonwMsg::FfKompresjaVal(var) => {
-                if let Some(ImgExt::Ff { metoda_kompresji }) = self
+                if let Some(ImgExtFf { ref mut metoda_kompresji }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Ff { .. }))
+                    .rozszerzenia.ff
                 {
                     match metoda_kompresji {
                         ForFfKompresja::Zstd(v) |
@@ -237,21 +216,17 @@ impl Program {
             }
             
             KonwMsg::AvifSpeed(das) => {
-                if let Some(ImgExt::Avif { speed, .. }) = self
+                if let Some(ImgExtAvif { ref mut speed, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Avif { .. }))
+                    .rozszerzenia.avif
                 {
-                    *speed = das; // Jeśli znaleziono, aktualizujemy wartość
+                    *speed = das;
                 }
             }
             KonwMsg::AvifLossyToggle => {
-                if let Some(ImgExt::Avif { lossy, .. }) = self
+                if let Some(ImgExtAvif { ref mut lossy, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut()
-                    .find(|f| matches!(f, ImgExt::Avif { .. }))
+                    .rozszerzenia.avif
                 {
 
                     if lossy.is_some(){
@@ -264,31 +239,25 @@ impl Program {
 
             }
             KonwMsg::AvifLossy(das) => {
-                if let Some(ImgExt::Avif { lossy, .. }) = self
+                if let Some(ImgExtAvif { ref mut lossy, .. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Avif { .. }))
+                    .rozszerzenia.avif
                 {
-                    *lossy = Some(das); // Jeśli znaleziono, aktualizujemy wartość
+                    *lossy = Some(das);
                 }
             }
             KonwMsg::AvifKompresja(metoda) => {
-                if let Some(ImgExt::Avif { metoda_kompresji,.. }) = self
+                if let Some(ImgExtAvif { ref mut metoda_kompresji,.. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Avif { .. }))
+                    .rozszerzenia.avif
                 {
                     *metoda_kompresji = metoda;
                 }
             }
             KonwMsg::AvifChroma(chromchrom) => {
-                if let Some(ImgExt::Avif { chroma,.. }) = self
+                if let Some(ImgExtAvif { ref mut chroma,.. }) = self
                     .dane_konw
-                    .rozszerzenia
-                    .iter_mut() // Tworzymy mutowalny iterator
-                    .find(|f| matches!(f, ImgExt::Avif { .. }))
+                    .rozszerzenia.avif
                 {
                     *chroma = chromchrom;
                 }
@@ -317,115 +286,162 @@ impl Program {
 
             }
             
-            KonwMsg::Bdepth(rozs, kolor_arc) => {
-                // 1. Szukamy indeksu na podstawie znacznika
-                if let Some(index) = self.dane_konw
-                    .tag
-                    .iter()
-                    .position(|t| *t == rozs)
-                {
-                    // 2. Pobieramy mutowalną referencję do formatu
-                    if let Some(format_danych) = self.dane_konw
-                        .rozszerzenia
-                        .get_mut(index)
-                    {
-                        // 3. Używamy jako_any(), aby móc porównać dyn z konkretnym typem w Vec
-                        let kolor_any = kolor_arc.jako_any();
-                        
+            KonwMsg::Bdepth(kolor_arc) => {
+                let kolor_any = kolor_arc.jako_any();
+                let f = &mut self.dane_konw.rozszerzenia;
 
-                        match format_danych {
-                            // Grupa JPG, PNG, WebP (jeśli używają tego samego typu enumu)
-                            ImgExt::Jpg { bit_depth, .. } => {
-                                if let Some(k) = kolor_any.downcast_ref::<BdepthJpg>() {
-                                    toggle_w_vec(bit_depth, k);
 
-                                }
-                            }
-                            ImgExt::Png { bit_depth, .. } => {
-                                if let Some(k) = kolor_any.downcast_ref::<BdepthPng>() {
-                                    toggle_w_vec(bit_depth, k);
+                if let Some(k) = kolor_any.downcast_ref::<BdepthJpg>() &&
+                    let Some(cfg) = &mut f.jpg {
+                        toggle_w_vec(&mut cfg.bit_depth, k);
 
-                                }
-                            }
-                            ImgExt::Webp { bit_depth, .. } => {
-                                // Próbujemy rzutować Arc na konkretny typ siedzący w tym Vec
-                                if let Some(k) = kolor_any.downcast_ref::<BdepthWebp>() {
-                                    toggle_w_vec(bit_depth, k);
+                } else if let Some(k) = kolor_any.downcast_ref::<BdepthPng>() &&
+                    let Some(cfg) = &mut f.png {
+                        toggle_w_vec(&mut cfg.bit_depth, k);
 
-                                }
-                            }
-                            ImgExt::Qoi { bit_depth, .. } => {
-                                if let Some(k) = kolor_any.downcast_ref::<BdepthQoi>() {
-                                    toggle_w_vec(bit_depth, k);
+                } else if let Some(k) = kolor_any.downcast_ref::<BdepthWebp>() &&
+                    let Some(cfg) = &mut f.webp {
+                        toggle_w_vec(&mut cfg.bit_depth, k);
 
-                                }
-                            }
-                            ImgExt::Avif { bit_depth, .. } => {
-                                if let Some(k) = kolor_any.downcast_ref::<BdepthAvif>() {
-                                    toggle_w_vec(bit_depth, k);
+                } else if let Some(k) = kolor_any.downcast_ref::<BdepthTga>() &&
+                    let Some(cfg) = &mut f.tga {
+                        toggle_w_vec(&mut cfg.bit_depth, k);
 
-                                }
-                            }
-                            ImgExt::Tga { bit_depth, .. } => {
-                                if let Some(k) = kolor_any.downcast_ref::<BdepthTga>() {
-                                    toggle_w_vec(bit_depth, k);
+                } else if let Some(k) = kolor_any.downcast_ref::<BdepthQoi>() &&
+                    let Some(cfg) = &mut f.qoi {
+                        toggle_w_vec(&mut cfg.bit_depth, k);
 
-                                }
-                            }
-                            ImgExt::Exr { bit_depth, .. } => {
-                                if let Some(k) = kolor_any.downcast_ref::<BdepthExr>() {
-                                    toggle_w_vec(bit_depth, k);
-                                }
-                            }
-                            _ => {}
-                        }
-                    }
+                } else if let Some(k) = kolor_any.downcast_ref::<BdepthAvif>() &&
+                    let Some(cfg) = &mut f.avif {
+                        toggle_w_vec(&mut cfg.bit_depth, k);
+
+                } else if let Some(k) = kolor_any.downcast_ref::<BdepthExr>() &&
+                    let Some(cfg) = &mut f.exr {
+                        toggle_w_vec(&mut cfg.bit_depth, k);
+
                 }
+                // Format 'Ff' pomijamy, bo nie ma pola bit_depth
+                // // 1. Szukamy indeksu na podstawie znacznika
+                // if let Some(index) = self.dane_konw
+                //     .tag
+                //     .iter()
+                //     .position(|t| *t == rozs)
+                // {
+                //     // 2. Pobieramy mutowalną referencję do formatu
+                //     if let Some(format_danych) = self.dane_konw
+                //         .rozszerzenia
+                //         .get_mut(index)
+                //     {
+                //         // 3. Używamy jako_any(), aby móc porównać dyn z konkretnym typem w Vec
+                //         let kolor_any = kolor_arc.jako_any();
+                //
+                //
+                //         match format_danych {
+                //             ImgExt::Jpg { bit_depth, .. } => {
+                //                 if let Some(k) = kolor_any.downcast_ref::<BdepthJpg>() {
+                //                     toggle_w_vec(bit_depth, k);
+                //
+                //                 }
+                //             }
+                //             ImgExt::Png { bit_depth, .. } => {
+                //                 if let Some(k) = kolor_any.downcast_ref::<BdepthPng>() {
+                //                     toggle_w_vec(bit_depth, k);
+                //
+                //                 }
+                //             }
+                //             ImgExt::Webp { bit_depth, .. } => {
+                //                 // Próbujemy rzutować Arc na konkretny typ siedzący w tym Vec
+                //                 if let Some(k) = kolor_any.downcast_ref::<BdepthWebp>() {
+                //                     toggle_w_vec(bit_depth, k);
+                //
+                //                 }
+                //             }
+                //             ImgExt::Qoi { bit_depth, .. } => {
+                //                 if let Some(k) = kolor_any.downcast_ref::<BdepthQoi>() {
+                //                     toggle_w_vec(bit_depth, k);
+                //
+                //                 }
+                //             }
+                //             ImgExt::Avif { bit_depth, .. } => {
+                //                 if let Some(k) = kolor_any.downcast_ref::<BdepthAvif>() {
+                //                     toggle_w_vec(bit_depth, k);
+                //
+                //                 }
+                //             }
+                //             ImgExt::Tga { bit_depth, .. } => {
+                //                 if let Some(k) = kolor_any.downcast_ref::<BdepthTga>() {
+                //                     toggle_w_vec(bit_depth, k);
+                //
+                //                 }
+                //             }
+                //             ImgExt::Exr { bit_depth, .. } => {
+                //                 if let Some(k) = kolor_any.downcast_ref::<BdepthExr>() {
+                //                     toggle_w_vec(bit_depth, k);
+                //                 }
+                //             }
+                //             _ => {}
+                //         }
+                //     }
+                // }
                 let _ = self.update(Message::ChckStatus);
 
             }
 
 
             KonwMsg::Rozszerzenia(gwiazdek) => {
-                let pozycja_tag = self.dane_konw
-                    .tag
-                    .iter()
-                    .position(|t| *t == gwiazdek);
-                let pozycja = self.dane_konw.rozszerzenia.iter().position(|f| {
-                    matches!(
-                        (f, &gwiazdek),
-                        (ImgExt::Jpg {..}, ImgExtTag::Jpg) |
-                        (ImgExt::Png {..}, ImgExtTag::Png) |
-                        (ImgExt::Webp {..}, ImgExtTag::Webp) |
-                        (ImgExt::Tga {..}, ImgExtTag::Tga) |
-                        (ImgExt::Ff {..}, ImgExtTag::Ff) |
-                        (ImgExt::Qoi {..}, ImgExtTag::Qoi) |
-                        (ImgExt::Avif {..}, ImgExtTag::Avif)
-                    )
-                });
-                if let Some(idx) = pozycja_tag {
-                    self.dane_konw.tag.remove(idx);
+
+                let f = &mut self.dane_konw.rozszerzenia;
+
+                match gwiazdek {
+                    ImgExtTag::Jpg => {if f.jpg.take().is_none() { f.jpg = Some(ImgExtJpg::default()); }}
+                    ImgExtTag::Png => {if f.png.take().is_none() { f.png = Some(ImgExtPng::default()); }}
+                    ImgExtTag::Webp => {if f.webp.take().is_none() { f.webp = Some(ImgExtWebp::default()); }}
+                    ImgExtTag::Tga => {if f.tga.take().is_none() { f.tga = Some(ImgExtTga::default()); }}
+                    ImgExtTag::Ff => {if f.ff.take().is_none() { f.ff = Some(ImgExtFf::default()); }}
+                    ImgExtTag::Qoi => {if f.qoi.take().is_none() { f.qoi = Some(ImgExtQoi::default()); }}
+                    ImgExtTag::Avif => {if f.avif.take().is_none() { f.avif = Some(ImgExtAvif::default()); }}
+                    ImgExtTag::Exr => {if f.exr.take().is_none() { f.exr = Some(ImgExtExr::default()); }}
+                    ImgExtTag::Unknown => {}
                 }
-
-                if let Some(index) = pozycja {
-                    self.dane_konw.rozszerzenia.remove(index);
-                } else {
-                    let nowy_format = match gwiazdek {
-                        ImgExtTag::Jpg => ImgExt::def_jpg(),
-                        ImgExtTag::Png => ImgExt::def_png(),
-                        ImgExtTag::Webp => ImgExt::def_webp(),
-                        ImgExtTag::Tga => ImgExt::def_tga(),
-                        ImgExtTag::Ff => ImgExt::def_ff(),
-                        ImgExtTag::Qoi => ImgExt::def_qoi(),
-                        ImgExtTag::Avif => ImgExt::def_avif(),
-                        ImgExtTag::Unknown => ImgExt::def_exr(),
-                        ImgExtTag::Exr => ImgExt::def_exr()
-                    };
-
-                    self.dane_konw.rozszerzenia.push(nowy_format);
-                    self.dane_konw.tag.push(gwiazdek.clone());
-
-                }
+                // let pozycja_tag = self.dane_konw
+                //     .tag
+                //     .iter()
+                //     .position(|t| *t == gwiazdek);
+                // let pozycja = self.dane_konw.rozszerzenia.iter().position(|f| {
+                //     matches!(
+                //         (f, &gwiazdek),
+                //         (ImgExt::Jpg {..}, ImgExtTag::Jpg) |
+                //         (ImgExt::Png {..}, ImgExtTag::Png) |
+                //         (ImgExt::Webp {..}, ImgExtTag::Webp) |
+                //         (ImgExt::Tga {..}, ImgExtTag::Tga) |
+                //         (ImgExt::Ff {..}, ImgExtTag::Ff) |
+                //         (ImgExt::Qoi {..}, ImgExtTag::Qoi) |
+                //         (ImgExt::Avif {..}, ImgExtTag::Avif)
+                //     )
+                // });
+                // if let Some(idx) = pozycja_tag {
+                //     self.dane_konw.tag.remove(idx);
+                // }
+                //
+                // if let Some(index) = pozycja {
+                //     self.dane_konw.rozszerzenia.remove(index);
+                // } else {
+                //     let nowy_format = match gwiazdek {
+                //         ImgExtTag::Jpg => ImgExt::def_jpg(),
+                //         ImgExtTag::Png => ImgExt::def_png(),
+                //         ImgExtTag::Webp => ImgExt::def_webp(),
+                //         ImgExtTag::Tga => ImgExt::def_tga(),
+                //         ImgExtTag::Ff => ImgExt::def_ff(),
+                //         ImgExtTag::Qoi => ImgExt::def_qoi(),
+                //         ImgExtTag::Avif => ImgExt::def_avif(),
+                //         ImgExtTag::Unknown => ImgExt::def_exr(),
+                //         ImgExtTag::Exr => ImgExt::def_exr()
+                //     };
+                //
+                //     self.dane_konw.rozszerzenia.push(nowy_format);
+                //     self.dane_konw.tag.push(gwiazdek.clone());
+                //
+                // }
                 let _ = self.update(Message::ChckStatus);
             }
             KonwMsg::ExifToggle => {

@@ -6,8 +6,9 @@ use crate::widget::styles::styl_kontenera;
 use enumy::dane_do_przetwarzania::DaneKonw;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
 use enumy::rozszerzenia::bdepth::BdepthJpg;
+use enumy::rozszerzenia::ext::ImgExtTag;
 use enumy::rozszerzenia::kolor::{ForJpgQuant, ForJpgSamplingFac};
-use enumy::rozszerzenia::ext::{ImgExt, ImgExtTag};
+use enumy::rozszerzenia::rozszenienia_zdjec::ImgExtJpg;
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{container, space, Column, Row};
 use iced::Element;
@@ -16,22 +17,20 @@ use strum::IntoEnumIterator;
 
 pub fn jpg<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
-        .push(przycisk_rozszerzenia(ImgExtTag::Jpg, ButtonType::KonwRozszerzenia, kolor, if dane.tag.contains(&ImgExtTag::Jpg){ &BtnState::Active } else { &BtnState::Disabled }, jezyk, temat))
+        .push(przycisk_rozszerzenia(ImgExtTag::Jpg, ButtonType::KonwRozszerzenia, kolor, if dane.rozszerzenia.jpg.is_some(){ &BtnState::Active } else { &BtnState::Disabled }, jezyk, temat))
         .push(
             container(
                 Row::new()
                     .push(
                         if let Some(
-                            ImgExt::Jpg {
+                            ImgExtJpg {
                                 jakosc,
                                 progresywny,
                                 bit_depth,
                                 sampling: _,
                                 quant: _,
                                 scans,
-                            }) = dane.rozszerzenia
-                            .iter()
-                            .find(|f| matches!(f, ImgExt::Jpg { .. }))
+                            }) = &dane.rozszerzenia.jpg
                         {
                             Column::new()
                                 .push(
