@@ -2,7 +2,7 @@ use image::DynamicImage;
 use lcms2::{Profile, Transform, Intent, PixelFormat, CIExyY, CIExyYTRIPLE, ToneCurve};
 use libheif_rs::{ColorPrimaries, TransferCharacteristics};
 use enumy::rozszerzenia::kolor::ColorNclx;
-
+/// Convert color
 pub fn konwertuj_przestrzen(
     img: &DynamicImage,
     icc_wejscie: Option<&Vec<u8>>,
@@ -109,6 +109,7 @@ pub fn konwertuj_przestrzen(
 const WP_D65: CIExyY = CIExyY { x: 0.3127, y: 0.3290, Y: 1.0 };
 const WP_C: CIExyY   = CIExyY { x: 0.3101, y: 0.3162, Y: 1.0 };
 
+/// Convert 'nclx' profile
 pub fn profil_z_nclx(nclx: &ColorNclx) -> Result<Profile, std::io::Error> {
 
     //  Mapowanie Primaries (Współrzędne kolorów) oraz Punktu Bieli

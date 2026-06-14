@@ -1,8 +1,7 @@
-use std::path::PathBuf;
 use encodery::halper::usun_kanal_alpha;
-use image::DynamicImage;
 use enumy::rozszerzenia::bdepth::TrybLączenia;
 use enumy::rozszerzenia::bdepth_impl::BitDepth;
+use image::DynamicImage;
 
 pub async fn laczenie_vac_to_dyn<T>(
     mut bufor: Vec<DynamicImage>,
@@ -120,9 +119,9 @@ where T:BitDepth + std::clone::Clone
     Ok(final_img)
 }
 
-pub async fn ogarnij_sciezki_w_koncu(sciezka_out:PathBuf, nazwa:String)-> Result<PathBuf, tokio::io::Error> {
-
-    let mut gfdsdf = sciezka_out;
-    gfdsdf.push(nazwa);
-    Ok(gfdsdf)
-}
+// pub async fn ogarnij_sciezki_w_koncu(sciezka_out:PathBuf, nazwa:String)-> Result<PathBuf, tokio::io::Error> {
+// 
+//     let mut gfdsdf = sciezka_out;
+//     gfdsdf.push(nazwa);
+//     Ok(gfdsdf)
+// }

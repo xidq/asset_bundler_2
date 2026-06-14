@@ -13,6 +13,11 @@ use std::io::Read;
 use std::path::PathBuf;
 use crate::wczytywanie::exr::exr_loading;
 
+/// # Main fn for image decoding
+/// That's how it is.
+/// 
+/// I'm using Image crate as just wrapper for moving data,
+/// and using their resize fn elsewhere ;)
 pub fn wczytaj_pliki(
     ścieżka: PathBuf
 ) -> Result<(DaneDoWczytywania, String), std::io::Error>{
@@ -28,6 +33,7 @@ pub fn wczytaj_pliki(
         .unwrap_or("")
         .to_lowercase();
 
+    // let sprawdzanie_kompresji = sprawdzanie_kompresji_zdjecia?;
     let sprawdzanie_kompresji = match rozszerzenie.as_str(){
         "zst" => {
             let mut decoder = zstd::stream::read::Decoder::new(&bajty[..])?;
@@ -64,3 +70,29 @@ pub fn wczytaj_pliki(
     
     Ok((fotu, nazwa))
 }
+
+
+// pub fn sprawdzanie_kompresji_zdjecia(rozszerzenie: String, bajty: Vec<u8>) -> Result<Vec<u8>, std::io::Error> {
+//     let blablabla = match rozszerzenie.as_str(){
+//         "zst" => {
+//             let mut decoder = zstd::stream::read::Decoder::new(&bajty[..])?;
+//             let mut rozpakowane = Vec::new();
+//             decoder.read_to_end(&mut rozpakowane)?;
+//             rozpakowane
+//         }
+//         "bz2" => {
+//             let mut decoder = bzip2::read::BzDecoder::new(&bajty[..]);
+//             let mut rozpakowane = Vec::new();
+//             decoder.read_to_end(&mut rozpakowane)?;
+//             rozpakowane
+//         }
+//         "xz" => {
+//             let mut decoder = xz2::read::XzDecoder::new(&bajty[..]);
+//             let mut rozpakowane = Vec::new();
+//             decoder.read_to_end(&mut rozpakowane)?;
+//             rozpakowane
+//         }
+//         _ => {bajty}
+//     };
+//     Ok(blablabla)
+// }

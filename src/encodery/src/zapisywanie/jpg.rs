@@ -13,23 +13,17 @@ use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
+/// # Encoding jpg
 pub async fn jpg_match<T>(
     dane: PrzetwarzanieJpg,
     dane2: InneDane<BdepthJpg>,
-    // wymiar: u32,
-    // bit_depth: BdepthJpg,
-    // nazwa_wariantu: String,
-    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
 ) -> Result<(), tokio::io::Error>
     where T: Logi,
 {
-
-
-
+    
     let (fotu, icc) = match &dane.kolor {
         ColorProfilePhoto::Exr(xxx) => {
             let obraz = dane.bufor().clone(); 

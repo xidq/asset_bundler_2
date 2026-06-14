@@ -30,10 +30,13 @@ pub enum ForExrKompresja{
 #[derive(Debug, Copy, Clone, PartialEq, EnumIter, EnumMessage, Display,Default)]
 pub enum ForFfKompresja {
     #[strum(message = "comp_Zstd", detailed_message = "hint_comp_Zstd")]
+    /// 0-22, def 3
     Zstd(u8),  //1-22|3
     #[strum(message = "comp_Bzip2", detailed_message = "hint_comp_Bzip2")]
+    /// 0-9, def 6
     Bzip2(u8), //1-9|6?
     #[strum(message = "comp_Xz", detailed_message = "hint_comp_Xz")]
+    /// 0-9, def 6
     Xz(u8),    //1-9|6
     #[default]
     #[strum(message = "comp_Zstd", detailed_message = "hint_comp_Zstd")]

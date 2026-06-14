@@ -1,19 +1,19 @@
 use crate::dds_export::save_image_to_dds;
+use crate::strukt::DaneDoZapisu;
 use enumy::dane_do_przetwarzania::DaneDdsPak;
 use enumy::rozszerzenia::kompresje::ForDdsKompresja;
 use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc;
 use futures::SinkExt;
+use image::imageops::FilterType;
 use image::{DynamicImage, GenericImageView};
 use std::fs;
 use std::fs::create_dir_all;
 use std::io::Read;
 use std::path::PathBuf;
 use std::time::Instant;
-use image::imageops::FilterType;
 use walkdir::WalkDir;
-use crate::strukt::DaneDoZapisu;
-
+/// # Main fn for image -> dds
 pub async fn image_to_dds(
     dane: DaneDdsPak,
     mut tx: mpsc::Sender<LogTxDdsPak>,
@@ -34,6 +34,7 @@ pub async fn image_to_dds(
         // dbg!(&przerób, (dane.ścieżka_wejściowa.clone().unwrap_or_default().len() as u32 * 4) + 3);
 
         let _ = tx_dla_wywolywacza.try_send(LogTxDdsPak::PostępPreOperacji(przerób,Some((dane.ścieżka_wejściowa.clone().unwrap_or_default().len() as u32 * 4) + 3)));
+        // wyslij_status(&mut tx_dla_wywolywacza,Some(LogTxDdsPak::PostępPreOperacji(przerób,Some((dane.ścieżka_wejściowa.clone().unwrap_or_default().len() as u32 * 4) + 3)))).await;
 
     };
 
@@ -51,13 +52,7 @@ pub async fn image_to_dds(
             Some(xxx) => {xxx}
         };
 
-
-
-
-
             lololo.iter().try_for_each(|e| -> Result<(), std::io::Error > {
-
-
 
                 match e.is_file() {
                     true => {
@@ -135,9 +130,7 @@ pub async fn image_to_dds(
                         Ok(())
                     }
 
-
                     false => {
-
 
                         for entry in WalkDir::new(e)
                             .into_iter()
@@ -244,9 +237,6 @@ pub async fn image_to_dds(
             }
             ).collect();
 
-
-
-
         wywoływacz();
 
         let refs_to_data: Vec<&[u8]> = obrazki_zmiana_rozmiaru.iter().map(|v| v.as_slice()).collect();
@@ -274,7 +264,7 @@ pub async fn image_to_dds(
             dane,
             tx.clone(),
         )
-        .unwrap_or(());
+        .await.unwrap_or(());
 
         Ok(())
     }

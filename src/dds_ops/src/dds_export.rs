@@ -6,26 +6,31 @@ use enumy::rozszerzenia::kompresje::ForDds;
 use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc::Sender;
 
-#[allow(clippy::too_many_arguments)]
-pub fn save_image_to_dds(
-    dane: DaneDoZapisu,
+/// # Secondary fn for image -> dds
+/// 
+pub async fn save_image_to_dds(
+    dane: DaneDoZapisu<'_>,
     mut tx: Sender<LogTxDdsPak>,
 ) -> Result<(), EncodingError> {
+    
     let mut przerób: u32 = 0;
     // dbg!("jestem w save_rgba_image_with_mipmaps");
 
     let mut wywoływacz = ||{
         przerób += 1;
-        // dbg!(&przerób, (dane.image_data.len() as u32 * 2) + 4);
-
+    //     // dbg!(&przerób, (dane.image_data.len() as u32 * 2) + 4);
+    // 
             let _ = tx.try_send(LogTxDdsPak::PostępSkładania(przerób,Some((dane.image_data.len() as u32 * 2) + 4)));
-
+    // 
     };
-
-
+    // let mut wywoływacz = async ||{
+    //     
+    //     przerób += 1;
+    //     wyslij_status(&mut tx,Some(LogTxDdsPak::PostępSkładania(przerób,Some((dane.image_data.len() as u32 * 2) + 4)))).await;
+    // 
+    // };
+    
     wywoływacz();
-
-
 
     let (formatowanko_dxgi, formatowanko_format) = match dane.format {
         ForDds::DxgiFormatBc1Unorm => (DxgiFormat::BC1_UNORM, Format::BC1_UNORM),
@@ -76,10 +81,6 @@ pub fn save_image_to_dds(
 
     wywoływacz();
 
-
-
-
-
     for data in dane.image_data.iter() {
         let view = ImageView::new(data, Size::new(dane.width, dane.height), ColorFormat::RGBA_U8)
             .expect("Błąd danych obrazka");
@@ -87,7 +88,6 @@ pub fn save_image_to_dds(
         wywoływacz();
 
         encoder.write_surface(view)?;
-
 
         wywoływacz();
         

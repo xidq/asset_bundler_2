@@ -11,9 +11,13 @@ pub trait DaneDoPrzetwarzania<T>{
     fn daj_dane(&self) -> Self;
     fn czym_jestem(&self) -> ImgExtTag;
     fn bufor(&self) -> &DynamicImage;
+    /// get resolution
     fn rozdzielczosci(&self) -> &Vec<Rozdzielczości>;
+    /// get input path
     fn sciezka_wejsciowa(&self) -> PathBuf;
+    /// get interpoolation method
     fn interpolacja(&self) -> &OptInterpolacja;
+    /// get bit_depth
     fn bdepth(&self) -> &Vec<T>;
     fn jako_enum(self) -> TypyPrzetwarzania;
 }

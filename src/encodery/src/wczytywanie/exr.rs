@@ -5,10 +5,8 @@ use image::{DynamicImage, GenericImageView, Rgba32FImage};
 use libheif_rs::{ColorPrimaries, TransferCharacteristics};
 use std::io::Cursor;
 
-// struct ExrOdbiornik {
-//     width: usize,
-//     data: Vec<f32>,
-// }
+/// # Decoding Exr
+/// Some use of libheif_rs.
 pub fn exr_loading(bajty: &[u8]) -> std::result::Result<DaneDoWczytywania, std::io::Error> {
 
     let kursor = Cursor::new(bajty);
@@ -67,6 +65,7 @@ pub fn exr_loading(bajty: &[u8]) -> std::result::Result<DaneDoWczytywania, std::
     let mut rgba_f32 = vec![0.0f32; num_pixels * 4];   // tymczasowy bufor f32
 
     // Funkcja kopiująca dane kanału do bufora RGBA (składowa: 0=R, 1=G, 2=B, 3=A)
+    /// Copy data into RGBA channel
     fn copy_channel(samples: &FlatSamples, rgba: &mut [f32], component: usize, _num_pixels: usize) {
         match samples {
             FlatSamples::F16(data) => {

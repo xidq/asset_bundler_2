@@ -3,7 +3,8 @@ use std::io::Cursor;
 use image::{DynamicImage, ImageBuffer};
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use crate::wczytywanie::strukty::DaneDoWczytywania;
-
+/// # Decoding png
+/// ;)
 pub fn png(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     let cursor = Cursor::new(bajty);
     let decoder = Decoder::new(cursor);

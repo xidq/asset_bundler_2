@@ -2,16 +2,19 @@ use std::io::Cursor;
 use image::ImageReader;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use crate::wczytywanie::strukty::DaneDoWczytywania;
-
+/// # Decoding unknown
+/// Trying to guess what's the format.
+/// 
+/// Here ImageReader is used.
 pub fn unknown(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error> {
     let cursor = Cursor::new(bajty);
 
-    // 1. Próba zgadnięcia formatu na podstawie bajtów (magiczne liczby)
+    // Próba zgadnięcia formatu na podstawie bajtów (magiczne liczby)
     let reader = ImageReader::new(cursor)
         .with_guessed_format()
         .map_err(|e| std::io::Error::new(std::io::ErrorKind::InvalidData, e))?;
 
-    // 2. Jeśli format nie został rozpoznany, wywalamy błąd
+    // Jeśli format nie został rozpoznany, wywalamy błąd
     if reader.format().is_none() {
         return Err(std::io::Error::new(
             std::io::ErrorKind::Unsupported,
@@ -19,7 +22,7 @@ pub fn unknown(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error> {
         ));
     }
 
-    // 3. Dekodowanie do DynamicImage
+    // Dekodowanie do DynamicImage
     let obraz = reader.decode()
         .map_err(std::io::Error::other)?;
 

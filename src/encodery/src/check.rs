@@ -8,6 +8,11 @@ use enumy::send::wyslij_status;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
 
+/// # Data validation
+/// If data can be checked multiple times that's ok.
+/// 
+/// So if something will be wrong that can be easyly fix,
+/// then it's fixed here too.
 pub async fn sprawdzacz<T>(
     pumpum: DaneKonw,
     mut tx: Sender<T>
@@ -165,8 +170,8 @@ where T: Logi{
         }
         match metoda_kompresji {
             ForFfKompresja::Zstd(ref mut xx) => {*xx = *(xx).clamp(&mut 1_u8, &mut 22_u8);}
-            ForFfKompresja::Bzip2(ref mut xx) => {*xx = *(xx).clamp(&mut 1_u8, &mut 22_u8);}
-            ForFfKompresja::Xz(ref mut xx) => {*xx = *(xx).clamp(&mut 1_u8, &mut 22_u8);}
+            ForFfKompresja::Bzip2(ref mut xx) => {*xx = *(xx).clamp(&mut 1_u8, &mut 9_u8);}
+            ForFfKompresja::Xz(ref mut xx) => {*xx = *(xx).clamp(&mut 1_u8, &mut 9_u8);}
             ForFfKompresja::Brak => {}
         }
         wyslij_status(&mut tx, Some(T::status(("data_chck_ff_bdepth",  "✓".to_string())))).await;

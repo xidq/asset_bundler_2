@@ -140,10 +140,26 @@ impl Logi for LogTxKonw {
 #[derive(Debug, Clone)]
 pub enum LogTxDdsPak {
     Start,
+    Sprawdzanie((&'static str,String)),
     PostępPreOperacji(u32,Option<u32>),
     PostępSkładania(u32,Option<u32>),
     Finito(String),
     Błąd(String),
+}
+impl Logi for LogTxDdsPak{
+    fn start() -> Self {
+        Self::Start
+    }
+
+    fn status(msg: (&'static str, String)) -> Self { Self::Sprawdzanie(msg) }
+
+    fn blad(msg: String) -> Self { Self::Błąd(msg) }
+
+    fn finito(msg: Option<String>) -> Self { Self::Finito(msg.unwrap_or_default()) }
+
+    fn nazwa() -> &'static str {
+        "[Dds Packing]"
+    }
 }
 #[allow(dead_code)]
 #[derive(Debug, Clone)]

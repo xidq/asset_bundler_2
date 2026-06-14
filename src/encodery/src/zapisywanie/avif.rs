@@ -12,7 +12,7 @@ use libheif_rs::{Channel, ColorSpace, CompressionFormat, EncoderParameterValue, 
 use std::fs::create_dir_all;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
+/// # Encoding avif
 pub async fn avif_match<T>(
     dane: PrzetwarzanieAvif,
     dane2: InneDane<BdepthAvif>,

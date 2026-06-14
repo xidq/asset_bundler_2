@@ -14,14 +14,10 @@ use lcms2::PixelFormat;
 use std::fs::create_dir_all;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
+/// # Encoding webp
 pub async fn webp_match<T>(
     dane: PrzetwarzanieWebp,
     dane2: InneDane<BdepthWebp>,
-    // wymiar: u32,
-    // bit_depth: BdepthWebp,
-    // nazwa_wariantu: String,
-    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,

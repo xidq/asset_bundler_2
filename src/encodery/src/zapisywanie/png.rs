@@ -11,14 +11,10 @@ use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
+/// # Encoding png
 pub async fn png_match<T>(
     dane: PrzetwarzaniePng,
     dane2: InneDane<BdepthPng>,
-    // wymiar: u32,
-    // bit_depth: BdepthPng,
-    // nazwa_wariantu: String,
-    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,

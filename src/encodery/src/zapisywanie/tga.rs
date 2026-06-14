@@ -9,14 +9,10 @@ use futures::channel::mpsc::Sender;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
+/// # Encoding tga
 pub async fn tga_match<T>(
     dane: PrzetwarzanieTga,
     dane2: InneDane<BdepthTga>,
-    // wymiar: u32,
-    // bit_depth: BdepthTga,
-    // nazwa_wariantu: String,
-    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,

@@ -10,14 +10,10 @@ use image::ImageEncoder;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
+/// # Encoding qoi
 pub async fn qoi_match<T>(
     dane: PrzetwarzanieQoi,
     dane2: InneDane<BdepthQoi>,
-    // wymiar: u32,
-    // bit_depth: BdepthQoi,
-    // nazwa_wariantu: String,
-    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,

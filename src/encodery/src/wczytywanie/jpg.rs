@@ -6,6 +6,7 @@ use img_parts::{ImageEXIF, ImageICC};
 use jpeg_decoder::Decoder;
 use std::io::Cursor;
 
+/// # Decoding jpg
 pub fn jpeg(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     let mut exif_out = None;
     let mut typ_koloru = ColorProfilePhoto::None;

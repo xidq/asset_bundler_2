@@ -13,7 +13,7 @@ use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use xz2::write::XzEncoder;
-
+/// # Encoding ff
 pub async fn ff_match<T>(
     dane: PrzetwarzanieFf,
     dane2: InneDane<ForFfKompresja>,
@@ -86,14 +86,13 @@ where T: Logi,
             //kompresja 1-22 || 3def
             let compressor = zstd::Encoder::new(
                 output_file,
-                (x as f32 / 9.).round().clamp(1., 22.) as i32,
+                x as i32,
             )?
                 .auto_finish();
 
-            // 2. Dodajesz buforowanie dla wydajności
+            // Dodajesz buforowanie dla wydajności
             let buffered_writer = std::io::BufWriter::new(compressor);
-
-            // 3. Reszta bez zmian
+            
             let encoder = image::codecs::farbfeld::FarbfeldEncoder::new(buffered_writer);
             final_finalv3_temp_final_ostatecznyv5
                 .write_with_encoder(encoder)
@@ -103,7 +102,7 @@ where T: Logi,
             //kompresja 1-9
             let bz_encoder = BzEncoder::new(
                 output_file,
-                Compression::new((x as f32 / 22.).round().clamp(1., 9.) as u32),
+                Compression::new(x as u32),
             );
             let buffered_writer = std::io::BufWriter::new(bz_encoder);
 
@@ -115,7 +114,7 @@ where T: Logi,
         ForFfKompresja::Xz(x) => {
             // 1-9 || 6def
             let xz_encoder =
-                XzEncoder::new(output_file, (x as f32 / 22.).round().clamp(1., 9.) as u32);
+                XzEncoder::new(output_file, x as u32);
             let buffered_writer = std::io::BufWriter::new(xz_encoder);
 
             let encoder = image::codecs::farbfeld::FarbfeldEncoder::new(buffered_writer);
@@ -140,8 +139,6 @@ where T: Logi,
     drop(oopr);
 
     wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
-
-
-
-Ok(())
+    
+    Ok(())
 }

@@ -1,0 +1,26 @@
+#cargo-features = ["edition2024"]
+[package]
+name = "encodery"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+tokio = { workspace = true }
+zstd = { workspace = true }
+image = { workspace = true }
+rand = { workspace = true }
+enumy = { path = "../enumy" }
+bzip2 = { workspace = true }
+xz2 = { workspace = true }
+libheif-rs = { workspace = true }
+jpeg-encoder = { workspace = true }
+futures = { workspace = true }
+webp = { workspace = true }
+four-cc = { workspace = true }
+jpeg-decoder = { workspace = true }
+bytes = { workspace = true }
+img-parts = { workspace = true }
+png = { workspace = true }
+lcms2 = { workspace = true }
+crc32fast = { workspace = true }
+exr = { workspace = true }

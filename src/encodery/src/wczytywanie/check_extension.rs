@@ -1,5 +1,6 @@
 use enumy::rozszerzenia::ext::ImgExtTag;
-
+/// # Check format
+/// Checkin' format for further decoding
 pub fn rozpoznaj_format(bajty: &[u8]) -> ImgExtTag {
     if bajty.len() < 12 { return ImgExtTag::Unknown; }
 
@@ -25,7 +26,8 @@ pub fn rozpoznaj_format(bajty: &[u8]) -> ImgExtTag {
 
     typ
 }
-
+/// # tga check
+/// Due to tga format philosophy we're checking if that's it.
 fn jest_tga(bajty: &[u8]) -> bool {
     let len = bajty.len();
     if len < 18 { return false; }

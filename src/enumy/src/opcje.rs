@@ -1,3 +1,4 @@
+use image::imageops::FilterType;
 use strum::{Display, EnumIter};
 
 #[allow(dead_code)]
@@ -11,6 +12,12 @@ pub enum OptKompresjaPlikówFiltracjaPlików {
 }
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq, Copy, EnumIter, Display)]
+/// # Existing file handling
+/// What should happen to already existing files?
+/// 
+/// Change? Leave them be? Change name?
+/// 
+/// Who knows what'll happen?
 pub enum OptIstniejePlik{
     Zamień,
     Zostaw,
@@ -18,6 +25,7 @@ pub enum OptIstniejePlik{
 }
 #[allow(dead_code)]
 #[derive(Debug, Copy, Clone, PartialEq, EnumIter, Display)]
+/// Zstd compression for binary packing
 pub enum OptKompresjaPlikówPoziomKompresjiZstd {
     Brak = 0,
     Standard = 3,
@@ -32,10 +40,23 @@ pub enum OptInterpolacja {
     Gaussian,
     Lanczos3,
 }
+impl OptInterpolacja{
+    /// Getting FilterType style enum from OptInterpolacja
+    pub fn konwertuj(&self) -> FilterType {
+        match self{
+            Self::Nearest => FilterType::Nearest,
+            Self::Triangle => FilterType::Triangle,
+            Self::CatmullRom => FilterType::CatmullRom,
+            Self::Gaussian => FilterType::Gaussian,
+            Self::Lanczos3 => FilterType::Lanczos3,
+        }
+    }
+}
 
 #[allow(dead_code)]
 #[derive(Clone)]
 pub enum OptEfektZaszumiania {
+    /// 0-100 (like percent)
     Tak(u8),
     Nie,
 }

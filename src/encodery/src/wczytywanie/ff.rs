@@ -2,6 +2,8 @@ use crate::wczytywanie::strukty::DaneDoWczytywania;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use image::{DynamicImage, ImageBuffer, Rgba};
 
+/// # Decoding farbfeld
+/// ;)
 pub fn ff(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error> {
     // 1. Sprawdzenie nagłówka "farbfeld" (8 bajtów)
     if bajty.len() < 16 || &bajty[0..8] != b"farbfeld" {

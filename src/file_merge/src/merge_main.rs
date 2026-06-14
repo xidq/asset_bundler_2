@@ -1,35 +1,38 @@
-use crate::metody_mielenia::laczenie::laczenie_vac_to_dyn;
+use crate::laczenie::laczenie_vac_to_dyn;
 use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
 use encodery::zapisywanie::generic::zapisywanie_generic;
 use enumy::dane_do_przetwarzania::DaneMerge;
+use enumy::fn_ogolne_przeliczeniowe::przelicz_czas;
+use enumy::log_file_gen::generuj_plik_logow;
 use enumy::opcje::OptInterpolacja;
 use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieExr, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 use enumy::rozszerzenia::bdepth::BdepthQoi;
 use enumy::rozszerzenia::ext::ImgExtSingle;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use enumy::send::wyslij_status;
 pub use enumy::statusy::LogTxMerge;
 use futures::channel::mpsc;
 use futures::executor::block_on;
-use futures::SinkExt;
 use image::DynamicImage;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-// fn that is entry point for merging images by channels
 
+// fn that is entry point for merging images by channels
+/// Main fn for merging photos
+///
+/// At least 1 photo must be valid
 pub async fn fn_do_laczenia_fot(
     zestaw_danych: DaneMerge,
     mut tx: mpsc::Sender<LogTxMerge>,
 ) -> Result<(), tokio::io::Error> {
-    
-    let _ = tx.send(LogTxMerge::Start).await;
 
+    wyslij_status(&mut tx,Some(LogTxMerge::Start)).await;
 
     let metryka_operacji = Some(3);
     let obecna_operacja: Arc<Mutex<u32>> = Arc::new(Mutex::new(0));
 
-
-    // let start_czas = std::time::Instant::now();
+    let start_czas = std::time::Instant::now();
 
     let sciezki = [
         zestaw_danych.sciezka_r,
@@ -75,17 +78,15 @@ pub async fn fn_do_laczenia_fot(
                     return img;
                 }
 
-
                 let przeskalowany = img.resize(max_x, max_y, image::imageops::FilterType::Lanczos3);
 
-                // 3. Przygotowanie tła
+                // Przygotowanie tła
                 let mut tlo = DynamicImage::ImageLuma8(image::ImageBuffer::new(max_x, max_y));
-
 
                 let x_pos = (max_x - przeskalowany.width()) / 2;
                 let y_pos = (max_y - przeskalowany.height()) / 2;
 
-                // 5. Nakładanie
+                // Nakładanie
                 image::imageops::overlay(&mut tlo, &przeskalowany, x_pos as i64, y_pos as i64);
                 tlo
             }
@@ -98,20 +99,8 @@ pub async fn fn_do_laczenia_fot(
     let img_b = przygotuj_final(surowe_obrazy[2].take());
     let img_a = przygotuj_final(surowe_obrazy[3].take());
 
-    // let mut ścieżka_wyjściowa = dane.sciezka_out.clone();
-    // ścieżka_wyjściowa.push(dane.nazwa);
-
-    // let ilosc_bitow = if let rozszerzenia_plików_zdjęciowych::Png { bit_depth, .. } = &dane.out_format {
-    //     // Pobieramy pierwszy element z Vec.
-    //     // .cloned() jest potrzebne, jeśli Obraz nie implementuje Copy
-    //     bit_depth.first().cloned().unwrap_or(Obraz::B8)
-    // } else {
-    //     // Wartość domyślna, jeśli out_format to nie Png
-    //     Obraz::B8
-    // };
     let wymiar = (max_x, max_y);
     let obrazki = Vec::from([img_r, img_g, img_b, img_a]);
-    // let bfor = laczenie_vac_to_dyn(obrazki,bit_depth,wymiar);
 
     let wynik: Result<(), tokio::io::Error> = block_on(async {
         match zestaw_danych.rozszerzenie {
@@ -316,11 +305,14 @@ pub async fn fn_do_laczenia_fot(
     match wynik {
         Ok(_) => {
             // let czas_napis = format!("{:.2?}", start_czas.elapsed());
-            let _ = tx.send(LogTxMerge::Finito(String::new())).await;
+            // let _ = tx.send(LogTxMerge::Finito(String::new())).await;
+            wyslij_status(&mut tx,Some(LogTxMerge::Finito(przelicz_czas(start_czas)))).await;
             Ok(())
         }
         Err(e) => {
-            let _ = tx.send(LogTxMerge::Błąd(e.to_string())).await;
+            let msg = format!("[Merging] {}",e);
+            generuj_plik_logow(msg.clone());
+            wyslij_status(&mut tx,Some(LogTxMerge::Błąd(e.to_string()))).await;
             Err(e)
         }
     }

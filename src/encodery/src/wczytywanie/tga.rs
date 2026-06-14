@@ -3,7 +3,8 @@ use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use image::codecs::tga::TgaDecoder;
 use image::{ColorType, DynamicImage, ImageBuffer, ImageDecoder};
 use std::io::Cursor;
-
+/// # Decoding tga
+/// ;)
 pub fn tga(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     let cursor = Cursor::new(bajty);
     let decoder = TgaDecoder::new(cursor)

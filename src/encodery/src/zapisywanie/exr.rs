@@ -15,14 +15,10 @@ use futures::channel::mpsc::Sender;
 use image::DynamicImage;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-
+/// # Encoding exr
 pub async fn exr_match<T>(
-    dane: PrzetwarzanieExr, //będzie dostosowane do exr... gdzie będą kompresje, profile itd.
+    dane: PrzetwarzanieExr,
     dane2: InneDane<BdepthExr>,
-    // wymiar: u32,
-    // bit_depth: BdepthExr, //tutaj też będą do exr rzeczy czyli na ten moment możesz używać BdepthExr::f16Half, BdepthExr::f32, BdepthExr::f32Half itp itd
-    // nazwa_wariantu: String,
-    // filtr: FilterType,
     metryka_operacji: Option<u32>,
     obecna_operacja: Arc<Mutex<u32>>,
     mut tx: Sender<T>,
@@ -206,7 +202,7 @@ where T: Logi,
     let image = Image::new(image_attributes, layer);
 
 
-    let mut output_path = dane.sciezka_wyjsciowa.join(&dane2.nazwa_wariantu).with_extension("exr");
+    let mut output_path = dane.sciezka_wyjsciowa.join(dane2.nazwa_wariantu).with_extension("exr");
     if output_path.exists() {
         match dane2.zastepowanie{
             OptIstniejePlik::Zamień => {}

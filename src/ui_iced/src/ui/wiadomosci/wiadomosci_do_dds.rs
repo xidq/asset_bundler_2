@@ -151,6 +151,7 @@ impl Program {
                         let _ = self.update(Message::ChckStatus);
 
                     }
+                    _ => {}
                 }
             }
             DdsMsg::RozpakInPathBtn => {

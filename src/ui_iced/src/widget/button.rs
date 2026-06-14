@@ -625,7 +625,7 @@ pub fn btn_rozdzielczosci<'a>(
                 jezyk.t(rozdzielczosc.get_message().unwrap_or("błąd danych rozdzielczosc"))
             ).font(jezyk.get_font()).width(Length::Fill).height(Length::Fill).center()
         )
-            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(KonwMsg::Rozdzielczość(rozdzielczosc.clone())))
+            .on_press(Message::ZbiorowePrzetwarzanieZdjęć(KonwMsg::Rozdzielczość(rozdzielczosc)))
             .height(100.).width(Length::FillPortion(1))
             .style(styl_przycisków(stan, kolor, temat)
         );

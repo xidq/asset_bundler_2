@@ -5,7 +5,8 @@ use lcms2::PixelFormat;
 use libheif_rs::{ColorPrimaries, TransferCharacteristics};
 use rand::RngExt;
 use std::path::{Path, PathBuf};
-
+/// # Noising
+/// Put some color noise to image
 pub fn zaszumianie(noising: u8, bufor: DynamicImage) -> DynamicImage {
     // let mut xoxo = bufor.clone();
     let mut rng = rand::rng();
@@ -273,7 +274,7 @@ pub fn zaszumianie(noising: u8, bufor: DynamicImage) -> DynamicImage {
 //         _ => bufor, // Reszta formatów bez zmian
 //     }
 // }
-
+/// Get rid of alpha channel if there's any
 pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> DynamicImage {
     let mapuj_u16_na_u8 = |v: u16| -> u8 { ((v as f32 / 65535.0) * 255.0).round() as u8 };
 
@@ -537,7 +538,9 @@ pub fn usun_kanal_alpha(bufor: DynamicImage, alfa_rgb: (u16, u16, u16)) -> Dynam
     };
     usuniete_alpha
 }
-
+/// Merge paths to one.
+/// 
+/// so there's one path wih subfolders
 pub fn merge_sciezki(ścieżka_wyjściowa:&Path, ścieżka_dopełniająca: &String) -> PathBuf {
     let mut huehuehue = ścieżka_wyjściowa.to_path_buf();
     huehuehue.push(ścieżka_dopełniająca);
@@ -702,8 +705,8 @@ pub fn konwersja_float_na_mniejsze(foto: DynamicImage,  chroma: PrzestrzeńExr) 
 // ---------- pomocnicze ----------
 // const SRGB_PRIMARIES: [f32; 8] = [0.64, 0.33, 0.30, 0.60, 0.15, 0.06, 0.3127, 0.3290];
 
-/// Wyznacza macierz 3x3 przekształcającą liniowe RGB z przestrzeni o chromatycznościach `src_prim`
-/// do przestrzeni `dst_prim`. Oba zestawy podane jako [rx, ry, gx, gy, bx, by, wx, wy].
+/// Matricies 3x3 transforms linear RGB from `src_prim` chromaticies
+/// to `dst_prim`. Both as [rx, ry, gx, gy, bx, by, wx, wy].
 fn compute_rgb_to_rgb_matrix(src_prim: [f32; 8], dst_prim: [f32; 8]) -> [f32; 9] {
     fn primaries_to_xyz(p: [f32; 8]) -> [[f32; 3]; 3] {
         let [rx, ry, gx, gy, bx, by, wx, wy] = p;
@@ -769,7 +772,7 @@ fn invert_3x3(m: [[f32; 3]; 3]) -> [[f32; 3]; 3] {
     ]
 }
 
-/// Gamma sRGB: liniowy -> sRGB (IEC 61966-2-1)
+/// Gamma sRGB: linear -> sRGB (IEC 61966-2-1)
 fn linear_to_srgb(c: f32) -> f32 {
     if c <= 0.0031308 {
         12.92 * c
@@ -896,15 +899,15 @@ pub fn konwersja_mniejsze_na_float(
 // ---------------------------------------------------------------------------
 // Funkcje pomocnicze
 
-/// Stałe chromatyczności sRGB / BT.709
+/// const chromaticies sRGB / BT.709
 const SRGB_PRIMARIES: [f32; 8] = [0.64, 0.33, 0.30, 0.60, 0.15, 0.06, 0.3127, 0.3290];
 
-/// Porównuje dwie 8‑liczbowe tablice chromatyczności z tolerancją.
+/// Compares two tables with 8 numbers chromaticies with tolerancy.
 fn primaries_approx_equal(a: [f32; 8], b: [f32; 8]) -> bool {
     a.iter().zip(b.iter()).all(|(x, y)| (x - y).abs() < 1e-4)
 }
 
-/// Zwraca chromatyczności [rx,ry, gx,gy, bx,by, wx,wy] dla znanych standardów.
+/// Returns chromaticies [rx,ry, gx,gy, bx,by, wx,wy] for known standards.
 fn primaries_to_coordinates(p: ColorPrimaries) -> [f32; 8] {
     match p {
         ColorPrimaries::ITU_R_BT_709_5 =>
@@ -919,7 +922,7 @@ fn primaries_to_coordinates(p: ColorPrimaries) -> [f32; 8] {
     }
 }
 
-/// Odwrotność funkcji transferu (gamma → liniowy).
+/// inverse transfer fn (gamma → linear).
 fn inverse_transfer(value: f32, tf: TransferCharacteristics) -> f32 {
     match tf {
         TransferCharacteristics::IEC_61966_2_1 => srgb_to_linear(value),
@@ -934,7 +937,7 @@ fn inverse_transfer(value: f32, tf: TransferCharacteristics) -> f32 {
     }
 }
 
-/// sRGB -> liniowy (IEC 61966‑2‑1)
+/// sRGB -> linear (IEC 61966‑2‑1)
 fn srgb_to_linear(c: f32) -> f32 {
     if c <= 0.04045 {
         c / 12.92
@@ -943,7 +946,7 @@ fn srgb_to_linear(c: f32) -> f32 {
     }
 }
 
-/// BT.709 / BT.2020 (SDR) -> liniowy
+/// BT.709 / BT.2020 (SDR) -> linear
 fn bt709_to_linear(c: f32) -> f32 {
     if c < 0.081 {
         c / 4.5

@@ -1,31 +1,32 @@
-use std::path::PathBuf;
-use enumy::send::wyslij_status;
 use crate::zapisywanie::avif::avif_match;
+use crate::zapisywanie::exr::exr_match;
 use crate::zapisywanie::ff::ff_match;
 use crate::zapisywanie::jpg::jpg_match;
 use crate::zapisywanie::png::png_match;
 use crate::zapisywanie::qoi::qoi_match;
 use crate::zapisywanie::tga::tga_match;
 use crate::zapisywanie::webp::webp_match;
-use enumy::opcje::{OptInterpolacja, OptIstniejePlik};
+use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::{DaneDoPrzetwarzania, TypyPrzetwarzania};
 use enumy::rozszerzenia::bdepth_impl::{BdepthEnum, BitDepth};
-use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
+use enumy::send::wyslij_status;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
+use std::path::PathBuf;
 use std::sync::Arc;
 use tokio::sync::Mutex;
-use crate::zapisywanie::exr::exr_match;
-
+/// data common for every extension here
 pub struct InneDane<T>{
     pub wymiar: u32,
     pub bdepth: T,
-    pub nazwa_wariantu: String,
+    pub nazwa_wariantu: &'static str,
     pub filtr: FilterType,
     pub zastepowanie: OptIstniejePlik,
 }
-
+/// # Main encoding fn
+/// Fn with generics where is decided what to do etc.
+/// 
 pub async fn zapisywanie_generic<T, F, G>(
     dane: F,
     metodyka: OptIstniejePlik,
@@ -37,36 +38,17 @@ where T: Logi,
       F: DaneDoPrzetwarzania<G> + std::clone::Clone,
 G: BitDepth + std::clone::Clone,
 {
-    
-    
 
-
-    let filtr = match &dane.interpolacja() {
-        OptInterpolacja::Nearest => FilterType::Nearest,
-        OptInterpolacja::Triangle => FilterType::Triangle,
-        OptInterpolacja::CatmullRom => FilterType::CatmullRom,
-        OptInterpolacja::Gaussian => FilterType::Gaussian,
-        OptInterpolacja::Lanczos3 => FilterType::Lanczos3,
-    };
-
+    // let filtr = match &dane.interpolacja() {
+    //     OptInterpolacja::Nearest => FilterType::Nearest,
+    //     OptInterpolacja::Triangle => FilterType::Triangle,
+    //     OptInterpolacja::CatmullRom => FilterType::CatmullRom,
+    //     OptInterpolacja::Gaussian => FilterType::Gaussian,
+    //     OptInterpolacja::Lanczos3 => FilterType::Lanczos3,
+    // };
+    let filtr = dane.interpolacja().konwertuj();
 
     for wariant in dane.rozdzielczosci() {
-        let (docelowy_wymiar, nazwa_wariantu) = match wariant {
-            Rozdzielczości::R16 => (16, "_16"),
-            Rozdzielczości::R32 => (32, "_32"),
-            Rozdzielczości::R64 => (64, "_64"),
-            Rozdzielczości::R128 => (128, "_128"),
-            Rozdzielczości::R256 => (256, "_256"),
-            Rozdzielczości::R512 => (512, "_512"),
-            Rozdzielczości::R1k => (1024, "_1024"),
-            Rozdzielczości::R2k => (2048, "_2k"),
-            Rozdzielczości::R4k => (4096, "_4k"),
-            Rozdzielczości::R6k => (6144, "_6k"),
-            Rozdzielczości::R8k => (8192, "_8k"),
-            Rozdzielczości::R16k => (16384, "_16k"),
-            Rozdzielczości::Oryginalna => (0, ""),
-        };
-
 
         for wybór in dane.bdepth() {
 
@@ -82,9 +64,9 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzJpg(danee) => {
                     if let BdepthEnum::Jpg(bdepth) = wybór.clone().jako_enum(){
                         let data = InneDane{
-                            wymiar: docelowy_wymiar,
+                            wymiar: *wariant as u32,
                             bdepth,
-                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            nazwa_wariantu: wariant.rozszerzenie(),
                             filtr,
                             zastepowanie: metodyka,
                         };
@@ -100,9 +82,9 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzPng(danee) => {
                     if let BdepthEnum::Png(bdepth) = wybór.clone().jako_enum(){
                         let data = InneDane{
-                            wymiar: docelowy_wymiar,
+                            wymiar: *wariant as u32,
                             bdepth,
-                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            nazwa_wariantu: wariant.rozszerzenie(),
                             filtr,
                             zastepowanie: metodyka,
                         };
@@ -118,9 +100,9 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzAvif(danee) => {
                     if let BdepthEnum::Avif(bdepth) = wybór.clone().jako_enum(){
                         let data = InneDane{
-                            wymiar: docelowy_wymiar,
+                            wymiar: *wariant as u32,
                             bdepth,
-                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            nazwa_wariantu: wariant.rozszerzenie(),
                             filtr,
                             zastepowanie: metodyka,
                         };
@@ -136,9 +118,9 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzWebp(danee) => {
                     if let BdepthEnum::Webp(bdepth) = wybór.clone().jako_enum(){
                         let data = InneDane{
-                            wymiar: docelowy_wymiar,
+                            wymiar: *wariant as u32,
                             bdepth,
-                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            nazwa_wariantu: wariant.rozszerzenie(),
                             filtr,
                             zastepowanie: metodyka,
                         };
@@ -154,9 +136,9 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzQoi(danee) => {
                     if let BdepthEnum::Qoi(bdepth) = wybór.clone().jako_enum(){
                         let data = InneDane{
-                            wymiar: docelowy_wymiar,
+                            wymiar: *wariant as u32,
                             bdepth,
-                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            nazwa_wariantu: wariant.rozszerzenie(),
                             filtr,
                             zastepowanie: metodyka,
                         };
@@ -172,9 +154,9 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzTga(danee) => {
                     if let BdepthEnum::Tga(bdepth) = wybór.clone().jako_enum(){
                         let data = InneDane{
-                            wymiar: docelowy_wymiar,
+                            wymiar: *wariant as u32,
                             bdepth,
-                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            nazwa_wariantu: wariant.rozszerzenie(),
                             filtr,
                             zastepowanie: metodyka,
                         };
@@ -190,9 +172,9 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzFf(danee) => {
                     if let BdepthEnum::Ff(bdepth) = wybór.clone().jako_enum(){
                         let data = InneDane{
-                            wymiar: docelowy_wymiar,
+                            wymiar: *wariant as u32,
                             bdepth,
-                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            nazwa_wariantu: wariant.rozszerzenie(),
                             filtr,
                             zastepowanie: metodyka,
                         };
@@ -208,9 +190,9 @@ G: BitDepth + std::clone::Clone,
                 TypyPrzetwarzania::PrzExr(danee) => {
                     if let BdepthEnum::Exr(bdepth) = wybór.clone().jako_enum(){
                         let data = InneDane{
-                            wymiar: docelowy_wymiar,
+                            wymiar: *wariant as u32,
                             bdepth,
-                            nazwa_wariantu: nazwa_wariantu.to_string(),
+                            nazwa_wariantu: wariant.rozszerzenie(),
                             filtr,
                             zastepowanie: metodyka,
                         };

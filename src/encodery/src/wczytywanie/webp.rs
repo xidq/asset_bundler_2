@@ -1,8 +1,9 @@
 use crate::wczytywanie::strukty::DaneDoWczytywania;
 use webp::Decoder;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
-// Safe wrapper, który już masz
 
+/// # Decoding webp
+/// ;)
 pub fn webp(bajty: &[u8]) -> Result<DaneDoWczytywania, std::io::Error> {
 
     let decoder = Decoder::new(bajty);

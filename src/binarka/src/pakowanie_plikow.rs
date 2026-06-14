@@ -198,7 +198,7 @@ pub async fn ogarnianie_eksportu(
         Err(e) => {
             let msg = format!("[Binary packing] {}",e);
             generuj_plik_logow(msg.clone());
-            wyslij_status(&mut tx,Some(LogTxBinPak::Błąd(msg))).await;
+            wyslij_status(&mut tx,Some(LogTxBinPak::Błąd(e.to_string()))).await;
             Err(e)
         }
     }

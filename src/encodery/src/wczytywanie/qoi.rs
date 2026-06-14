@@ -3,7 +3,8 @@ use crate::wczytywanie::strukty::DaneDoWczytywania;
 use std::io::Cursor;
 use image::{ColorType, DynamicImage, ImageBuffer, ImageDecoder};
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
-
+/// # Decoding qoi
+/// ;)
 pub fn qoi(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {
     let cursor = Cursor::new(bajty);
 
