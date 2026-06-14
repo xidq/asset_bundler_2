@@ -15,7 +15,7 @@ use strum::IntoEnumIterator;
 
 pub fn png<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
     Column::new()
-        .push(przycisk_rozszerzenia(ImgExtTag::Png, ButtonType::KonwRozszerzenia, kolor, if dane.rozszerzenia.jpg.is_some() { &BtnState::Active } else { &BtnState::Disabled }, jezyk, temat))
+        .push(przycisk_rozszerzenia(ImgExtTag::Png, ButtonType::KonwRozszerzenia, kolor, if dane.rozszerzenia.png.is_some() { &BtnState::Active } else { &BtnState::Disabled }, jezyk, temat))
         .push(
             container(
                 Row::new()
