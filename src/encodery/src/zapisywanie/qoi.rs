@@ -27,7 +27,7 @@ where T: Logi,
     let (final_img, nazwa_bd, color_type, szer, wys) = match dane2.bdepth {
         BdepthQoi::Color24 => {
             // 1. Usuwamy alfę i przygotowujemy RGB8
-            dbg!("[debug] qoi tc24");
+            // dbg!("[debug] qoi tc24");
             let img = usun_kanal_alpha(dane.bufor.clone(), dane.alpha);
             let res = if dane2.wymiar == 0 {
                 match dane.zaszumienie {
@@ -56,7 +56,7 @@ where T: Logi,
         }
 
         BdepthQoi::Color32 => {
-            dbg!("[debug] qoi tc32");
+            // dbg!("[debug] qoi tc32");
 
             let res = if dane2.wymiar == 0 {
                 match dane.zaszumienie {

@@ -127,7 +127,7 @@ where T: Logi,
         }
 
         BdepthTga::TrueColorA32 => {
-            dbg!("[debug] tga tc32");
+            // dbg!("[debug] tga tc32");
 
             let res = if dane2.wymiar == 0 {
                 match dane.zaszumienie {
