@@ -13,6 +13,8 @@ use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
 use xz2::write::XzEncoder;
+use enumy::inne_ui::WskaznikSzumu;
+
 /// # Encoding ff
 pub async fn ff_match<T>(
     dane: PrzetwarzanieFf,
@@ -35,8 +37,8 @@ where T: Logi,
     };
 
     let final_finalv3_temp_final_ostatecznyv5 = match dane.zaszumienie {
-        Some(xoxo) => zaszumianie(xoxo, bombozooo),
-        None => bombozooo,
+        WskaznikSzumu::Normalny { .. } | WskaznikSzumu::Perlin{ .. } => {zaszumianie(dane.zaszumienie, bombozooo)}
+        WskaznikSzumu::NoNoise => {bombozooo}
     };
 
     let lambadziara = dane2.bdepth;

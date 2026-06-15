@@ -36,7 +36,7 @@ pub fn jpg<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                 .push(
                                     Row::new().spacing(15).height(50.)
                                         .push(pole_tekstowe_przycisku(format!("Q: {}%", jakosc), jezyk, temat))
-                                        .push(slajderr(*jakosc as i32, (0,100), &SliderType::KonwJpgQuality, kolor, temat, Length::FillPortion(2)  ))
+                                        .push(slajderr(*jakosc, (0,100), &SliderType::KonwJpgQuality, kolor, temat, Length::FillPortion(2)  ))
                                         .push(space().width(15.))
                                 )
                                 .push(
@@ -60,7 +60,7 @@ pub fn jpg<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, t
                                 .push(
                                     Row::new().spacing(15)
                                         .push(pole_tekstowe_przycisku(format!("scans: {}", scans), jezyk, temat))
-                                        .push(slajderr(*scans as i32, (2,64), &SliderType::KonwersjaJpgScans, kolor, temat, Length::FillPortion(2)  ))
+                                        .push(slajderr(*scans, (2,64), &SliderType::KonwersjaJpgScans, kolor, temat, Length::FillPortion(2)  ))
                                         .push(space().width(15.))
                                 )
                                 .push(

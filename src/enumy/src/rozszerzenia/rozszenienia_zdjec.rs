@@ -55,7 +55,7 @@ pub struct ImgExtQoi {
 #[derive(Clone, Debug, PartialEq)]
 pub struct ImgExtAvif{
     pub chroma: ForAvifChroma,
-    pub speed:i32,
+    pub speed:u8,
     pub metoda_kompresji: ForAvifKompresja,
     pub lossy:Option<u8>,
     pub bit_depth: Vec<BdepthAvif>,

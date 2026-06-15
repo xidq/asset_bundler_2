@@ -6,6 +6,7 @@ use crate::rozszerzenia::kompresje::{ForAvifKompresja, ForExrKompresja, ForFfKom
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use image::DynamicImage;
 use std::path::PathBuf;
+use crate::inne_ui::WskaznikSzumu;
 
 pub trait DaneDoPrzetwarzania<T>{
     fn daj_dane(&self) -> Self;
@@ -45,7 +46,7 @@ pub struct PrzetwarzanieJpg{
     pub quant: ForJpgQuant,
     pub scans: u8,
     pub alpha: (u16, u16, u16),
-    pub zaszumienie: Option<u8>,
+    pub zaszumienie: WskaznikSzumu,
     pub exif: Option<Vec<u8>>,
     pub kolor: ColorProfilePhoto,
 }
@@ -69,7 +70,7 @@ pub struct PrzetwarzaniePng{
     pub kompresja: u8,
     pub bit_depth:  Vec<BdepthPng>,
     pub alpha: (u16, u16, u16),
-    pub zaszumienie: Option<u8>,
+    pub zaszumienie: WskaznikSzumu,
     pub exif: Option<Vec<u8>>,
     pub kolor: ColorProfilePhoto,
 }
@@ -93,7 +94,7 @@ pub struct PrzetwarzanieAvif{
     pub interpolacja: OptInterpolacja,
     pub bit_depth:  Vec<BdepthAvif>,
     pub alpha: (u16, u16, u16),
-    pub zaszumienie: Option<u8>,
+    pub zaszumienie: WskaznikSzumu,
     pub chroma: ForAvifChroma,
     pub speed:i32,
     pub metoda_kompresji: ForAvifKompresja,
@@ -122,7 +123,7 @@ pub struct PrzetwarzanieWebp{
     pub interpolacja: OptInterpolacja,
     pub bit_depth:  Vec<BdepthWebp>,
     pub alpha: (u16, u16, u16),
-    pub zaszumienie: Option<u8>,
+    pub zaszumienie: WskaznikSzumu,
     pub lossy: Option<u8>,
     pub exif: Option<Vec<u8>>,
     pub kolor: ColorProfilePhoto,
@@ -147,7 +148,7 @@ pub struct PrzetwarzanieQoi{
     pub interpolacja: OptInterpolacja,
     pub bit_depth:  Vec<BdepthQoi>,
     pub alpha: (u16, u16, u16),
-    pub zaszumienie: Option<u8>,
+    pub zaszumienie: WskaznikSzumu
 }
 impl DaneDoPrzetwarzania<BdepthQoi> for PrzetwarzanieQoi{
     fn daj_dane(&self) -> Self {self.clone()}
@@ -169,7 +170,7 @@ pub struct PrzetwarzanieTga{
     pub interpolacja: OptInterpolacja,
     pub bit_depth:  Vec<BdepthTga>,
     pub alpha: (u16, u16, u16),
-    pub zaszumienie: Option<u8>,
+    pub zaszumienie: WskaznikSzumu
 }
 impl DaneDoPrzetwarzania<BdepthTga> for PrzetwarzanieTga{
     fn daj_dane(&self) -> Self {self.clone()}
@@ -191,7 +192,7 @@ pub struct PrzetwarzanieFf{
     pub interpolacja: OptInterpolacja,
     pub kompresja:  Vec<ForFfKompresja>,
     pub alpha: (u16, u16, u16),
-    pub zaszumienie: Option<u8>,
+    pub zaszumienie: WskaznikSzumu
 }
 impl DaneDoPrzetwarzania<ForFfKompresja> for PrzetwarzanieFf{
     fn daj_dane(&self) -> Self {self.clone()}
@@ -214,7 +215,7 @@ pub struct PrzetwarzanieExr{
     pub kompresja: ForExrKompresja,
     pub bit_depth:  Vec<BdepthExr>,
     pub alpha: (u16, u16, u16),
-    pub zaszumienie: Option<u8>,
+    pub zaszumienie: WskaznikSzumu,
     pub kolor: ColorProfilePhoto,
 }
 impl DaneDoPrzetwarzania<BdepthExr> for PrzetwarzanieExr{

@@ -14,6 +14,7 @@ use std::fs::File;
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::Mutex;
+use enumy::inne_ui::WskaznikSzumu;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 
 pub async fn dds_to_image(
@@ -117,7 +118,7 @@ pub async fn dds_to_image(
                                 quant,
                                 scans,
                                 alpha: (0, 0, 0),
-                                zaszumienie: None,
+                                zaszumienie: WskaznikSzumu::NoNoise,
                                 exif: None,
                                 kolor: ColorProfilePhoto::None,
                             };
@@ -137,7 +138,7 @@ pub async fn dds_to_image(
                                 nazwa: nazawawawa.clone(),
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 alpha: (0, 0, 0),
-                                zaszumienie: None,
+                                zaszumienie: WskaznikSzumu::NoNoise,
                                 kompresja: vec![metoda_kompresji],
                             };
                             zapisywanie_generic(
@@ -158,7 +159,7 @@ pub async fn dds_to_image(
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bit_depth: bit_depth.clone(),
                                 alpha: (0, 0, 0),
-                                zaszumienie: None,
+                                zaszumienie: WskaznikSzumu::NoNoise,
                                 exif: None,
                                 kompresja,
                                 kolor: ColorProfilePhoto::None,
@@ -180,7 +181,7 @@ pub async fn dds_to_image(
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bit_depth: bit_depth.clone(),
                                 alpha: (0, 0, 0),
-                                zaszumienie: None,
+                                zaszumienie: WskaznikSzumu::NoNoise,
                                 lossy: if lossless { None } else { Some(jakosc) },
                                 exif: None,
                                 kolor: ColorProfilePhoto::None,
@@ -202,7 +203,7 @@ pub async fn dds_to_image(
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bit_depth: bit_depth.clone(),
                                 alpha: (0, 0, 0),
-                                zaszumienie: None,
+                                zaszumienie: WskaznikSzumu::NoNoise,
                             };
                             zapisywanie_generic(
                                 dane,
@@ -221,7 +222,7 @@ pub async fn dds_to_image(
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bit_depth: bit_depth.clone(),
                                 alpha: (0, 0, 0),
-                                zaszumienie: None,
+                                zaszumienie: WskaznikSzumu::NoNoise,
                             };
                             zapisywanie_generic(
                                 dane,
@@ -240,9 +241,9 @@ pub async fn dds_to_image(
                                 interpolacja: OptInterpolacja::Lanczos3,
                                 bit_depth: bit_depth.clone(),
                                 alpha: (0, 0, 0),
-                                zaszumienie: None,
+                                zaszumienie: WskaznikSzumu::NoNoise,
                                 chroma,
-                                speed,
+                                speed: speed as i32,
                                 metoda_kompresji,
                                 lossy,
                                 exif: None,
@@ -266,7 +267,7 @@ pub async fn dds_to_image(
                                 kompresja,
                                 bit_depth,
                                 alpha: (0, 0, 0),
-                                zaszumienie: None,
+                                zaszumienie: WskaznikSzumu::NoNoise,
                                 kolor: ColorProfilePhoto::None,
                             };
                             zapisywanie_generic(

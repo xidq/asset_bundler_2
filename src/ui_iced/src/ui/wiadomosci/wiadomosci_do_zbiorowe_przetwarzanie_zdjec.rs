@@ -262,9 +262,8 @@ impl Program {
                     *chroma = chromchrom;
                 }
             }
-            KonwMsg::Noising(procent) => {
-                self.dane_konw.noising =
-                    if procent == 0u8 { None } else { Some(procent) };
+            KonwMsg::Noising(wskaznik) => {
+                self.dane_konw.noising = wskaznik;
             }
             KonwMsg::Rozdzielczość(khekhe) => {
                 let pozycja = self.dane_konw

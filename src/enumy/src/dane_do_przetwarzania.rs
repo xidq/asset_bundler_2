@@ -6,6 +6,7 @@ use image::imageops::FilterType;
 use std::any::Any;
 use std::cmp::PartialEq;
 use std::path::PathBuf;
+use crate::inne_ui::WskaznikSzumu;
 use crate::rozszerzenia::rozszenienia_zdjec::{FormatyWyjściowe, ImgExtJpg};
 
 #[allow(dead_code)]
@@ -57,7 +58,7 @@ pub struct DaneKonw {
     pub ścieżka_wejściowa: PathBuf,
     pub ścieżka_wyjściowa: PathBuf,
     pub opcje_rozdzielczości: Vec<Rozdzielczości>,
-    pub noising: Option<u8>,
+    pub noising: WskaznikSzumu,
     // pub rozszerzenia: Vec<ImgExt>,
     // pub tag:Vec<ImgExtTag>,
     pub rozszerzenia: FormatyWyjściowe,
@@ -72,7 +73,7 @@ impl Default for DaneKonw {
             ścieżka_wejściowa: PathBuf::new(),
             ścieżka_wyjściowa: PathBuf::new(),
             opcje_rozdzielczości: Vec::from([Rozdzielczości::Oryginalna]),
-            noising: None,
+            noising: WskaznikSzumu::NoNoise,
             // rozszerzenia: Vec::from([ Default::default() ]),
             // tag: Vec::from([ ImgExtTag::Jpg ]),
             rozszerzenia: FormatyWyjściowe {

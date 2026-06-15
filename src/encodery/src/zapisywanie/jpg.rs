@@ -13,6 +13,8 @@ use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use enumy::inne_ui::WskaznikSzumu;
+
 /// # Encoding jpg
 pub async fn jpg_match<T>(
     dane: PrzetwarzanieJpg,
@@ -60,8 +62,8 @@ pub async fn jpg_match<T>(
 
 
     let final_finalv3_temp_final_ostatecznyv5 = match dane.zaszumienie {
-        Some(xoxo) => zaszumianie(xoxo, final_img),
-        None => final_img,
+        WskaznikSzumu::Normalny { .. } | WskaznikSzumu::Perlin{ .. } => {zaszumianie(dane.zaszumienie, final_img)}
+        WskaznikSzumu::NoNoise => {final_img}
     };
 
     let finalna_nazwa = format!("{}{}{}.jpg", dane.nazwa, dane2.nazwa_wariantu, nazwa_bd);

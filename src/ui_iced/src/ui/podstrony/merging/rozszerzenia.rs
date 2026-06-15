@@ -56,7 +56,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         .push(
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("Q: {}%", jakosc), jezyk, temat))
-                                                .push(slajderr(jakosc as i32, (0,100), &SliderType::MergeJpgQuality, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(jakosc, (0,100), &SliderType::MergeJpgQuality, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         )
                                         // .push(
@@ -81,7 +81,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         .push(
                                             Row::new().spacing(15)
                                                 .push(pole_tekstowe_przycisku(format!("scans: {}", scans), jezyk, temat))
-                                                .push(slajderr(scans as i32, (2,64), &SliderType::MergeJpgScans, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(scans, (2,64), &SliderType::MergeJpgScans, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         )
                                         .push(
@@ -117,7 +117,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                         .push(
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("C: {}", kompresja), jezyk, temat))
-                                                .push(slajderr(kompresja as i32, (0, 9), &SliderType::MergePngKompresja, kolor, temat, Length::FillPortion(2)))
+                                                .push(slajderr(kompresja, (0, 9), &SliderType::MergePngKompresja, kolor, temat, Length::FillPortion(2)))
                                                 .push(space().width(15.))
                                         )
                                         .push(
@@ -181,7 +181,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                                     {
                                                         Row::new().spacing(15).height(50.)
                                                             .push(pole_tekstowe_przycisku(format!("Q: {}", jakosc), jezyk, temat))
-                                                            .push(slajderr(jakosc as i32, (0, 100), &SliderType::MergeWebpJakosc, kolor, temat, Length::FillPortion(2)))
+                                                            .push(slajderr(jakosc, (0, 100), &SliderType::MergeWebpJakosc, kolor, temat, Length::FillPortion(2)))
                                                             .push(space().width(15.))
                                                     }
                                                 true => {Row::new().height(50.)}
@@ -260,19 +260,19 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                                 ForFfKompresja::Zstd(kompresja) => {
                                                     Row::new().spacing(15).height(50.)
                                                         .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                        .push(slajderr(kompresja as i32, (1,22), &SliderType::MergeFfZstd, kolor, temat, Length::FillPortion(2)  ))
+                                                        .push(slajderr(kompresja, (1,22), &SliderType::MergeFfZstd, kolor, temat, Length::FillPortion(2)  ))
                                                         .push(space().width(15.))
                                                 }
                                                 ForFfKompresja::Bzip2(kompresja) => {
                                                     Row::new().spacing(15).height(50.)
                                                         .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                        .push(slajderr(kompresja as i32, (1,9), &SliderType::MergeFfBzip2, kolor, temat, Length::FillPortion(2)  ))
+                                                        .push(slajderr(kompresja, (1,9), &SliderType::MergeFfBzip2, kolor, temat, Length::FillPortion(2)  ))
                                                         .push(space().width(15.))
                                                 }
                                                 ForFfKompresja::Xz(kompresja) => {
                                                     Row::new().spacing(15).height(50.)
                                                         .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                        .push(slajderr(kompresja as i32, (1,9), &SliderType::MergeFfXz, kolor, temat, Length::FillPortion(2)  ))
+                                                        .push(slajderr(kompresja, (1,9), &SliderType::MergeFfXz, kolor, temat, Length::FillPortion(2)  ))
                                                         .push(space().width(15.))
                                                 }
                                                 ForFfKompresja::Brak => {
@@ -371,7 +371,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneMerge, kolor: &'a Color, jezyk: &'a Wybór
                                                 Some(ggg) => {
                                                     Row::new().spacing(15).height(50.)
                                                         .push(pole_tekstowe_przycisku(format!("Q: {}", ggg), jezyk, temat))
-                                                        .push(slajderr(ggg as i32, (0, 100), &SliderType::MergeAvifQuality, kolor, temat, Length::FillPortion(2)))
+                                                        .push(slajderr(ggg, (0, 100), &SliderType::MergeAvifQuality, kolor, temat, Length::FillPortion(2)))
                                                         .push(space().width(15.))
                                                 }
                                                 None => { Row::new().spacing(15).height(50.) }

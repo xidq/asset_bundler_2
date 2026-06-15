@@ -27,7 +27,7 @@ pub enum Message {
     TextInputHandling(String, TextInputType),
     Przyciski(ButtonType),
     Startujemy(ActProces),
-    Slidery(SliderType, i32),
+    Slidery(SliderType, u8),
     ChckStatus,
     Nic,
     

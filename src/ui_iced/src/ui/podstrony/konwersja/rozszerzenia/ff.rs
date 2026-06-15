@@ -31,19 +31,19 @@ pub fn ff<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, te
                                         ForFfKompresja::Zstd(kompresja) => {
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                .push(slajderr(*kompresja as i32, (1,22), &SliderType::KonwersjaFfZstd, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(*kompresja, (1,22), &SliderType::KonwersjaFfZstd, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         }
                                         ForFfKompresja::Bzip2(kompresja) => {
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                .push(slajderr(*kompresja as i32, (1,9), &SliderType::KonwersjaFfBzip2, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(*kompresja, (1,9), &SliderType::KonwersjaFfBzip2, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         }
                                         ForFfKompresja::Xz(kompresja) => {
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                .push(slajderr(*kompresja as i32, (1,9), &SliderType::KonwersjaFfXz, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(*kompresja, (1,9), &SliderType::KonwersjaFfXz, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         }
                                         ForFfKompresja::Brak => {

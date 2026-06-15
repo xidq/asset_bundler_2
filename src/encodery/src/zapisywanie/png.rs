@@ -11,6 +11,8 @@ use lcms2::PixelFormat;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use enumy::inne_ui::WskaznikSzumu;
+
 /// # Encoding png
 pub async fn png_match<T>(
     dane: PrzetwarzaniePng,
@@ -56,10 +58,10 @@ where T: Logi,
     let obecnie = *oopr;
     drop(oopr);
     wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
-    
+
     let final_final_final_v3_xd = match dane.zaszumienie {
-        Some(x) => zaszumianie(x, final_img),
-        None => final_img,
+        WskaznikSzumu::Normalny { .. } | WskaznikSzumu::Perlin{ .. } => {zaszumianie(dane.zaszumienie, final_img)}
+        WskaznikSzumu::NoNoise => {final_img}
     };
     let mut plikkk = ogarnij_icc(
         icc,

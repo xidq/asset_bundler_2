@@ -55,7 +55,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         .push(
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("Q: {}%", jakosc), jezyk, temat))
-                                                .push(slajderr(jakosc as i32, (0,100), &SliderType::DdsJpgQuality, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(jakosc, (0,100), &SliderType::DdsJpgQuality, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         )
                                         .push(
@@ -80,7 +80,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         .push(
                                             Row::new().spacing(15)
                                                 .push(pole_tekstowe_przycisku(format!("scans: {}", scans), jezyk, temat))
-                                                .push(slajderr(scans as i32, (2,64), &SliderType::DdsJpgScans, kolor, temat, Length::FillPortion(2)  ))
+                                                .push(slajderr(scans, (2,64), &SliderType::DdsJpgScans, kolor, temat, Length::FillPortion(2)  ))
                                                 .push(space().width(15.))
                                         )
                                         .push(
@@ -116,7 +116,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                         .push(
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("C: {}", kompresja), jezyk, temat))
-                                                .push(slajderr(kompresja as i32, (0, 9), &SliderType::DdsPngKompresja, kolor, temat, Length::FillPortion(2)))
+                                                .push(slajderr(kompresja, (0, 9), &SliderType::DdsPngKompresja, kolor, temat, Length::FillPortion(2)))
                                                 .push(space().width(15.))
                                         )
                                         .push(
@@ -180,7 +180,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                                     {
                                                         Row::new().spacing(15).height(50.)
                                                             .push(pole_tekstowe_przycisku(format!("Q: {}", jakosc), jezyk, temat))
-                                                            .push(slajderr(jakosc as i32, (0, 100), &SliderType::DdsWebpJakosc, kolor, temat, Length::FillPortion(2)))
+                                                            .push(slajderr(jakosc, (0, 100), &SliderType::DdsWebpJakosc, kolor, temat, Length::FillPortion(2)))
                                                             .push(space().width(15.))
                                                     }
                                                 true => {Row::new().height(50.)}
@@ -259,19 +259,19 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                                 ForFfKompresja::Zstd(kompresja) => {
                                                     Row::new().spacing(15).height(50.)
                                                         .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                        .push(slajderr(kompresja as i32, (1,22), &SliderType::DdsFfZstd, kolor, temat, Length::FillPortion(2)  ))
+                                                        .push(slajderr(kompresja, (1,22), &SliderType::DdsFfZstd, kolor, temat, Length::FillPortion(2)  ))
                                                         .push(space().width(15.))
                                                 }
                                                 ForFfKompresja::Bzip2(kompresja) => {
                                                     Row::new().spacing(15).height(50.)
                                                         .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                        .push(slajderr(kompresja as i32, (1,9), &SliderType::DdsFfBzip2, kolor, temat, Length::FillPortion(2)  ))
+                                                        .push(slajderr(kompresja, (1,9), &SliderType::DdsFfBzip2, kolor, temat, Length::FillPortion(2)  ))
                                                         .push(space().width(15.))
                                                 }
                                                 ForFfKompresja::Xz(kompresja) => {
                                                     Row::new().spacing(15).height(50.)
                                                         .push(pole_tekstowe_przycisku(format!("Q: {}", kompresja), jezyk, temat))
-                                                        .push(slajderr(kompresja as i32, (1,9), &SliderType::DdsFfXz, kolor, temat, Length::FillPortion(2)  ))
+                                                        .push(slajderr(kompresja, (1,9), &SliderType::DdsFfXz, kolor, temat, Length::FillPortion(2)  ))
                                                         .push(space().width(15.))
                                                 }
                                                 ForFfKompresja::Brak => {
@@ -368,7 +368,7 @@ pub fn rozszerzenia<'a>(dane: &'a DaneDdsUnpak, kolor: &'a Color, jezyk: &'a Wyb
                                                 Some(ggg) => {
                                                     Row::new().spacing(15).height(50.)
                                                         .push(pole_tekstowe_przycisku(format!("Q: {}", ggg), jezyk, temat))
-                                                        .push(slajderr(ggg as i32, (0, 100), &SliderType::DdsAvifQuality, kolor, temat, Length::FillPortion(2)))
+                                                        .push(slajderr(ggg, (0, 100), &SliderType::DdsAvifQuality, kolor, temat, Length::FillPortion(2)))
                                                         .push(space().width(15.))
                                                 }
                                                 None => { Row::new().spacing(15).height(50.) }

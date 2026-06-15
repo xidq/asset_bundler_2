@@ -272,7 +272,7 @@ where T: Logi{
 
     dane.alfa_rgb = (dane.alfa_rgb.0.clamp(0_u16,u16::MAX),dane.alfa_rgb.1.clamp(0_u16,u16::MAX),dane.alfa_rgb.2.clamp(0_u16,u16::MAX));
 
-    dane.noising = Some(dane.noising.unwrap_or(0_u8).clamp(0_u8, 100_u8));
+    // dane.noising = Some(dane.noising.unwrap_or(0_u8).clamp(0_u8, 100_u8));
 
     let bbbbb = match dane.inter {
         OptInterpolacja::Nearest => {true}

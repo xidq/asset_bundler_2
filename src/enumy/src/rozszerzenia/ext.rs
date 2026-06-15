@@ -58,7 +58,7 @@ pub enum ImgExt {
     },
     Avif{
         chroma: ForAvifChroma,
-        speed:i32,
+        speed:u8, //i32
         metoda_kompresji: ForAvifKompresja,
         lossy:Option<u8>,
         bit_depth: Vec<BdepthAvif>,
@@ -128,7 +128,7 @@ pub enum ImgExtSingle {
     },
     Avif{
         chroma: ForAvifChroma,
-        speed:i32,
+        speed:u8,
         metoda_kompresji: ForAvifKompresja,
         lossy:Option<u8>,
         bit_depth: BdepthAvif,

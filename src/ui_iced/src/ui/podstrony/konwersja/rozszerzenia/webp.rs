@@ -32,7 +32,7 @@ pub fn webp<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, 
                                             {
                                                 Row::new().spacing(15).height(50.)
                                                     .push(pole_tekstowe_przycisku(format!("Q: {}", jakosc), jezyk, temat))
-                                                    .push(slajderr(*jakosc as i32, (0, 100), &SliderType::KonwersjaWebpJakosc, kolor, temat, Length::FillPortion(2)))
+                                                    .push(slajderr(*jakosc, (0, 100), &SliderType::KonwersjaWebpJakosc, kolor, temat, Length::FillPortion(2)))
                                                     .push(space().width(15.))
                                             }
                                         true => {Row::new().height(50.)}

@@ -301,7 +301,7 @@ pub async fn main_fn_konwersja(
                             alpha: wsio_dane.alfa_rgb,
                             zaszumienie: wsio_dane.noising,
                             chroma: chroma.clone(),
-                            speed: *speed,
+                            speed: *speed as i32,
                             metoda_kompresji: metoda_kompresji.clone(),
                             lossy: *lossy,
                             exif: exif.clone(),

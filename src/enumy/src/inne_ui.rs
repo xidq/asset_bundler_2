@@ -1,6 +1,6 @@
 use iced::Color;
 use std::collections::HashMap;
-use strum::{EnumIter, EnumMessage};
+use strum::{Display, EnumIter, EnumMessage};
 
 pub const KOLOR_TŁA: Color = Color::from_rgb(0.11, 0.11, 0.1);
 // pub const KOLOR_FLIRT: Color = Color::from_rgb(162. / 255., 0., 109. / 255.);
@@ -18,6 +18,15 @@ pub const KOLOR_CZCIONKI_JASNY: Color = Color::from_rgba(1., 1., 1., 0.8);
 pub const KOLOR_OBRAMOWANIA_NIE_AKTYWNY: Color = Color::from_rgba(1., 1., 1., 0.2);
 
 pub const WYSOKOSC_CZCIONEK_PRZYCISKI: f32 = 40.;
+
+#[derive(Debug, Clone, Copy, PartialEq, EnumIter, Display)]
+
+/// # Noise types for images
+pub enum WskaznikSzumu{
+    Normalny { moc: u8 },
+    Perlin { moc: u8, skala: u8 },
+    NoNoise,
+}
 #[derive(Debug, Clone, Copy, PartialEq, EnumIter, Eq)]
 pub enum UiPods {
     BinPak,
@@ -148,7 +157,7 @@ pub enum SliderType{
     KonwersjaFfZstd,
     KonwersjaFfBzip2,
     KonwersjaFfXz,
-    KonwersjaNoising,
+    KonwersjaNoisingBase,
     MergeJpgQuality,
     MergeJpgScans,
     MergeAvifSpeed,
@@ -169,6 +178,8 @@ pub enum SliderType{
     DdsPngKompresja,
     // KonwExrCompDwaa,
     // KonwExrCompDwab,
+    KonwersjaNoisingPerlin,
+    KonwersjaNoisingPerlinSkala,
 }
 #[derive(Clone, Debug)]
 pub enum DropdownType{

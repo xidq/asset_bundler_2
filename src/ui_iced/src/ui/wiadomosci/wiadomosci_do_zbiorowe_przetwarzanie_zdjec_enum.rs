@@ -1,4 +1,5 @@
 use std::sync::Arc;
+use enumy::inne_ui::WskaznikSzumu;
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use enumy::rozszerzenia::kompresje::{ForAvifKompresja, ForFfKompresja};
 use enumy::rozszerzenia::bdepth_impl::BitDepth;
@@ -17,7 +18,7 @@ pub enum KonwMsg {
     PngKompresja(u8),
     WypełnienieAlpha(u8, u16),
     Rozdzielczość(Rozdzielczości),
-    AvifSpeed(i32),
+    AvifSpeed(u8),
     WebpLossless,
     AvifLossyToggle,
     AvifLossy(u8),
@@ -29,7 +30,7 @@ pub enum KonwMsg {
     PathInText(String),
     PathOutText(String),
     PathOutPathInBool(bool),
-    Noising(u8),
+    Noising(WskaznikSzumu),
     Uruchom,
     Log(LogTxKonw),
     PathInFile,

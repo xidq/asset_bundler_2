@@ -1,15 +1,16 @@
-use crate::halper::{usun_kanal_alpha, zaszumianie};
-use enumy::send::wyslij_status;
-use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
+use crate::halper::usun_kanal_alpha;
+use crate::zapisywanie::generic::{get_higher_tier_copy, operacje, InneDane};
 use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::PrzetwarzanieQoi;
 use enumy::rozszerzenia::bdepth::BdepthQoi;
+use enumy::send::wyslij_status;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
 use image::ImageEncoder;
 use std::fs::{create_dir_all, File};
 use std::sync::Arc;
 use tokio::sync::Mutex;
+
 /// # Encoding qoi
 pub async fn qoi_match<T>(
     dane: PrzetwarzanieQoi,
@@ -20,26 +21,15 @@ pub async fn qoi_match<T>(
 ) -> Result<(), tokio::io::Error>
 where T: Logi,
 {
+
+
+
     let (final_img, nazwa_bd, color_type, szer, wys) = match dane2.bdepth {
         BdepthQoi::Color24 => {
             // 1. Usuwamy alfę i przygotowujemy RGB8
             // dbg!("[debug] qoi tc24");
             let img = usun_kanal_alpha(dane.bufor.clone(), dane.alpha);
-            let res = if dane2.wymiar == 0 {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(x, img),
-                    None => img,
-                }
-                    .to_rgb8()
-            } else {
-                match dane.zaszumienie {
-                    Some(x) => {
-                        zaszumianie(x, img.resize(dane2.wymiar, dane2.wymiar, dane2.filtr))
-                    }
-                    None => img.resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                }
-                    .to_rgb8()
-            };
+            let res = operacje(dane.zaszumienie,img,dane2.wymiar,dane2.filtr).to_rgb8();
 
             let (width, height) = res.dimensions();
             (
@@ -54,26 +44,7 @@ where T: Logi,
         BdepthQoi::Color32 => {
             // dbg!("[debug] qoi tc32");
 
-            let res = if dane2.wymiar == 0 {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(x, dane.bufor.clone()),
-                    None => dane.bufor.clone(),
-                }
-                    .to_rgba8()
-            } else {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(
-                        x,
-                        dane.bufor
-                            .clone()
-                            .resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                    ),
-                    None => dane.bufor
-                        .clone()
-                        .resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                }
-                    .to_rgba8()
-            };
+            let res = operacje(dane.zaszumienie,dane.bufor.clone(),dane2.wymiar,dane2.filtr).to_rgba8();
             let (width, height) = res.dimensions();
             (
                 res.into_raw(),
@@ -139,3 +110,4 @@ where T: Logi,
 
     Ok(())
 }
+

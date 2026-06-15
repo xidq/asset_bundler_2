@@ -63,7 +63,7 @@ pub fn avif<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, 
                                         Some(ggg) => {
                                             Row::new().spacing(15).height(50.)
                                                 .push(pole_tekstowe_przycisku(format!("Q: {}", ggg), jezyk, temat))
-                                                .push(slajderr(*ggg as i32, (0, 100), &SliderType::KonwersjaAvifQuality, kolor, temat, Length::FillPortion(2)))
+                                                .push(slajderr(*ggg, (0, 100), &SliderType::KonwersjaAvifQuality, kolor, temat, Length::FillPortion(2)))
                                                 .push(space().width(15.))
                                         }
                                         None => { Row::new().spacing(15).height(50.) }

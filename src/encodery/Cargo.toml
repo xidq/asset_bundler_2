@@ -1,7 +1,7 @@
 #cargo-features = ["edition2024"]
 [package]
 name = "encodery"
-version = "0.1.0"
+version = "0.1.84"
 edition = "2024"
 
 [dependencies]
@@ -24,3 +24,4 @@ png = { workspace = true }
 lcms2 = { workspace = true }
 crc32fast = { workspace = true }
 exr = { workspace = true }
+noise = { workspace = true }

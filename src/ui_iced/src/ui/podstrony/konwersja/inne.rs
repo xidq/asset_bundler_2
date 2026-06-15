@@ -1,15 +1,18 @@
-use iced::widget::{container, slider, space, text, Column, Row};
-use iced_core::{Border, Color, Length};
-use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::{BtnState, ButtonType, SliderType, UstawieniaThemeWsio};
-use enumy::opcje::OptInterpolacja;
-use enumy::wybranie_jezykowe::WybórJęzyka;
 use crate::ui::wiadomosci::message_enum::Message;
 use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::KonwMsg;
 use crate::widget::button::{pole_tekstowe_przycisku, przycisk};
 use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
+use crate::widget::styles::{styl_menu_pick, styl_pick_list};
+use enumy::dane_do_przetwarzania::DaneKonw;
+use enumy::inne_ui::{BtnState, ButtonType, SliderType, UstawieniaThemeWsio, WskaznikSzumu};
+use enumy::opcje::OptInterpolacja;
+use enumy::wybranie_jezykowe::WybórJęzyka;
+use iced::widget::{container, pick_list, slider, space, text, Column, Row};
+use iced::Element;
+use iced_core::{Border, Color, Length};
+use strum::IntoEnumIterator;
 
 pub fn reszta<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Column<'a, Message> {
     Column::new().padding(15).spacing(15)
@@ -216,19 +219,93 @@ pub fn reszta<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka
         )
         .push(
             Row::new().spacing(15)
-                .push(pole_tekstowe_przycisku(match dane.noising {
-                    Some(x) => format!("{}\n{}%", jezyk.t("conversion_noising"), x),
-                    None => format!(
-                        "{}\n{}",
-                        jezyk.t("conversion_noising"),
-                        jezyk.t("mgt_gen_off")
-                    ),
-                }, jezyk, temat))
-                .push(slajderr(dane.noising.unwrap_or(0) as i32, (0,100), &SliderType::KonwersjaNoising, kolor, temat, Length::FillPortion(2)  ))
+                .push(
+                    pick_list(
+                        WskaznikSzumu::iter().collect::<Vec<_>>(),
+                        Some(dane.noising),
+                        |xx|Message::ZbiorowePrzetwarzanieZdjęć(KonwMsg::Noising(xx)) // Akcja po kliknięciu
+                    )
+                        .placeholder("Wybierz...")
+                        .width(200)
+                        .style(styl_pick_list(&temat.kolory.ustawienia,  temat))
+                        .menu_style(styl_menu_pick(&temat.kolory.ustawienia,  temat)),
+                )
+                .push(
+                    pole_tekstowe_przycisku(
+                        match dane.noising{
+                            WskaznikSzumu::Normalny { moc } => {
+                                format!("{}:\n{}%", jezyk.t("conversion_noising"), moc)
+                            }
+                            WskaznikSzumu::Perlin { moc, skala, } => {
+                                format!("{}: {}%\n{}: {}%", jezyk.t("conversion_noising"), moc,jezyk.t("conversion_noising_scale"),skala)
+                            }
+                            WskaznikSzumu::NoNoise => {
+                                format!(
+                                    "{}\n{}",
+                                    jezyk.t("conversion_noising"),
+                                    jezyk.t("mgt_gen_off")
+                                )
+                            }
+                        },
+                        jezyk,
+                        temat
+                    )
+                )
+                // .push(pole_tekstowe_przycisku(match dane.noising {
+                //     Some(x) => format!("{}\n{}%", jezyk.t("conversion_noising"), x),
+                //     None => format!(
+                //         "{}\n{}",
+                //         jezyk.t("conversion_noising"),
+                //         jezyk.t("mgt_gen_off")
+                //     ),
+                // }, jezyk, temat))
+
                 .push(space().width(15.))
+        )
+        .push(
+            Row::new().height(50.).spacing(15)
+                .push(
+                    match dane.noising {
+                        WskaznikSzumu::Normalny { moc } => {
+                            slajderr(moc, (0, 100), &SliderType::KonwersjaNoisingBase, kolor, temat, Length::FillPortion(2))
+                        }
+                        WskaznikSzumu::Perlin { moc, .. } => {
+                            slajderr(moc, (0, 100), &SliderType::KonwersjaNoisingPerlin, kolor, temat, Length::FillPortion(2))
+                        }
+                        WskaznikSzumu::NoNoise => {
+                            Element::from(Column::new().push(space()))
+                        }
+                    }
+                )
+                .push(
+                    match dane.noising {
+                        WskaznikSzumu::Perlin { skala, .. } => {
+                            slajderr(skala, (0, 100), &SliderType::KonwersjaNoisingPerlinSkala, kolor, temat, Length::FillPortion(2))
+                        }
+                        _ => {
+                            Element::from(Column::new().push(space().width(Length::FillPortion(2))))
+                        }
+                    }
+                )
         )
         .push(przycisk("mgt_exif_data", ButtonType::KonwExifToggle,Length::FillPortion(1), Length::Fixed(50.),kolor,if dane.exif { &BtnState::Active } else { &BtnState::Disabled },jezyk,temat))
 
-
-
 }
+
+// fn slidery_zaszumienia<'a>(dane: &'a WskaznikSzumu, kolor: &'a Color, temat: &'a UstawieniaThemeWsio) -> Element<'a, Message> {
+//     Column::new()
+//         .push(
+//             if let Some(danee) = dane{
+//                 match danee{
+//                     WskaznikSzumu::Normalny { moc } => {
+//                         slajderr(*moc as i32, (0,100), &SliderType::KonwersjaNoisingBase, kolor, temat, Length::FillPortion(2)  )
+//                     }
+//                     WskaznikSzumu::Perlin { moc, skala } => {
+//                         slajderr(*moc as i32, (0,100), &SliderType::KonwersjaNoisingPerlin, kolor, temat, Length::FillPortion(2)  )
+//                     }
+//                 }.into()
+//             } else {
+//                 Element::from(Column::new().push(space()))
+//             }
+//         ).into()
+// }

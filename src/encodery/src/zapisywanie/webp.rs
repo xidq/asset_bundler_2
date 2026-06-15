@@ -14,6 +14,8 @@ use lcms2::PixelFormat;
 use std::fs::create_dir_all;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use enumy::inne_ui::WskaznikSzumu;
+
 /// # Encoding webp
 pub async fn webp_match<T>(
     dane: PrzetwarzanieWebp,
@@ -53,8 +55,8 @@ where T: Logi,
     wyslij_status(&mut tx, T::postep_liczbowy(obecnie, metryka_operacji)).await;
 
     let final_finalv3_temp_final_ostatecznyv5 = match dane.zaszumienie {
-        Some(xoxo) => zaszumianie(xoxo, final_img),
-        None => final_img,
+        WskaznikSzumu::Normalny { .. } | WskaznikSzumu::Perlin{ .. } => {zaszumianie(dane.zaszumienie, final_img)}
+        WskaznikSzumu::NoNoise => {final_img}
     };
 
     // 1. KRYTYCZNE: Przepuszczamy obraz przez LCMS2, tak jak w PNG i AVIF!

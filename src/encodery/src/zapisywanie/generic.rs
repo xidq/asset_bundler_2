@@ -15,7 +15,11 @@ use futures::channel::mpsc::Sender;
 use image::imageops::FilterType;
 use std::path::PathBuf;
 use std::sync::Arc;
+use image::DynamicImage;
 use tokio::sync::Mutex;
+use enumy::inne_ui::WskaznikSzumu;
+use crate::halper::zaszumianie;
+
 /// data common for every extension here
 pub struct InneDane<T>{
     pub wymiar: u32,
@@ -23,6 +27,7 @@ pub struct InneDane<T>{
     pub nazwa_wariantu: &'static str,
     pub filtr: FilterType,
     pub zastepowanie: OptIstniejePlik,
+    // pub noising: WskaznikSzumu,
 }
 /// # Main encoding fn
 /// Fn with generics where is decided what to do etc.
@@ -247,4 +252,18 @@ pub fn get_higher_tier_copy(sciezka: PathBuf) -> PathBuf {
     }
 
     nowa_sciezka
+}
+
+pub fn operacje(szum: WskaznikSzumu, img: DynamicImage, wymiar: u32, filtr: FilterType) -> DynamicImage {
+    if wymiar == 0 {
+        match szum {
+            WskaznikSzumu::Normalny { .. } | WskaznikSzumu::Perlin { .. } => { zaszumianie(szum, img) }
+            WskaznikSzumu::NoNoise => { img }
+        }
+    } else {
+        match szum {
+            WskaznikSzumu::Normalny { .. } | WskaznikSzumu::Perlin { .. } => { zaszumianie(szum, img.resize(wymiar, wymiar, filtr)) }
+            WskaznikSzumu::NoNoise => { img.resize(wymiar, wymiar, filtr) }
+        }
+    }
 }

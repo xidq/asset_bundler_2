@@ -7,7 +7,7 @@ use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::Konw
 use crate::ui::wiadomosci::wiadomosci_pakowanie_bin_enum::BinPakMsg;
 use crate::ui::wiadomosci::wiadomosci_rozpakowanie_binarki_enum::BinUnpakMsg;
 use chrono::{Local, Timelike};
-use enumy::inne_ui::{ActProces, BtnState, ButtonType, DropdownType, ObecnyColorTheme, SliderType, TextInputType, UiPods};
+use enumy::inne_ui::{ActProces, BtnState, ButtonType, DropdownType, ObecnyColorTheme, SliderType, TextInputType, UiPods, WskaznikSzumu};
 use enumy::opcje::{OptInterpolacja, OptIstniejePlik, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
 use enumy::rozszerzenia::ext::{ImgExt, ImgExtSingle};
 use enumy::rozszerzenia::kolor::{ForAvifChroma, ForJpgQuant, ForJpgSamplingFac};
@@ -552,14 +552,14 @@ impl Program {
                         if let Some(ImgExtJpg { ref mut jakosc, .. }) = self.dane_konw
                             .rozszerzenia.jpg
                         {
-                            *jakosc = wartość as u8;
+                            *jakosc = wartość;
                         }
                     }
                     SliderType::KonwersjaJpgScans => {
                         if let Some(ImgExtJpg { ref mut scans, .. }) = self.dane_konw
                             .rozszerzenia.jpg
                         {
-                            *scans = wartość as u8;
+                            *scans = wartość;
                         }
                     }
                     SliderType::KonwersjaAvifSpeed => {
@@ -573,59 +573,67 @@ impl Program {
                         if let Some(ImgExtAvif { ref mut lossy, .. }) = self.dane_konw
                             .rozszerzenia.avif
                         {
-                            *lossy = Some(wartość as u8);
+                            *lossy = Some(wartość);
                         }
                     }
                     SliderType::KonwersjaPngKompresja => {
                         if let Some(ImgExtPng { ref mut kompresja, .. }) = self.dane_konw
                             .rozszerzenia.png
                         {
-                            *kompresja = wartość as u8;
+                            *kompresja = wartość;
                         }
                     }
                     SliderType::KonwersjaWebpJakosc => {
                         if let Some(ImgExtWebp { ref mut jakosc, .. }) = self.dane_konw
                             .rozszerzenia.webp
                         {
-                            *jakosc = wartość as u8;
+                            *jakosc = wartość;
                         }
                     }
                     SliderType::KonwersjaFfZstd => {
                         if let Some(ImgExtFf { ref mut metoda_kompresji, .. }) = self.dane_konw
                             .rozszerzenia.ff
                         {
-                            *metoda_kompresji = ForFfKompresja::Zstd(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Zstd(wartość);
                         }
                     }
                     SliderType::KonwersjaFfBzip2 => {
                         if let Some(ImgExtFf { ref mut metoda_kompresji, .. }) = self.dane_konw
                             .rozszerzenia.ff
                         {
-                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość);
                         }
                     }
                     SliderType::KonwersjaFfXz => {
                         if let Some(ImgExtFf { ref mut metoda_kompresji, .. }) = self.dane_konw
                             .rozszerzenia.ff
                         {
-                            *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Xz(wartość);
                         }
                     }
-                    SliderType::KonwersjaNoising => {
-                        if wartość == 0 {
-                            self.dane_konw.noising = None;
-                        } else {
-                            self.dane_konw.noising = Some(wartość as u8);
+                    SliderType::KonwersjaNoisingBase => {
+                        if let WskaznikSzumu::Normalny { ref mut moc } = self.dane_konw.noising{
+                            *moc = wartość;
+                        }
+                    }
+                    SliderType::KonwersjaNoisingPerlin => {
+                        if let WskaznikSzumu::Perlin { ref mut moc, .. } = self.dane_konw.noising{
+                            *moc = wartość;
+                        }
+                    }
+                    SliderType::KonwersjaNoisingPerlinSkala => {
+                        if let WskaznikSzumu::Perlin { ref mut skala, .. } = self.dane_konw.noising{
+                            *skala = wartość;
                         }
                     }
                     SliderType::MergeJpgQuality => {
                         if let ImgExtSingle::Jpg { ref mut jakosc, .. } = self.dane_merge.rozszerzenie {
-                            *jakosc = wartość as u8;
+                            *jakosc = wartość;
                         }
                     }
                     SliderType::MergeJpgScans => {
                         if let ImgExtSingle::Jpg { ref mut scans, .. } = self.dane_merge.rozszerzenie {
-                            *scans = wartość as u8;
+                            *scans = wartość;
                         }
                     }
                     SliderType::MergeAvifSpeed => {
@@ -635,62 +643,62 @@ impl Program {
                     }
                     SliderType::MergeAvifQuality => {
                         if let ImgExtSingle::Avif { ref mut lossy, .. } = self.dane_merge.rozszerzenie {
-                            *lossy = Some(wartość as u8);
+                            *lossy = Some(wartość);
                         }
                     }
                     SliderType::MergePngKompresja => {
                         if let ImgExtSingle::Png { ref mut kompresja, .. } = self.dane_merge.rozszerzenie {
-                            *kompresja = wartość as u8;
+                            *kompresja = wartość;
                         }
                     }
                     SliderType::MergeWebpJakosc => {
                         if let ImgExtSingle::Webp { ref mut jakosc, .. } = self.dane_merge.rozszerzenie {
-                            *jakosc = wartość as u8;
+                            *jakosc = wartość;
                         }
                     }
                     SliderType::MergeFfZstd => {
                         if let ImgExtSingle::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
-                            *metoda_kompresji = ForFfKompresja::Zstd(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Zstd(wartość);
                         }
                     }
                     SliderType::MergeFfBzip2 => {
                         if let ImgExtSingle::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
-                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość);
                         }
                     }
                     SliderType::MergeFfXz => {
                         if let ImgExtSingle::Ff { ref mut metoda_kompresji, .. } = self.dane_merge.rozszerzenie {
-                            *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Xz(wartość);
                         }
                     }
                     SliderType::DdsJpgScans => {
                         if let ImgExt::Jpg { ref mut scans, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *scans = wartość as u8;
+                            *scans = wartość;
                         }
                     }
                     SliderType::DdsJpgQuality => {
                         if let ImgExt::Jpg { ref mut jakosc, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *jakosc = wartość as u8;
+                            *jakosc = wartość;
                         }
                     }
                     SliderType::DdsWebpJakosc => {
                         if let ImgExt::Webp { ref mut jakosc, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *jakosc = wartość as u8;
+                            *jakosc = wartość;
                         }
                     }
                     SliderType::DdsFfBzip2 => {
                         if let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Bzip2(wartość);
                         }
                     }
                     SliderType::DdsFfZstd => {
                         if let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *metoda_kompresji = ForFfKompresja::Zstd(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Zstd(wartość);
                         }
                     }
                     SliderType::DdsFfXz => {
                         if let ImgExt::Ff { ref mut metoda_kompresji, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *metoda_kompresji = ForFfKompresja::Xz(wartość as u8);
+                            *metoda_kompresji = ForFfKompresja::Xz(wartość);
                         }
                     }
                     SliderType::DdsAvifSpeed => {
@@ -700,12 +708,12 @@ impl Program {
                     }
                     SliderType::DdsAvifQuality => {
                         if let ImgExt::Avif { ref mut lossy, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *lossy = lossy.as_mut().map(|_| wartość as u8)
+                            *lossy = lossy.as_mut().map(|_| wartość)
                         }
                     }
                     SliderType::DdsPngKompresja => {
                         if let ImgExt::Png { ref mut kompresja, .. } = self.dane_dds_rozpak.rozszerzenie {
-                            *kompresja = wartość as u8;
+                            *kompresja = wartość;
                         }
                     }
                     // SliderType::KonwExrCompDwaa => {

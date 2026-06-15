@@ -1,9 +1,9 @@
-use crate::halper::{usun_kanal_alpha, zaszumianie};
-use enumy::send::wyslij_status;
-use crate::zapisywanie::generic::{get_higher_tier_copy, InneDane};
+use crate::halper::usun_kanal_alpha;
+use crate::zapisywanie::generic::{get_higher_tier_copy, operacje, InneDane};
 use enumy::opcje::OptIstniejePlik;
 use enumy::przetwarzanie::PrzetwarzanieTga;
 use enumy::rozszerzenia::bdepth::BdepthTga;
+use enumy::send::wyslij_status;
 use enumy::statusy::Logi;
 use futures::channel::mpsc::Sender;
 use std::fs::{create_dir_all, File};
@@ -25,22 +25,7 @@ where T: Logi,
         BdepthTga::Luma8 => {
             let img = usun_kanal_alpha(dane.bufor.clone(), dane.alpha);
 
-            let res = if dane2.wymiar == 0 {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(x, img),
-                    None => img,
-                }
-                    .to_luma8()
-            } else {
-                match dane.zaszumienie {
-                    Some(x) => {
-                        zaszumianie(x, img.resize(dane2.wymiar, dane2.wymiar, dane2.filtr))
-                    }
-                    None => img.resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                }
-                    .to_luma8()
-                // img.resize(wymiar, wymiar, filtr).to_luma8()
-            };
+            let res = operacje(dane.zaszumienie,img,dane2.wymiar,dane2.filtr).to_luma8();
             let (width, height) = res.dimensions();
             (
                 res.into_raw(),
@@ -53,26 +38,7 @@ where T: Logi,
 
         BdepthTga::HighColor16 => {
             // Skalujemy bufor
-            let xxx = if dane2.wymiar == 0 {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(x,dane.bufor.clone()),
-                    None =>dane.bufor.clone(),
-                }
-                    .to_rgba8()
-            } else {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(
-                        x,
-                        dane.bufor
-                            .clone()
-                            .resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                    ),
-                    None => dane.bufor
-                        .clone()
-                        .resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                }
-                    .to_rgba8()
-            };
+            let xxx = operacje(dane.zaszumienie,dane.bufor.clone(),dane2.wymiar,dane2.filtr).to_rgba8();
             let (width, height) = xxx.dimensions();
 
             let mut raw = Vec::new();
@@ -89,21 +55,7 @@ where T: Logi,
         BdepthTga::TrueColor24 => {
             // 1. Usuwamy alfę i przygotowujemy RGB8
             let img = usun_kanal_alpha(dane.bufor.clone(), dane.alpha);
-            let res = if dane2.wymiar == 0 {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(x, img),
-                    None => img,
-                }
-                    .to_rgb8()
-            } else {
-                match dane.zaszumienie {
-                    Some(x) => {
-                        zaszumianie(x, img.resize(dane2.wymiar, dane2.wymiar, dane2.filtr))
-                    }
-                    None => img.resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                }
-                    .to_rgb8()
-            };
+            let res = operacje(dane.zaszumienie,img,dane2.wymiar,dane2.filtr).to_rgb8();
 
             // 2. TGA chce BGR, więc mapujemy piksele: [R, G, B] -> B, G, R
             // let mut raw = Vec::with_capacity((res.width() * res.height() * 3) as usize);
@@ -125,26 +77,7 @@ where T: Logi,
         BdepthTga::TrueColorA32 => {
             // dbg!("[debug] tga tc32");
 
-            let res = if dane2.wymiar == 0 {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(x,dane.bufor.clone()),
-                    None =>dane.bufor.clone(),
-                }
-                    .to_rgba8()
-            } else {
-                match dane.zaszumienie {
-                    Some(x) => zaszumianie(
-                        x,
-                        dane.bufor
-                            .clone()
-                            .resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                    ),
-                    None => dane.bufor
-                        .clone()
-                        .resize(dane2.wymiar, dane2.wymiar, dane2.filtr),
-                }
-                    .to_rgba8()
-            };
+            let res = operacje(dane.zaszumienie,dane.bufor.clone(),dane2.wymiar,dane2.filtr).to_rgba8();
             let (width, height) = res.dimensions();
             (
                 res.into_raw(),

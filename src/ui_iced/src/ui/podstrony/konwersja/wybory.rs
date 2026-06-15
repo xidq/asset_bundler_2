@@ -1,7 +1,7 @@
 use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::text::info_male;
 use enumy::dane_do_przetwarzania::DaneKonw;
-use enumy::inne_ui::UstawieniaThemeWsio;
+use enumy::inne_ui::{UstawieniaThemeWsio, WskaznikSzumu};
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use enumy::rozszerzenia::rozszenienia_zdjec::{ImgExtAvif, ImgExtExr, ImgExtFf, ImgExtJpg, ImgExtPng, ImgExtQoi, ImgExtTga, ImgExtWebp};
@@ -356,12 +356,22 @@ pub fn wybory<'a>(dane: &'a DaneKonw, temat: &'a UstawieniaThemeWsio) -> Element
 
 // inne --------------------------------------------------------------------------------------------
 
+    let noising_stat = match dane.noising{
+        WskaznikSzumu::Normalny { moc } => {
+            format!("Noise: {}", moc)
+        }
+        WskaznikSzumu::Perlin { moc, skala } => {
+            format!("Perlin: {}|{:.2}", moc, skala)
+        }
+        WskaznikSzumu::NoNoise => {String::from("Noise off")}
+    };
+
     let mut inne_row = Row::new().spacing(3.);
     inne_row = inne_row
         .push(info_male("|".to_string(), true, temat))
         .push(info_male("Exif".to_string(), dane.exif, temat))
         .push(info_male("|".to_string(), true, temat))
-        .push(info_male(format!("Noise: {}", dane.noising.unwrap_or( 0)), dane.noising.is_some(), temat))
+        .push(info_male(noising_stat, dane.noising != WskaznikSzumu::NoNoise, temat))
         .push(info_male("|".to_string(), true, temat));
 
 

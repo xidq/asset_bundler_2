@@ -263,7 +263,8 @@ impl WybórJęzyka {
                 "mgt_compression" => "Kompresja:",
                 "conversion_avif_chroma" => "Chroma:",
                 "conversion_webp_losless" => "Bezstratny.",
-                "conversion_noising" => "Zaszumienie:",
+                "conversion_noising" => "Zaszumienie",
+                "conversion_noising_scale" => "Skala",
                 "conversion_alpha_color" => "Kolor alpha:",
                 "dds_format" => "Format:",
 

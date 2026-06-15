@@ -17,6 +17,7 @@ use futures::executor::block_on;
 use image::DynamicImage;
 use std::sync::Arc;
 use tokio::sync::Mutex;
+use enumy::inne_ui::WskaznikSzumu::NoNoise;
 
 // fn that is entry point for merging images by channels
 /// Main fn for merging photos
@@ -117,7 +118,7 @@ pub async fn fn_do_laczenia_fot(
                     kompresja,
                     bit_depth: vec![bit_depth],
                     alpha: (0, 0, 0),
-                    zaszumienie: None,
+                    zaszumienie: NoNoise,
                     exif: None,
                     kolor: ColorProfilePhoto::None,
                 };
@@ -149,7 +150,7 @@ pub async fn fn_do_laczenia_fot(
                     quant,
                     scans,
                     alpha: (0, 0, 0),
-                    zaszumienie: None,
+                    zaszumienie: NoNoise,
                     exif: None,
                     progresywny,
                     kolor: ColorProfilePhoto::None,
@@ -175,7 +176,7 @@ pub async fn fn_do_laczenia_fot(
                     interpolacja: OptInterpolacja::Lanczos3,
                     bit_depth: vec![bit_depth],
                     alpha: (0, 0, 0),
-                    zaszumienie: None,
+                    zaszumienie: NoNoise,
                     lossy: if lossless { None } else { Some(jakosc) },
                     exif: None,
                     kolor: ColorProfilePhoto::None,
@@ -198,7 +199,7 @@ pub async fn fn_do_laczenia_fot(
                     interpolacja: OptInterpolacja::Lanczos3,
                     bit_depth: vec![bit_depth],
                     alpha: (0, 0, 0),
-                    zaszumienie: None,
+                    zaszumienie: NoNoise,
                 };
                 zapisywanie_generic(
                     dane,
@@ -217,7 +218,7 @@ pub async fn fn_do_laczenia_fot(
                     interpolacja: OptInterpolacja::Lanczos3,
                     kompresja: vec![metoda_kompresji],
                     alpha: (0, 0, 0),
-                    zaszumienie: None,
+                    zaszumienie: NoNoise,
                 };
                 zapisywanie_generic(
                     dane,
@@ -236,7 +237,7 @@ pub async fn fn_do_laczenia_fot(
                     interpolacja: OptInterpolacja::Lanczos3,
                     bit_depth: vec![bit_depth],
                     alpha: (0, 0, 0),
-                    zaszumienie: None,
+                    zaszumienie: NoNoise,
                 };
                 zapisywanie_generic(
                     dane,
@@ -262,9 +263,9 @@ pub async fn fn_do_laczenia_fot(
                     interpolacja: OptInterpolacja::Lanczos3,
                     bit_depth: vec![bit_depth],
                     alpha: (0, 0, 0),
-                    zaszumienie: None,
+                    zaszumienie: NoNoise,
                     chroma,
-                    speed,
+                    speed: speed as i32,
                     metoda_kompresji,
                     lossy,
                     exif: None,
@@ -288,7 +289,7 @@ pub async fn fn_do_laczenia_fot(
                     kompresja,
                     bit_depth: vec![bit_depth],
                     alpha: (0, 0, 0),
-                    zaszumienie: None,
+                    zaszumienie: NoNoise,
                     kolor: ColorProfilePhoto::None,
                 };
                 zapisywanie_generic(
