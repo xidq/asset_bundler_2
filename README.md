@@ -44,6 +44,7 @@ A modular Rust toolbox for media asset management. It was created to handle the 
    asset_bundler_2/
 Project Structure
 ├── src/
+
 │   ├── app/             # Main application logic
 │   ├── binarka/         # Binary-related utilities
 │   ├── dds_ops/         # DDS texture operations
