@@ -44,15 +44,15 @@ A modular Rust toolbox for media asset management. It was created to handle the 
    asset_bundler_2/
 Project Structure<br>
 ├── src/<br>
-│   ├── app/             # Main application logic
-│   ├── binarka/         # Binary-related utilities
-│   ├── dds_ops/         # DDS texture operations
-│   ├── encodery/        # Encoding/decoding logic
-│   ├── enumy/           # Shared enums
-│   ├── file_merge/      # File merging & bundling
-│   ├── image_conversion/# Image format conversion
-│   ├── kompresja/       # Compression utilities
-│   ├── szyfrowanie/     # Encryption module
-│   └── ui_iced/         # Iced GUI implementation
-├── Cargo.toml           # Workspace configuration
-└── README.md            # This file
+│   ├── app/             # Main application logic<br>
+│   ├── binarka/         # Binary-related utilities<br>
+│   ├── dds_ops/         # DDS texture operations<br>
+│   ├── encodery/        # Encoding/decoding logic<br>
+│   ├── enumy/           # Shared enums<br>
+│   ├── file_merge/      # File merging & bundling<br>
+│   ├── image_conversion/# Image format conversion<br>
+│   ├── kompresja/       # Compression utilities<br>
+│   ├── szyfrowanie/     # Encryption module<br>
+│   └── ui_iced/         # Iced GUI implementation<br>
+├── Cargo.toml           # Workspace configuration<br>
+└── README.md            # This file<br>
