@@ -9,6 +9,7 @@ use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::Event;
 use std::fmt::Debug;
 use std::sync::Arc;
+use std::time::Instant;
 // use crate::ui::wiadomosci::wiadomosci_do_zbiorowe_przetwarzanie_zdjec_enum::ZbiorowePrzetwarzanieZdjęćMessage;
 
 #[allow(dead_code)]
@@ -55,4 +56,6 @@ pub enum Message {
     DevResetUstawien,
     DevCustomLog,
     DevCustomLogText(String),
+    
+    DoubleClick(Instant),
 }

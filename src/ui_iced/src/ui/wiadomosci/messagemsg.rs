@@ -36,6 +36,32 @@ pub enum ElementyDoNazwIZmianUstawien{
 
 
 impl Program {
+    // fn czy_db_click(&mut self) -> bool {
+    //     // let elapsed = self.double_click.elapsed().as_millis();
+    //     // self.double_click = std::time::Instant::now();
+    //     // elapsed <= 250 && elapsed >= 50
+    //     let now = std::time::Instant::now();
+    //
+    //     // 1. Jeśli timer jest w przyszłości, to znaczy, że właśnie resetujemy
+    //     // i ignorujemy mikro-ruchy myszki z tego samego kliknięcia
+    //     if self.double_click > now {
+    //         return true;
+    //     }
+    //
+    //     // Obliczamy bezpiecznie czas, który upłynął
+    //     let elapsed = now.duration_since(self.double_click).as_millis();
+    //
+    //     if elapsed >= 50 && elapsed <= 250 {
+    //         // 2. Wykryto double-click! Ustawiamy timer 200ms w PRZYSZŁOŚĆ,
+    //         // aby zablokować nadpisywanie wartości przez resztę tego kliknięcia
+    //         self.double_click = now + std::time::Duration::from_millis(200);
+    //         true
+    //     } else {
+    //         // 3. Zwykłe przeciąganie lub pojedyncze kliknięcie
+    //         self.double_click = now;
+    //         false
+    //     }
+    // }
     fn wczytaj_ustawienia(&mut self, mapa: HashMap<String, String>){
         mapa.into_iter().for_each(|(key, val)| {
             match ElementyDoNazwIZmianUstawien::from_str(&key){
@@ -69,6 +95,11 @@ impl Program {
         };
 
         match message {
+            // Message::DoubleClick(czas) => {
+            //     if czas.elapsed().as_millis() < 250{
+            //
+            //     }
+            // }
             Message::InitLogStartowy => {
                 let powitanie = format!(
                     "{}!!!!!\n {}: {}\n  {}: {}\n   {}, \n    {}: {}\n{}\n---------------------------------------",
@@ -547,6 +578,7 @@ impl Program {
             }
 
             Message::Slidery(typ, wartość) => {
+                let dk = /*self.czy_db_click()*/ false;
                 match typ {
                     SliderType::KonwJpgQuality => {
                         if let Some(ImgExtJpg { ref mut jakosc, .. }) = self.dane_konw
@@ -559,7 +591,7 @@ impl Program {
                         if let Some(ImgExtJpg { ref mut scans, .. }) = self.dane_konw
                             .rozszerzenia.jpg
                         {
-                            *scans = wartość;
+                            *scans = if dk { ImgExtJpg::default().scans } else { wartość };
                         }
                     }
                     SliderType::KonwersjaAvifSpeed => {

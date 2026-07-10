@@ -370,10 +370,11 @@ impl Program {
                         ImgExtTag::Unknown => ImgExt::def_ff(),
                         ImgExtTag::Exr => ImgExt::def_exr()
                     };
-
-
-
+                
                 let _ = self.update(Message::ChckStatus);
+            }
+            DdsMsg::Dx9 => {
+                self.dane_dds_pak.dx9 = !self.dane_dds_pak.dx9
             }
             _ => {}
         }

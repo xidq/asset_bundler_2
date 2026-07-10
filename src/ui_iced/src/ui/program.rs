@@ -1,3 +1,4 @@
+use std::time::Instant;
 use iced::{
     font, widget::{button, column, container, row, scrollable, text, Space},
     Task,
@@ -47,6 +48,8 @@ pub struct Program {
     uchwyt_szumu: image::Handle,
 
     pub temat:UstawieniaThemeWsio,
+
+    // pub double_click: Instant,
 
 }
 
@@ -112,6 +115,7 @@ impl Program {
                 dane_dds_rozpak: DaneDdsUnpak::default(),
                 uchwyt_szumu: generuj_ziarno(),
                 temat: UstawieniaThemeWsio::default(),
+                // double_click: Instant::now(),
             },
             Task::batch(Vec::from([
                 Task::done(Message::InitUstawienia),

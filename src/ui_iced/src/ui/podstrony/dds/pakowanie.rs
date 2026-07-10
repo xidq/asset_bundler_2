@@ -8,11 +8,12 @@ use enumy::ikony::folder_icon;
 use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
 use enumy::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
 use enumy::wybranie_jezykowe::WybórJęzyka;
-use iced::widget::{space, Column};
+use iced::widget::{checkbox, space, Column};
 use iced::widget::{text, Row};
 use iced::Element;
 use iced_core::{Color, Length};
 use std::path::PathBuf;
+use crate::ui::wiadomosci::wiadomosci_do_dds_enum::DdsMsg;
 
 fn tekst_sciezek<'a>(
     sciezki: &'a Option<Vec<PathBuf>>,
@@ -174,6 +175,7 @@ pub fn pakowanie<'a>(dane: &'a DaneDdsPak, kolor: &'a Color, jezyk: &'a WybórJ�
                 .push(dropdown::<ForDdsKompresja, _>(dane, kolor, temat))
                 .push(space().width(15.))
         )
+        .push(checkbox(dane.dx9).on_toggle(|_bool|Message::Dds(DdsMsg::Dx9)).label("Dx9? (tylko bc1/2/3, reszta dx10)"))
         .push(
             Row::new().spacing(15).height(50.)
                 .push(pole_tekstowe_przycisku("dds_format", jezyk, temat))

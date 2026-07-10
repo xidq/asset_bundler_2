@@ -33,4 +33,5 @@ pub enum DdsMsg {
     JpgProg,
     WebpLoss,
     AvifLoss,
+    Dx9,
 }

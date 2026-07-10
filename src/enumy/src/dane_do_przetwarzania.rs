@@ -129,6 +129,7 @@ pub struct DaneDdsPak {
     pub ścieżka_wyjściowa: PathBuf,
     pub nazwa: String,
     pub format: ForDds,
+    pub dx9: bool,
     pub kompresja: ForDdsKompresja,
 }
 impl Default for DaneDdsPak {
@@ -138,6 +139,7 @@ impl Default for DaneDdsPak {
             ścieżka_wyjściowa: PathBuf::new(),
             nazwa: String::new(),
             format: ForDds::DxgiFormatBc7Unorm,
+            dx9: false,
             kompresja: ForDdsKompresja::Normal,
         }
     }
