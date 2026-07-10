@@ -1,4 +1,4 @@
-use crate::wczytywanie::strukty::DaneDoWczytywania;
+use crate::DaneDoWczytywania;
 use webp::Decoder;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 

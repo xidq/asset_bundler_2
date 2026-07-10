@@ -1,4 +1,4 @@
-use crate::dane_do_przetwarzania::{DaneBinPak, DaneDdsPak, DaneDdsUnpak, DaneKonw, DaneMerge};
+use crate::dane_do_przetwarzania::{DaneBinPak, DaneDdsPak, DaneDdsUnpak, DaneMerge};
 use crate::inne_ui::{ActProces, DropdownType};
 use crate::opcje::{OptInterpolacja, OptIstniejePlik, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
 use crate::rozszerzenia::ext::{ImgExt, ImgExtSingle};
@@ -87,40 +87,7 @@ impl ElementyDropdown for ForDdsKompresja {
 impl ElementyDropdown for ForDds {
     fn as_any(&self) -> &dyn Any { self }
 }
-// -------------------------------------------------------------------------------------------------
-impl DaneDropdown<ForJpgSamplingFac> for DaneKonw {
 
-    type Opcja = Vec<ForJpgSamplingFac>;
-
-    fn get_data(&self) -> Option<ForJpgSamplingFac> {
-        if let Some(ImgExtJpg { sampling, .. }) = self.rozszerzenia.jpg {
-            Some(sampling)
-        } else {
-            None
-        }
-    }
-
-    fn get_dropdown_type() -> DropdownType {
-        DropdownType::KonwersjaJpgSample
-    }
-
-    fn get_proces_name() -> ActProces {ActProces::Konw }
-}
-// -------------------------------------------------------------------------------------------------
-impl DaneDropdown<OptIstniejePlik> for DaneKonw {
-
-    type Opcja = Vec<OptIstniejePlik>;
-
-    fn get_data(&self) -> Option<OptIstniejePlik> {
-        Some(self.istniejace_pliki)
-    }
-
-    fn get_dropdown_type() -> DropdownType {
-        DropdownType::KonwersjaFileTreatment
-    }
-
-    fn get_proces_name() -> ActProces {ActProces::Konw }
-}
 // -------------------------------------------------------------------------------------------------
 impl DaneDropdown<ForJpgSamplingFac> for DaneDdsUnpak {
 
@@ -194,27 +161,6 @@ impl DaneDropdown<ForJpgSamplingFac> for DaneMerge {
 }
 
 // -------------------------------------------------------------------------------------------------
-impl DaneDropdown<ForJpgQuant> for DaneKonw {
-
-    type Opcja = Vec<ForJpgQuant>;
-
-    fn get_data(&self) -> Option<ForJpgQuant> {
-
-        if let Some(ImgExtJpg{ quant, .. }) = self.rozszerzenia.jpg {
-            Some(quant)
-        } else {
-            None
-        }
-        
-    }
-
-    fn get_dropdown_type() -> DropdownType {
-        DropdownType::KonwersjaJpgQuant
-    }
-
-    fn get_proces_name() -> ActProces {ActProces::Konw }
-}
-// -------------------------------------------------------------------------------------------------
 impl DaneDropdown<ForJpgQuant> for DaneDdsUnpak {
 
     type Opcja = Vec<ForJpgQuant>;
@@ -254,27 +200,6 @@ impl DaneDropdown<ForJpgQuant> for DaneMerge {
     }
 
     fn get_proces_name() -> ActProces {ActProces::Merge }
-}
-// -------------------------------------------------------------------------------------------------
-impl DaneDropdown<ForAvifChroma> for DaneKonw {
-
-    type Opcja = Vec<ForAvifChroma>;
-
-    fn get_data(&self) -> Option<ForAvifChroma> {
-        
-        if let Some(ImgExtAvif { ref chroma, .. }) = self.rozszerzenia.avif {
-            Some(chroma.clone())
-        } else {
-            None
-        }
-        
-    }
-
-    fn get_dropdown_type() -> DropdownType {
-        DropdownType::KonwersjaAvifChroma
-    }
-
-    fn get_proces_name() -> ActProces {ActProces::Konw }
 }
 // -------------------------------------------------------------------------------------------------
 impl DaneDropdown<ForAvifChroma> for DaneMerge {
@@ -319,27 +244,6 @@ impl DaneDropdown<ForAvifChroma> for DaneDdsUnpak {
     fn get_proces_name() -> ActProces {ActProces::DdsUnpak }
 }
 // -------------------------------------------------------------------------------------------------
-impl DaneDropdown<ForAvifKompresja> for DaneKonw {
-
-    type Opcja = Vec<ForAvifKompresja>;
-
-    fn get_data(&self) -> Option<ForAvifKompresja> {
-        
-        if let Some(ImgExtAvif { ref metoda_kompresji, .. }) = self.rozszerzenia.avif {
-            Some(metoda_kompresji.clone())
-        } else {
-            None
-        }
-        
-    }
-
-    fn get_dropdown_type() -> DropdownType {
-        DropdownType::KonwersjaAvifKompresja
-    }
-
-    fn get_proces_name() -> ActProces {ActProces::Konw }
-}
-// -------------------------------------------------------------------------------------------------
 impl DaneDropdown<ForAvifKompresja> for DaneDdsUnpak {
 
     type Opcja = Vec<ForAvifKompresja>;
@@ -381,40 +285,6 @@ impl DaneDropdown<ForAvifKompresja> for DaneMerge {
     fn get_proces_name() -> ActProces {ActProces::Merge }
 }
 // -------------------------------------------------------------------------------------------------
-impl DaneDropdown<OptInterpolacja> for DaneKonw {
-
-    type Opcja = Vec<OptInterpolacja>;
-
-    fn get_data(&self) -> Option<OptInterpolacja> {
-        Some(self.inter)
-    }
-
-    fn get_dropdown_type() -> DropdownType {
-        DropdownType::KonwersjaInterpolacja
-    }
-
-    fn get_proces_name() -> ActProces {ActProces::Konw }
-}
-// -------------------------------------------------------------------------------------------------
-impl DaneDropdown<ForFfKompresja> for DaneKonw {
-
-    type Opcja = Vec<ForFfKompresja>;
-
-    fn get_data(&self) -> Option<ForFfKompresja> {
-        
-        if let Some(ImgExtFf { metoda_kompresji }) = self.rozszerzenia.ff {
-            Some(metoda_kompresji)
-        } else {
-            None
-        }
-
-    }
-    fn get_dropdown_type() -> DropdownType {
-        DropdownType::KonwersjaKompresjaFf
-    }
-    fn get_proces_name() -> ActProces {ActProces::Konw }
-
-}
 impl DaneDropdown<ForFfKompresja> for DaneDdsUnpak {
 
     type Opcja = Vec<ForFfKompresja>;
@@ -486,27 +356,6 @@ impl DaneDropdown<OptKompresjaPlikówPoziomKompresjiZstd> for DaneBinPak {
     fn get_proces_name() -> ActProces {ActProces::BinPak }
 
 
-}
-// -------------------------------------------------------------------------------------------------
-impl DaneDropdown<ForExrKompresja> for DaneKonw {
-
-    type Opcja = Vec<ForExrKompresja>;
-
-    fn get_data(&self) -> Option<ForExrKompresja> {
-
-        if let Some(ImgExtExr { kompresja, .. }) = self.rozszerzenia.exr {
-            Some(kompresja)
-        } else {
-            None
-        }
-
-    }
-
-    fn get_dropdown_type() -> DropdownType {
-        DropdownType::KonwersjaExrKompresja
-    }
-
-    fn get_proces_name() -> ActProces {ActProces::Konw }
 }
 // -------------------------------------------------------------------------------------------------
 impl DaneDropdown<ForExrKompresja> for DaneMerge {

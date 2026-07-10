@@ -10,7 +10,7 @@ use crate::ui::podstrony::konwersja::rozszerzenia::{
 use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::oddzielacze::oddzielacz_poziomy;
 use crate::widget::styles::styl_scrollable;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::inne_ui::UstawieniaThemeWsio;
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{scrollable, Column};

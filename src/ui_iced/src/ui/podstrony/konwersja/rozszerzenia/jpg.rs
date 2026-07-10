@@ -3,7 +3,7 @@ use crate::widget::button::{btn_bdepth_konwersja, pole_tekstowe_przycisku, przyc
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
 use enumy::rozszerzenia::bdepth::BdepthJpg;
 use enumy::rozszerzenia::ext::ImgExtTag;

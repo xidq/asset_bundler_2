@@ -1,6 +1,6 @@
 use std::io;
 use image::{DynamicImage, ImageBuffer, Rgb, Rgba};
-use crate::wczytywanie::strukty::DaneDoWczytywania;
+use crate::DaneDoWczytywania;
 use enumy::rozszerzenia::kolor::{ColorNclx, ColorProfilePhoto};
 use libheif_rs::{ColorSpace, HeifContext, LibHeif, RgbChroma};
 /// # Avif decoding

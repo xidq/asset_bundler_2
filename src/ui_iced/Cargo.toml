@@ -16,6 +16,7 @@ sys-locale = { workspace = true }
 rfd = { workspace = true }
 tokio = { workspace = true }
 file_merge = { path = "../file_merge" }
+encodery = { path = "../encodery" }
 strum = { workspace = true }
 dds_ops = { path = "../dds_ops" }
 rand = { workspace = true }

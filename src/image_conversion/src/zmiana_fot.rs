@@ -2,7 +2,7 @@ use encodery::check::sprawdzacz;
 use encodery::halper::merge_sciezki;
 use encodery::wczytywanie::main_wczytywanie::wczytaj_pliki;
 use encodery::zapisywanie::generic::zapisywanie_generic;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::enums_structs_io::FILTERFOTO;
 use enumy::przetwarzanie::{PrzetwarzanieAvif, PrzetwarzanieExr, PrzetwarzanieFf, PrzetwarzanieJpg, PrzetwarzaniePng, PrzetwarzanieQoi, PrzetwarzanieTga, PrzetwarzanieWebp};
 use enumy::rozszerzenia::rozszenienia_zdjec::{ImgExtAvif, ImgExtExr, ImgExtFf, ImgExtJpg, ImgExtPng, ImgExtQoi, ImgExtTga, ImgExtWebp};

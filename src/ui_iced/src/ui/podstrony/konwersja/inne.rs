@@ -5,7 +5,7 @@ use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::{styl_menu_pick, styl_pick_list};
-use enumy::dane_do_przetwarzania::DaneKonw;
+
 use enumy::inne_ui::{BtnState, ButtonType, SliderType, UstawieniaThemeWsio, WskaznikSzumu};
 use enumy::opcje::OptInterpolacja;
 use enumy::wybranie_jezykowe::WybórJęzyka;
@@ -13,6 +13,7 @@ use iced::widget::{container, pick_list, slider, space, text, Column, Row};
 use iced::Element;
 use iced_core::{Border, Color, Length};
 use strum::IntoEnumIterator;
+use encodery::DaneKonw;
 
 pub fn reszta<'a>(dane: &'a DaneKonw, kolor: &'a Color, jezyk: &'a WybórJęzyka, temat: &'a UstawieniaThemeWsio) -> Column<'a, Message> {
     Column::new().padding(15).spacing(15)

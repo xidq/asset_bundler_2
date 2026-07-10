@@ -2,7 +2,7 @@ use png::{Decoder, ColorType, BitDepth};
 use std::io::Cursor;
 use image::{DynamicImage, ImageBuffer};
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
-use crate::wczytywanie::strukty::DaneDoWczytywania;
+use crate::DaneDoWczytywania;
 /// # Decoding png
 /// ;)
 pub fn png(bajty: &Vec<u8>) -> Result<DaneDoWczytywania, std::io::Error> {

@@ -1,4 +1,4 @@
-use crate::wczytywanie::strukty::DaneDoWczytywania;
+use crate::DaneDoWczytywania;
 use enumy::rozszerzenia::kolor::{ColorProfilePhoto, PrzestrzeńExr};
 use exr::prelude::*;
 use image::{DynamicImage, GenericImageView, Rgba32FImage};

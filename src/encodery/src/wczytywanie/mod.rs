@@ -1,7 +1,6 @@
 pub mod main_wczytywanie;
 mod avif;
 mod check_extension;
-mod strukty;
 mod jpg;
 mod png;
 mod webp;

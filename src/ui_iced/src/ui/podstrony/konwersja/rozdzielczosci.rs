@@ -1,6 +1,6 @@
 use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::btn_rozdzielczosci;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::inne_ui::{BtnState, UstawieniaThemeWsio};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use enumy::wybranie_jezykowe::WybórJęzyka;

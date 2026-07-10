@@ -4,7 +4,7 @@ use crate::wczytywanie::ff::ff;
 use crate::wczytywanie::jpg::jpeg;
 use crate::wczytywanie::png::png;
 use crate::wczytywanie::qoi::qoi;
-use crate::wczytywanie::strukty::DaneDoWczytywania;
+use crate::DaneDoWczytywania;
 use crate::wczytywanie::tga::tga;
 use crate::wczytywanie::unknown::unknown;
 use crate::wczytywanie::webp::webp;

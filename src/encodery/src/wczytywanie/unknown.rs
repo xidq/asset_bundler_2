@@ -1,7 +1,7 @@
 use std::io::Cursor;
 use image::ImageReader;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
-use crate::wczytywanie::strukty::DaneDoWczytywania;
+use crate::DaneDoWczytywania;
 /// # Decoding unknown
 /// Trying to guess what's the format.
 /// 

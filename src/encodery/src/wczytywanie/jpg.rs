@@ -1,4 +1,4 @@
-use crate::wczytywanie::strukty::DaneDoWczytywania;
+use crate::DaneDoWczytywania;
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;
 use image::{DynamicImage, ImageBuffer};
 use img_parts::jpeg::Jpeg;

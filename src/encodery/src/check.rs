@@ -1,4 +1,4 @@
-use enumy::dane_do_przetwarzania::DaneKonw;
+use crate::DaneKonw;
 use enumy::opcje::OptInterpolacja;
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::kompresje::ForFfKompresja;

@@ -1,7 +1,7 @@
 use crate::ui::podstrony::konwersja::wybory::wybory;
 use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::przycisk_podmenu;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::inne_ui::{UiPods, UstawieniaThemeWsio};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{space, Column};

@@ -3,7 +3,7 @@ use crate::widget::button::{pole_tekstowe_przycisku, przycisk_rozszerzenia};
 use crate::widget::dropdown::dropdown;
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
 use enumy::rozszerzenia::ext::ImgExtTag;
 use enumy::rozszerzenia::kompresje::ForFfKompresja;

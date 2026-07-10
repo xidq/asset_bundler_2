@@ -1,7 +1,7 @@
 use iced::Element;
 use iced::widget::{Column, Row};
 use iced_core::Length;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::enums_structs_io::LogPrzetwarzanieFot;
 use enumy::inne_ui::{UiPods, UstawieniaThemeWsio};
 use enumy::wybranie_jezykowe::WybórJęzyka;

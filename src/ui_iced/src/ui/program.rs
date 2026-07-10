@@ -1,11 +1,10 @@
-use std::time::Instant;
 use iced::{
     font, widget::{button, column, container, row, scrollable, text, Space},
     Task,
 };
 use crate::ui::wiadomosci::message_enum::Message;
 use enumy::czcionki::{FONT_DEFAULT, FONT_JAPANESE, FONT_KOREAN, FONT_THAI};
-use enumy::dane_do_przetwarzania::{DaneBinPak, DaneBinUnpak, DaneDdsPak, DaneDdsUnpak, DaneKonw, DaneMerge};
+use enumy::dane_do_przetwarzania::{DaneBinPak, DaneBinUnpak, DaneDdsPak, DaneDdsUnpak, DaneMerge};
 use enumy::enums_structs_io::{LogPakowaniaDds, LogRozpakowywanieDds};
 pub(crate) use enumy::enums_structs_io::{LogPakowanie, LogPrzetwarzanieFot, LogRozpakowywanie};
 use enumy::inne_ui::{BtnState, PrzyciskiGlowneMenu, UiPods, UstawieniaThemeWsio};
@@ -21,6 +20,7 @@ use crate::widget::button::przycisk_glowne_menu;
 use crate::widget::colors_n_stuff::KOLOR_CZCIONKI_SREDNI;
 use crate::widget::styles::styl_przycisków;
 use iced_core::{Shadow, Theme, Vector};
+use encodery::DaneKonw;
 
 #[allow(dead_code)]
 pub struct Program {

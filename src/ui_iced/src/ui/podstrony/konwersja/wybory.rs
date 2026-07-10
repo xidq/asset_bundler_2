@@ -1,6 +1,6 @@
 use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::text::info_male;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::inne_ui::{UstawieniaThemeWsio, WskaznikSzumu};
 use enumy::rozszerzenia::bdepth::{BdepthAvif, BdepthExr, BdepthJpg, BdepthPng, BdepthQoi, BdepthTga, BdepthWebp};
 use enumy::rozszerzenia::rozdzielczosci::Rozdzielczości;

@@ -1,5 +1,5 @@
 use image::codecs::qoi::QoiDecoder;
-use crate::wczytywanie::strukty::DaneDoWczytywania;
+use crate::DaneDoWczytywania;
 use std::io::Cursor;
 use image::{ColorType, DynamicImage, ImageBuffer, ImageDecoder};
 use enumy::rozszerzenia::kolor::ColorProfilePhoto;

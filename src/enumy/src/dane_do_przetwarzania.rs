@@ -1,4 +1,4 @@
-use crate::opcje::{OptInterpolacja, OptIstniejePlik, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
+use crate::opcje::{OptIstniejePlik, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
 use crate::rozszerzenia::ext::{ImgExt, ImgExtSingle, ImgExtTag};
 use crate::rozszerzenia::kompresje::{DdxDxVersion, ForDds, ForDdsKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
@@ -6,9 +6,6 @@ use image::imageops::FilterType;
 use std::any::Any;
 use std::cmp::PartialEq;
 use std::path::PathBuf;
-use crate::inne_ui::WskaznikSzumu;
-use crate::rozszerzenia::rozszenienia_zdjec::{FormatyWyjściowe, ImgExtJpg};
-
 #[allow(dead_code)]
 #[derive(Clone, Debug, PartialEq)]
 pub struct DaneBinPak {
@@ -49,47 +46,6 @@ impl Default for DaneBinUnpak {
         Self{
             ścieżka_pliku: PathBuf::new(),
             ścieżka_docelowa: PathBuf::new(),
-        }
-    }
-}
-#[allow(dead_code)]
-#[derive(Clone, Debug, PartialEq)]
-pub struct DaneKonw {
-    pub ścieżka_wejściowa: PathBuf,
-    pub ścieżka_wyjściowa: PathBuf,
-    pub opcje_rozdzielczości: Vec<Rozdzielczości>,
-    pub noising: WskaznikSzumu,
-    // pub rozszerzenia: Vec<ImgExt>,
-    // pub tag:Vec<ImgExtTag>,
-    pub rozszerzenia: FormatyWyjściowe,
-    pub inter: OptInterpolacja,
-    pub alfa_rgb: (u16, u16, u16),
-    pub exif: bool,
-    pub istniejace_pliki: OptIstniejePlik,
-}
-impl Default for DaneKonw {
-    fn default() -> Self {
-        DaneKonw {
-            ścieżka_wejściowa: PathBuf::new(),
-            ścieżka_wyjściowa: PathBuf::new(),
-            opcje_rozdzielczości: Vec::from([Rozdzielczości::Oryginalna]),
-            noising: WskaznikSzumu::NoNoise,
-            // rozszerzenia: Vec::from([ Default::default() ]),
-            // tag: Vec::from([ ImgExtTag::Jpg ]),
-            rozszerzenia: FormatyWyjściowe {
-                jpg: Some(ImgExtJpg::default()),
-                png: None,
-                webp: None,
-                tga: None,
-                ff: None,
-                qoi: None,
-                avif: None,
-                exr: None,
-            },
-            inter: OptInterpolacja::Lanczos3,
-            alfa_rgb: (0, 0, 0),
-            exif: false,
-            istniejace_pliki: OptIstniejePlik::Zamień,
         }
     }
 }
@@ -201,16 +157,6 @@ pub trait DaneDoObrbki{
 }
 
 
-impl DaneDoObrbki for DaneKonw {
-    fn jako_any(&self) -> &dyn Any { self }
-    fn jest_rowny(&self, inny: &dyn Any) -> bool {
-        if let Some(v) = inny.downcast_ref::<Self>() {
-            return v == self;
-        }
-        false
-    }
-    // fn tag_master(&self) -> Vec<ImgExtTag> { self.tag.clone() }
-}
 impl DaneDoObrbki for DaneMerge {
     fn jako_any(&self) -> &dyn Any { self }
     fn jest_rowny(&self, inny: &dyn Any) -> bool {

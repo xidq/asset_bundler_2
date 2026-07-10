@@ -3,7 +3,7 @@ use crate::widget::button::{pole_tekstowe_przycisku, przycisk, przycisk_startu};
 use crate::widget::dropdown::dropdown;
 use crate::widget::status::{status_text, status_text_bar};
 use crate::widget::text_place::tekstowe_pole_wypelniane;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::enums_structs_io::LogPrzetwarzanieFot;
 use enumy::ikony::folder_icon;
 use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};

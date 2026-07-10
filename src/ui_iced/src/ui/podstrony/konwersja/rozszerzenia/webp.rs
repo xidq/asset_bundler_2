@@ -2,7 +2,7 @@ use crate::ui::wiadomosci::message_enum::Message;
 use crate::widget::button::{btn_bdepth_konwersja, pole_tekstowe_przycisku, przycisk, przycisk_rozszerzenia};
 use crate::widget::slajder::slajderr;
 use crate::widget::styles::styl_kontenera;
-use enumy::dane_do_przetwarzania::DaneKonw;
+use encodery::DaneKonw;
 use enumy::inne_ui::{BtnState, ButtonType, RodzajeContainer, SliderType, UstawieniaThemeWsio};
 use enumy::rozszerzenia::bdepth::BdepthWebp;
 use enumy::rozszerzenia::ext::ImgExtTag;
