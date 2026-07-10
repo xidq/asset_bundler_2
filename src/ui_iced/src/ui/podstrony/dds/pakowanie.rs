@@ -6,7 +6,7 @@ use crate::widget::text_place::tekstowe_pole_wypelniane;
 use enumy::dane_do_przetwarzania::DaneDdsPak;
 use enumy::ikony::folder_icon;
 use enumy::inne_ui::{ActProces, BtnState, ButtonType, TextInputType, UstawieniaThemeWsio};
-use enumy::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
+use enumy::rozszerzenia::kompresje::{DdxDxVersion, ForDds, ForDdsKompresja};
 use enumy::wybranie_jezykowe::WybórJęzyka;
 use iced::widget::{checkbox, space, Column};
 use iced::widget::{text, Row};
@@ -175,7 +175,7 @@ pub fn pakowanie<'a>(dane: &'a DaneDdsPak, kolor: &'a Color, jezyk: &'a WybórJ�
                 .push(dropdown::<ForDdsKompresja, _>(dane, kolor, temat))
                 .push(space().width(15.))
         )
-        .push(checkbox(dane.dx9).on_toggle(|_bool|Message::Dds(DdsMsg::Dx9)).label("Dx9? (tylko bc1/2/3, reszta dx10)"))
+        .push(checkbox(dane.dx_ver == DdxDxVersion::Dx9).on_toggle(|_bool|Message::Dds(DdsMsg::DxVersion)).label("Dx9? (tylko bc1/2/3, reszta dx10)"))
         .push(
             Row::new().spacing(15).height(50.)
                 .push(pole_tekstowe_przycisku("dds_format", jezyk, temat))

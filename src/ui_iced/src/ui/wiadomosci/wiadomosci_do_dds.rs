@@ -11,6 +11,7 @@ use enumy::statusy::{LogTxDdsPak, LogTxDdsUnpak};
 use futures::channel::mpsc;
 use iced::Task;
 use std::path::PathBuf;
+use enumy::rozszerzenia::kompresje::DdxDxVersion;
 
 fn toggle_w_vec<T: PartialEq + Clone>(vec: &mut Vec<T>, element: &T) {
     if let Some(pos) = vec.iter().position(|x| x == element) {
@@ -373,8 +374,12 @@ impl Program {
                 
                 let _ = self.update(Message::ChckStatus);
             }
-            DdsMsg::Dx9 => {
-                self.dane_dds_pak.dx9 = !self.dane_dds_pak.dx9
+            DdsMsg::DxVersion => {
+                if self.dane_dds_pak.dx_ver == DdxDxVersion::Dx9 {
+                    self.dane_dds_pak.dx_ver = DdxDxVersion::Dx10
+                } else {
+                    self.dane_dds_pak.dx_ver = DdxDxVersion::Dx9
+                }
             }
             _ => {}
         }

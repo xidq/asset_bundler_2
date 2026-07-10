@@ -1,6 +1,6 @@
 use std::fs::File;
 use dds::CompressionQuality;
-use enumy::rozszerzenia::kompresje::ForDds;
+use enumy::rozszerzenia::kompresje::{DdxDxVersion, ForDds};
 
 pub struct DaneDoZapisu<'a>{
     pub file: &'a mut File,
@@ -10,4 +10,5 @@ pub struct DaneDoZapisu<'a>{
     pub format: &'a ForDds,
     pub kompresja: CompressionQuality,
     pub minimaps: bool,
+    pub dx_ver: DdxDxVersion,
 }

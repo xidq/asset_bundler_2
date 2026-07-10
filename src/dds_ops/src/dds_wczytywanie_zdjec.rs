@@ -257,6 +257,7 @@ pub async fn image_to_dds(
             format: &dane.format,
             kompresja,
             minimaps: true,
+            dx_ver: dane.dx_ver
         };
         wywoływacz();
 

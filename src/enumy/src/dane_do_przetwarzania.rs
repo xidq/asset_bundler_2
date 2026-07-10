@@ -1,6 +1,6 @@
 use crate::opcje::{OptInterpolacja, OptIstniejePlik, OptKompresjaPlikówFiltracjaPlików, OptKompresjaPlikówPoziomKompresjiZstd};
 use crate::rozszerzenia::ext::{ImgExt, ImgExtSingle, ImgExtTag};
-use crate::rozszerzenia::kompresje::{ForDds, ForDdsKompresja};
+use crate::rozszerzenia::kompresje::{DdxDxVersion, ForDds, ForDdsKompresja};
 use crate::rozszerzenia::rozdzielczosci::Rozdzielczości;
 use image::imageops::FilterType;
 use std::any::Any;
@@ -129,7 +129,7 @@ pub struct DaneDdsPak {
     pub ścieżka_wyjściowa: PathBuf,
     pub nazwa: String,
     pub format: ForDds,
-    pub dx9: bool,
+    pub dx_ver: DdxDxVersion,
     pub kompresja: ForDdsKompresja,
 }
 impl Default for DaneDdsPak {
@@ -139,7 +139,7 @@ impl Default for DaneDdsPak {
             ścieżka_wyjściowa: PathBuf::new(),
             nazwa: String::new(),
             format: ForDds::DxgiFormatBc7Unorm,
-            dx9: false,
+            dx_ver: DdxDxVersion::Dx10,
             kompresja: ForDdsKompresja::Normal,
         }
     }

@@ -25,6 +25,12 @@ pub enum ForExrKompresja{
     // Dwaa(Option<f32>),
     // Dwab(Option<f32>),
 }
+#[derive(Clone, Debug, PartialEq)]
+pub enum DdxDxVersion{
+    Dx10,
+    Dx9,
+}
+
 
 #[allow(dead_code)]
 #[derive(Debug, Copy, Clone, PartialEq, EnumIter, EnumMessage, Display,Default)]

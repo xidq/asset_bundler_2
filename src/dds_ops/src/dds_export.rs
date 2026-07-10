@@ -2,14 +2,10 @@ use crate::dds_halper::oblicz_ilosc_mipmap;
 use crate::strukt::DaneDoZapisu;
 use dds::header::{Dx10Header, Dx9Header, Dx9PixelFormat, DxgiFormat, FourCC, Header};
 use dds::*;
-use enumy::rozszerzenia::kompresje::ForDds;
+use enumy::rozszerzenia::kompresje::{DdxDxVersion, ForDds};
 use enumy::statusy::LogTxDdsPak;
 use futures::channel::mpsc::Sender;
 
-enum DdxDxVersion{
-    Dx10,
-    Dx9,
-}
 
 /// # Secondary fn for image -> dds
 /// 
@@ -18,7 +14,6 @@ pub async fn save_image_to_dds(
     mut tx: Sender<LogTxDdsPak>,
 ) -> Result<(), EncodingError> {
 
-    let dxversion: DdxDxVersion = DdxDxVersion::Dx10;
     
     let mut przerób: u32 = 0;
     // dbg!("jestem w save_rgba_image_with_mipmaps");
@@ -89,7 +84,7 @@ pub async fn save_image_to_dds(
     dx10_header.array_size = ilosc_tekstur;
     // dx9_header.array_size = ilosc_tekstur;
 
-    let header: Header = match dxversion{
+    let header: Header = match dane.dx_ver{
         DdxDxVersion::Dx10 => {
             let mut dx10_header = Dx10Header::new_image(dane.width, dane.height, format)
                 .with_mipmap_count(oblicz_ilosc_mipmap(dane.width, dane.height));
